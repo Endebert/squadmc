@@ -1,0 +1,463 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Squad MC">
+    <link rel="apple-touch-icon" sizes="57x57" href="./favicon/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="./favicon/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="./favicon/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="./favicon/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="./favicon/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="./favicon/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="./favicon/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="./favicon/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="./favicon/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="./favicon/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="./favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="./favicon/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./favicon/favicon-16x16.png">
+    <link rel="manifest" href="./favicon/manifest.json">
+    <meta name="msapplication-TileColor" content="#000000">
+    <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+    <meta name="theme-color" content="#000000">
+    <title>Robert's Mortar Calculator for Squad</title>
+    <link rel="stylesheet" href="./leaflet.css"/>
+    <link rel="stylesheet" href="./L.Control.MousePosition.css"/>
+    <link rel="stylesheet" href="./L.easyButton.css">
+    <link rel="stylesheet" href="./custom.css"/>
+
+    <style type="text/css">
+        html,
+        body,
+        #photo {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+    </style>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.2/js/all.js"></script>
+
+
+<body>
+<div id="mapTitle" align="center">
+    <div id="mapName">Al Basrah</div>
+    <table>
+        <tr>
+            <td><img class="inline" src="mortar.png" width="16px" height="16px"/>
+                <div class="inline keypad" id="mortarPos">&nbsp;&nbsp;-&nbsp;-&nbsp;</div>
+            </td>
+            <td><img class="inline" src="target.png" width="16px" height="16px"/>
+                <div class="inline keypad" id="targetPos">&nbsp;&nbsp;-&nbsp;-&nbsp;</div>
+            </td>
+        </tr>
+    </table>
+    <div class="keypad" id="mapAngle">&nbsp;&nbsp;&nbsp;°</div>&nbsp;<div class="keypad" id="mapBearing">&nbsp;&nbsp;&nbsp;&nbsp;</div>
+</div>
+
+<div id="mousecoord" class="leaflet-control-mouseposition-target">THIS IS A TEST</div>
+<div id="photo"></div>
+<script src="./leaflet-src.js"></script>
+<script src="./squadcalc.js"></script>
+<script src="./utils.js"></script>
+<script type="text/javascript" src="./L.SimpleGraticule.js"></script>
+<script type="text/javascript" src="./L.Control.MousePosition.js"></script>
+<script src="./L.easyButton.js"></script>
+<script type="text/javascript">
+
+    var DEBUG = false;
+
+    const iSize = 48; // icon size
+
+    const mortarIcon = L.icon({
+        iconUrl: 'mortar.png',
+
+        iconSize: [iSize, iSize], // size of the icon
+        iconAnchor: [iSize / 2, iSize / 2], // point of the icon which will correspond to marker's location
+        popupAnchor: [0, -iSize / 2] // point from which the popup should open relative to the iconAnchor
+    });
+
+    const targetIcon = L.icon({
+        iconUrl: 'target.png',
+
+        iconSize: [iSize, iSize], // size of the icon
+        iconAnchor: [iSize / 2, iSize / 2], // point of the icon which will correspond to marker's location
+        popupAnchor: [0, -iSize / 2] // point from which the popup should open relative to the iconAnchor
+    });
+
+    const albasrah = L.imageOverlay('./maps/albasrah.jpg', [[0, 0], [3200, 3200]]);
+    const chora = L.imageOverlay('./maps/chora.jpg', [[0, 0], [4073, 4073]]);
+    const foolsroad = L.imageOverlay('./maps/foolsroad.jpg', [[0, 0], [1775, 1739]]);
+    const forest = L.imageOverlay('./maps/forest.jpg', [[0, 0], [1200, 1200]]);
+    const gorodok = L.imageOverlay('./maps/gorodok.jpg', [[0, 0], [4347, 4347]]);
+    const jensens = L.imageOverlay('./maps/jensens.jpg', [[0, 0], [1513, 1513]]);
+    const kohat = L.imageOverlay('./maps/kohat.jpg', [[0, 0], [4026, 4026]]);
+    const kokan = L.imageOverlay('./maps/kokan.jpg', [[0, 0], [2500, 2500]]);
+    const logarvalley = L.imageOverlay('./maps/logarvalley.jpg', [[0, 0], [1765, 1765]]);
+    const mestia = L.imageOverlay('./maps/mestia.jpg', [[0, 0], [2403, 2403]]);
+    const narva = L.imageOverlay('./maps/narva.jpg', [[0, 0], [2205, 2205]]);
+    const sumari = L.imageOverlay('./maps/sumari.jpg', [[0, 0], [1303, 1303]]);
+    const yehorivka = L.imageOverlay('./maps/yehorivka.jpg', [[0, 0], [4041, 4041]]);
+
+    // debug maps
+    const albasrah_l = L.imageOverlay('./maps/albasrah_l.jpg', [[0, 0], [3200, 3200]]);
+    const chora_l = L.imageOverlay('./maps/chora_l.jpg', [[0, 0], [4073, 4073]]);
+    const foolsroad_l = L.imageOverlay('./maps/foolsroad_l.jpg', [[0, 0], [1775, 1739]]);
+    const forest_l = L.imageOverlay('./maps/forest_l.jpg', [[0, 0], [1200, 1200]]);
+    const gorodok_l = L.imageOverlay('./maps/gorodok_l.jpg', [[0, 0], [4347, 4347]]);
+    const jensens_l = L.imageOverlay('./maps/jensens_l.jpg', [[0, 0], [1513, 1513]]);
+    const kohat_l = L.imageOverlay('./maps/kohat_l.jpg', [[0, 0], [4026, 4026]]);
+    const kokan_l = L.imageOverlay('./maps/kokan_l.jpg', [[0, 0], [2500, 2500]]);
+    const logarvalley_l = L.imageOverlay('./maps/logarvalley_l.jpg', [[0, 0], [1765, 1765]]);
+    const mestia_l = L.imageOverlay('./maps/mestia_l.jpg', [[0, 0], [2403, 2403]]);
+    const narva_l = L.imageOverlay('./maps/narva_l.jpg', [[0, 0], [2205, 2205]]);
+    const sumari_l = L.imageOverlay('./maps/sumari_l.jpg', [[0, 0], [1303, 1303]]);
+    const yehorivka_l = L.imageOverlay('./maps/yehorivka_l.jpg', [[0, 0], [4041, 4041]]);
+
+    const baseMaps = {
+        "Al Basrah": albasrah,
+        "Chora Valley": chora,
+        "Fool's Road": foolsroad,
+        "Operation First Light": forest,
+        "Gorodok": gorodok,
+        "Jensen's Range": jensens,
+        "Kohat Toi River Valley": kohat,
+        "Kokan": kokan,
+        "Logar Valley": logarvalley,
+        "Mestia": mestia,
+        "Narva": narva,
+        "Sumari Bala": sumari,
+        "Yehorivka": yehorivka,
+
+        "DEBUG: Al Basrah": albasrah_l,
+        "DEBUG: Chora Valley": chora_l,
+        "DEBUG: Fool's Road": foolsroad_l,
+        "DEBUG: Operation First Light": forest_l,
+        "DEBUG: Gorodok": gorodok_l,
+        "DEBUG: Jensen's Range": jensens_l,
+        "DEBUG: Kohat Toi River Valley": kohat_l,
+        "DEBUG: Kokan": kokan_l,
+        "DEBUG: Logar Valley": logarvalley_l,
+        "DEBUG: Mestia": mestia_l,
+        "DEBUG: Narva": narva_l,
+        "DEBUG: Sumari Bala": sumari_l,
+        "DEBUG: Yehorivka": yehorivka_l,
+    };
+
+    let mo = {}; // map objects
+    let fo = {}; // flag objects
+
+    fo["Al Basrah"] = [
+        createLocation("Village", [2000, 760]),
+        createLocation("US Airfield", [770, 1070]),
+        createLocation("US Checkpoint", [1550, 1530]),
+        createLocation("Outskirts", [2050, 1600]),
+        createLocation("Refinery", [1939, 2070]),
+        createLocation("Mosque", [2107, 1882]),
+        createLocation("Oasis", [2448, 1575]),
+        createLocation("Suburbs", [2307, 1941]),
+        createLocation("Alleys", [2238, 2243]),
+        createLocation("Fringe", [2713, 1541]),
+        createLocation("Estates", [2705, 2087]),
+    ];
+
+    fo["Chora Valley"] = [
+        createLocation("Russia Main", [2730, 600]),
+        createLocation("Monolith", [2345, 850]),
+        createLocation("SW Nursery", [2529, 1213]),
+        createLocation("Orchard", [1835, 1428]),
+        createLocation("Radio Station", [2224, 1898]),
+        createLocation("Hemp Farm", [1755, 2148]),
+        createLocation("Gas Station", [1817, 2511]),
+        createLocation("US Main", [1795, 2905]),
+    ];
+
+    const grid_options = {
+        interval: 300,
+        showOriginLabel: false,
+        redraw: 'moveend',
+        zoomIntervals: [],
+        // bounds: L.latLngBounds([[0, 0], [3200, 3200]]) // initialize with al basrah bounds
+    };
+    const grid = L.simpleGraticule(grid_options);
+
+    const map = L.map('photo', {
+        crs: L.CRS.Simple,
+        minZoom: -3,
+        maxZoom: 2,
+        attributionControl: true,
+        layers: [grid],
+        zoomSnap: 0
+    });
+
+    // noinspection JSNonASCIINames
+    const overlayMaps = {
+        'Keypad grid': grid
+    };
+    const layerControl = L.control.layers(baseMaps, overlayMaps);
+    layerControl.addTo(map);
+
+    const scaleControl = L.control.scale({maxWidth: 300, metric: true, imperial: false, position: 'bottomright'});
+    scaleControl.addTo(map);
+
+    const mouseControl = L.control.mousePosition();
+    mouseControl.addTo(map);
+
+    // L.easyButton('fas fa-binoculars', function (btn, map) {
+    //     DEBUG = !DEBUG;
+    // }).addTo(map);
+
+    const markerGroup = L.layerGroup();
+    const flagMarkerGroup = L.layerGroup();
+
+    map.addLayer(markerGroup);
+    map.addLayer(flagMarkerGroup);
+
+    function drawLine() {
+        if (!mo.mortarMarker || !mo.targetMarker)
+            return;
+
+        const s = mo.mortarMarker.getLatLng();
+        const e = mo.targetMarker.getLatLng();
+
+        if (!mo.distLine) {
+            mo.distLine = L.polyline([s, e], {color: 'green'});
+            // mapObjects.distLine.addTo(map);
+            mo.distLine.addTo(markerGroup);
+        } else {
+            mo.distLine.setLatLngs([s, e]);
+        }
+
+        mo.distLine.setStyle({color: isNaN(elevation) ? 'red' : 'green'});
+    }
+
+    let angle = 0;
+    let elevation = 0;
+
+    function calculate() {
+        if (!mo.mortarMarker || !mo.targetMarker)
+            return;
+
+        const s = mo.mortarMarker.getLatLng();
+        const e = mo.targetMarker.getLatLng();
+        if (!mo.infoPopup) {
+            mo.infoPopup = L.popup({autoPan: false});
+            mo.targetMarker.bindPopup(mo.infoPopup);
+        }
+
+        angle = Math.atan2(e.lng - s.lng, e.lat - s.lat) * 180 / Math.PI;
+
+        const a = s.lat - e.lat;
+        const b = s.lng - e.lng;
+
+        const dist = Math.sqrt(a * a + b * b);
+        angle = Math.round(180 - angle); // rotate so 0° is towards North
+        elevation = Math.round(interpolateElevation(dist));
+
+        let strAngle = ('000' + angle).substr(-3);
+
+        let strElevation = isNaN(elevation) ? 'XXXX' : ('0000' + elevation).substr(-4);
+
+        mo.infoPopup
+        // .setContent("" + angle + "° | " + elevation)
+            .setContent('<table>' +
+                '<tr><th align="right">bearing: </th><td>' + strAngle + '°</td></tr>' +
+                '<tr><th align="right">elevation: </th><td>' + strElevation + '</td></tr>' +
+                '</table>');
+        document.getElementById("mapAngle").innerText = strAngle + "°";
+        document.getElementById("mapBearing").innerText = strElevation;
+    }
+
+    let dragged = false;
+
+    function setMortar(latlng) {
+        console.log("setMortar: ", JSON.stringify(latlng));
+
+        if (!mo.mortarMarker) {
+            mo.mortarMarker = new L.marker(latlng, {draggable: 'true', icon: mortarIcon});
+            mo.maxRangeCircle = new L.circle(latlng, {
+                draggable: 'false',
+                radius: 1250,
+                color: 'green',
+                fillOpacity: 0.05
+            });
+            mo.minRangeCircle = new L.circle(latlng, {
+                draggable: 'false',
+                radius: 50,
+                color: 'red',
+                fillOpacity: 0.05
+            });
+            if (mo.targetMarker)
+                mo.targetMarker.openPopup();
+            mo.mortarMarker.on('dragstart', function (e) {
+                dragged = true;
+            });
+            mo.mortarMarker.on('drag', function (e) {
+                calcAndDraw();
+                mo.maxRangeCircle.setLatLng(e.latlng);
+                mo.minRangeCircle.setLatLng(e.latlng);
+                document.getElementById("mortarPos").innerText = getKP(e.latlng.lat, e.latlng.lng)
+            });
+            mo.mortarMarker.on('dragend', function (e) {
+                setTimeout(() => { // black magic to not trigger click after drag
+
+                    // if (mo.targetMarker)
+                    //     mo.targetMarker.openPopup();
+                    dragged = false;
+                }, 10);
+
+            });
+            // map.addLayer(mapObjects.mortarMarker);
+            mo.mortarMarker.addTo(markerGroup);
+            mo.maxRangeCircle.addTo(markerGroup);
+            mo.minRangeCircle.addTo(markerGroup);
+        }
+        else {
+            mo.mortarMarker.setLatLng(latlng);
+            mo.maxRangeCircle.setLatLng(latlng);
+            mo.minRangeCircle.setLatLng(latlng);
+        }
+
+        calcAndDraw();
+        document.getElementById("mortarPos").innerText = getKP(latlng.lat, latlng.lng);
+
+        if (mo.targetMarker)
+            mo.targetMarker.openPopup();
+    }
+
+    function calcAndDraw() {
+        calculate();
+        drawLine();
+    }
+
+    function pad(num, size) {
+        return ('0000' + num).substr(-size)
+    }
+
+    function setTarget(latlng) {
+        console.log("setTarget: ", JSON.stringify(latlng));
+        if (!mo.targetMarker) {
+            mo.targetMarker = new L.marker(latlng, {draggable: 'true', icon: targetIcon});
+
+            console.log("opened popup");
+            mo.targetMarker.on('dragstart', function (e) {
+                dragged = true;
+            });
+            mo.targetMarker.on('drag', function (e) {
+                calcAndDraw();
+                document.getElementById("targetPos").innerText = getKP(e.latlng.lat, e.latlng.lng)
+                // mo.targetMarker.openPopup();
+            });
+            mo.targetMarker.on('dragend', function (e) {
+                setTimeout(() => { // black magic to not trigger click after drag
+                    dragged = false;
+                }, 10);
+            });
+            // map.addLayer(mo.targetMarker);
+            mo.targetMarker.addTo(markerGroup);
+        }
+        else {
+            mo.targetMarker.setLatLng(latlng);
+        }
+        calcAndDraw();
+        document.getElementById("targetPos").innerText = getKP(latlng.lat, latlng.lng)
+        // mo.targetMarker.openPopup();
+    }
+
+    function onMapClick(e) {
+
+        if (dragged)
+            return true; // black magic to not trigger click after drag
+        function createButton(label, container) {
+            const btn = L.DomUtil.create('button', '', container);
+            btn.setAttribute('type', 'button');
+            btn.innerHTML = label;
+            return btn;
+        }
+
+        const choicePopUp = L.popup();
+        let container = L.DomUtil.create('div');
+        const mortar = createButton('<img src="./mortar.png" height=' + iSize + ' width=' + iSize + '>', container);
+        const target = createButton('<img src="./target.png" height=' + iSize + ' width=' + iSize + '>', container);
+        if (!mo.mortarMarker) {
+            setMortar(e.latlng);
+        } else if (!mo.targetMarker) {
+            setTarget(e.latlng);
+        } else {
+            choicePopUp
+                .setLatLng(e.latlng)
+                .setContent(container)
+                .openOn(map);
+
+            L.DomEvent.on(mortar, 'click', () => {
+                map.closePopup();
+                setMortar(e.latlng);
+            });
+
+            L.DomEvent.on(target, 'click', () => {
+                map.closePopup();
+                setTarget(e.latlng);
+            });
+
+        }
+
+        if (DEBUG) {
+            copyTextToClipboard("[" + Math.round(e.latlng.lat) + ", " + Math.round(e.latlng.lng) + "]");
+        }
+
+    }
+
+    map.on('click', onMapClick);
+
+    function onBaseLayerChange(e) {
+        layerControl.collapse();
+        console.log("layer changed:", e.name);
+        document.getElementById("mapName").innerText = e.name;
+        console.log("layer:", e.layer);
+        reInit(e.layer.getBounds(), e.name);
+        localStorage.setItem("lastLayer", e.name);
+    }
+
+    map.on('baselayerchange', onBaseLayerChange);
+
+    function reInit(bounds, layerName) {
+        // try {
+        //     flagMarkerGroup.eachLayer(function (layer) {
+        //         flagMarkerGroup.removeLayer(layer);
+        //     });
+        //     let m = layerName;
+        //     for (let f in fo[m]) {
+        //         console.log("f:", fo[m][f]);
+        //         fo[m][f].addTo(flagMarkerGroup);
+        //     }
+        // } catch (e) {
+        //     console.log("reIniting flagMarkers failed:", e);
+        // }
+        try {
+            markerGroup.eachLayer(function (layer) {
+                markerGroup.removeLayer(layer);
+            });
+            mo = {};
+        } catch (e) {
+            // do nothing
+        }
+
+        console.log("reInit with bounds:", bounds);
+        map.setMaxBounds(bounds);
+        map.fitBounds(bounds);
+    }
+
+    let m = localStorage.getItem("lastLayer");
+
+    if (!m)
+        for (m in baseMaps) break; // get first object and stop loop
+    map.setView(baseMaps[m].getBounds().getCenter(), -5);
+    map.addLayer(baseMaps[m]);
+</script>
+</body>
+
+</html>
