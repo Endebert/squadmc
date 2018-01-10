@@ -425,18 +425,18 @@
     map.on('baselayerchange', onBaseLayerChange);
 
     function reInit(bounds, layerName) {
-        // try {
-        //     flagMarkerGroup.eachLayer(function (layer) {
-        //         flagMarkerGroup.removeLayer(layer);
-        //     });
-        //     let m = layerName;
-        //     for (let f in fo[m]) {
-        //         console.log("f:", fo[m][f]);
-        //         fo[m][f].addTo(flagMarkerGroup);
-        //     }
-        // } catch (e) {
-        //     console.log("reIniting flagMarkers failed:", e);
-        // }
+        try {
+           flagMarkerGroup.eachLayer(function (layer) {
+               flagMarkerGroup.removeLayer(layer);
+           });
+           let m = layerName;
+           for (let f in fo[m]) {
+               console.log("f:", fo[m][f]);
+               fo[m][f].addTo(flagMarkerGroup);
+           }
+        } catch (e) {
+           console.log("reIniting flagMarkers failed:", e);
+        }
         try {
             markerGroup.eachLayer(function (layer) {
                 markerGroup.removeLayer(layer);
