@@ -65,7 +65,8 @@
 <script src="./squadcalc.js"></script>
 <script src="./utils.js"></script>
 <script type="text/javascript" src="./L.CRS.SimpleTopLeft.js"></script>
-<script type="text/javascript" src="./L.SimpleGraticule.js"></script>
+<script type="text/javascript" src="./L.Calculator.js"></script>
+<script type="text/javascript" src="./L.SquadGrid.js"></script>
 <script type="text/javascript" src="./L.Control.MousePosition.js"></script>
 <script src="./L.easyButton.js"></script>
 <script type="text/javascript">
@@ -182,7 +183,7 @@
   });
 
   const map = L.map('photo', {
-    crs: L.CRS.SimpleTopLeft,
+    crs: L.CRS.Simple,
     minZoom: -3,
     maxZoom: 2,
     attributionControl: true,
@@ -205,209 +206,14 @@
   const mouseControl = L.control.mousePosition();
   mouseControl.addTo(map);
 
+  const calcLayer = L.calculator();
+  calcLayer.addTo(map);
+
   // L.easyButton('fas fa-binoculars', function (btn, map) {
   //     DEBUG = !DEBUG;
   // }).addTo(map);
-
-  const markerGroup = L.layerGroup();
   const flagMarkerGroup = L.layerGroup();
-
-  map.addLayer(markerGroup);
   map.addLayer(flagMarkerGroup);
-
-  function drawLine() {
-    if (!mo.mortarMarker || !mo.targetMarker) {
-      return;
-    }
-
-    const s = mo.mortarMarker.getLatLng();
-    const e = mo.targetMarker.getLatLng();
-
-    if (!mo.distLine) {
-      mo.distLine = L.polyline([s, e], {color: 'green'});
-      // mapObjects.distLine.addTo(map);
-      mo.distLine.addTo(markerGroup);
-    } else {
-      mo.distLine.setLatLngs([s, e]);
-    }
-
-    mo.distLine.setStyle({color: isNaN(elevation) ? 'red' : 'green'});
-  }
-
-  let angle = 0;
-  let elevation = 0;
-
-  function calculate() {
-    if (!mo.mortarMarker || !mo.targetMarker) {
-      return;
-    }
-
-    const s = mo.mortarMarker.getLatLng();
-    const e = mo.targetMarker.getLatLng();
-    if (!mo.infoPopup) {
-      mo.infoPopup = L.popup({autoPan: false});
-      mo.targetMarker.bindPopup(mo.infoPopup);
-    }
-
-    angle = Math.atan2(e.lng - s.lng, e.lat - s.lat) * 180 / Math.PI;
-
-    const a = s.lat - e.lat;
-    const b = s.lng - e.lng;
-
-    const dist = Math.sqrt(a * a + b * b);
-    angle = Math.round(180 - angle); // rotate so 0° is towards North
-    elevation = Math.round(interpolateElevation(dist));
-
-    const strAngle = (`000${angle}`).substr(-3);
-
-    const strElevation = isNaN(elevation) ? 'XXXX' : (`0000${elevation}`).substr(-4);
-
-    mo.infoPopup
-    // .setContent("" + angle + "° | " + elevation)
-      .setContent(`${'<table>' +
-        '<tr><th align="right">bearing: </th><td>'}${strAngle}°</td></tr>` +
-        `<tr><th align="right">elevation: </th><td>${strElevation}</td></tr>` +
-        '</table>');
-    document.getElementById('mapAngle').innerText = `${strAngle}°`;
-    document.getElementById('mapBearing').innerText = strElevation;
-  }
-
-  let dragged = false;
-
-  function setMortar(latlng) {
-    console.log('setMortar: ', JSON.stringify(latlng));
-
-    if (!mo.mortarMarker) {
-      mo.mortarMarker = new L.marker(latlng, {draggable: 'true', icon: mortarIcon});
-      mo.maxRangeCircle = new L.circle(latlng, {
-        draggable: 'false',
-        radius: 1250,
-        color: 'green',
-        fillOpacity: 0.05,
-      });
-      mo.minRangeCircle = new L.circle(latlng, {
-        draggable: 'false',
-        radius: 50,
-        color: 'red',
-        fillOpacity: 0.05,
-      });
-      if (mo.targetMarker) {
-        mo.targetMarker.openPopup();
-      }
-      mo.mortarMarker.on('dragstart', (e) => {
-        dragged = true;
-      });
-      mo.mortarMarker.on('drag', (e) => {
-        calcAndDraw();
-        mo.maxRangeCircle.setLatLng(e.latlng);
-        mo.minRangeCircle.setLatLng(e.latlng);
-        document.getElementById('mortarPos').innerText = getKP(e.latlng.lat, e.latlng.lng);
-      });
-      mo.mortarMarker.on('dragend', (e) => {
-        setTimeout(() => { // black magic to not trigger click after drag
-          // if (mo.targetMarker)
-          //     mo.targetMarker.openPopup();
-          dragged = false;
-        }, 10);
-      });
-      // map.addLayer(mapObjects.mortarMarker);
-      mo.mortarMarker.addTo(markerGroup);
-      mo.maxRangeCircle.addTo(markerGroup);
-      mo.minRangeCircle.addTo(markerGroup);
-    } else {
-      mo.mortarMarker.setLatLng(latlng);
-      mo.maxRangeCircle.setLatLng(latlng);
-      mo.minRangeCircle.setLatLng(latlng);
-    }
-
-    calcAndDraw();
-    document.getElementById('mortarPos').innerText = getKP(latlng.lat, latlng.lng);
-
-    if (mo.targetMarker) {
-      mo.targetMarker.openPopup();
-    }
-  }
-
-  function calcAndDraw() {
-    calculate();
-    drawLine();
-  }
-
-  function pad(num, size) {
-    return (`0000${num}`).substr(-size);
-  }
-
-  function setTarget(latlng) {
-    console.log('setTarget: ', JSON.stringify(latlng));
-    if (!mo.targetMarker) {
-      mo.targetMarker = new L.marker(latlng, {draggable: 'true', icon: targetIcon});
-
-      console.log('opened popup');
-      mo.targetMarker.on('dragstart', (e) => {
-        dragged = true;
-      });
-      mo.targetMarker.on('drag', (e) => {
-        calcAndDraw();
-        document.getElementById('targetPos').innerText = getKP(e.latlng.lat, e.latlng.lng);
-        // mo.targetMarker.openPopup();
-      });
-      mo.targetMarker.on('dragend', (e) => {
-        setTimeout(() => { // black magic to not trigger click after drag
-          dragged = false;
-        }, 10);
-      });
-      // map.addLayer(mo.targetMarker);
-      mo.targetMarker.addTo(markerGroup);
-    } else {
-      mo.targetMarker.setLatLng(latlng);
-    }
-    calcAndDraw();
-    document.getElementById('targetPos').innerText = getKP(latlng.lat, latlng.lng);
-    // mo.targetMarker.openPopup();
-  }
-
-  function onMapClick(e) {
-    if (dragged) {
-      return true;
-    } // black magic to not trigger click after drag
-    function createButton(label, container) {
-      const btn = L.DomUtil.create('button', '', container);
-      btn.setAttribute('type', 'button');
-      btn.innerHTML = label;
-      return btn;
-    }
-
-    const choicePopUp = L.popup();
-    const container = L.DomUtil.create('div');
-    const mortar = createButton(`<img src="./mortar.png" height=${iSize} width=${iSize}>`, container);
-    const target = createButton(`<img src="./target.png" height=${iSize} width=${iSize}>`, container);
-    if (!mo.mortarMarker) {
-      setMortar(e.latlng);
-    } else if (!mo.targetMarker) {
-      setTarget(e.latlng);
-    } else {
-      choicePopUp
-        .setLatLng(e.latlng)
-        .setContent(container)
-        .openOn(map);
-
-      L.DomEvent.on(mortar, 'click', () => {
-        map.closePopup();
-        setMortar(e.latlng);
-      });
-
-      L.DomEvent.on(target, 'click', () => {
-        map.closePopup();
-        setTarget(e.latlng);
-      });
-    }
-
-    if (DEBUG) {
-      copyTextToClipboard(`[${Math.round(e.latlng.lat)}, ${Math.round(e.latlng.lng)}]`);
-    }
-  }
-
-  map.on('click', onMapClick);
 
   function onBaseLayerChange(e) {
     layerControl.collapse();
@@ -419,7 +225,6 @@
   }
 
   map.on('baselayerchange', onBaseLayerChange);
-
   function reInit(bounds, layerName) {
     try {
       flagMarkerGroup.eachLayer((layer) => {

@@ -110,3 +110,7 @@ function isMultiple(x, y) {
     const d = t >= r ? t - r : r - t;
     return d < 0.0001;
 }
+
+function pad(num, size) {
+  return (`0000${num}`).substr(-size);
+}
