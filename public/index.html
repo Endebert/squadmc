@@ -64,6 +64,7 @@
 <script src="./leaflet-src.js"></script>
 <script src="./squadcalc.js"></script>
 <script src="./utils.js"></script>
+<script type="text/javascript" src="./L.CRS.SimpleTopLeft.js"></script>
 <script type="text/javascript" src="./L.SimpleGraticule.js"></script>
 <script type="text/javascript" src="./L.Control.MousePosition.js"></script>
 <script src="./L.easyButton.js"></script>
@@ -186,7 +187,7 @@
     const grid = L.simpleGraticule(grid_options);
 
     const map = L.map('photo', {
-        crs: L.CRS.Simple,
+        crs: L.CRS.SimpleTopLeft,
         minZoom: -3,
         maxZoom: 2,
         attributionControl: true,
