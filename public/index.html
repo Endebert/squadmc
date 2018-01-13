@@ -66,6 +66,7 @@
 <script src="./utils.js"></script>
 <script type="text/javascript" src="./L.CRS.SimpleTopLeft.js"></script>
 <script type="text/javascript" src="./L.Calculator.js"></script>
+<script type="text/javascript" src="./L.Flags.js"></script>
 <script type="text/javascript" src="./L.SquadGrid.js"></script>
 <script type="text/javascript" src="./L.Control.MousePosition.js"></script>
 <script src="./L.easyButton.js"></script>
@@ -151,32 +152,7 @@
   };
 
   let mo = {}; // map objects
-  const fo = {}; // flag objects
 
-  fo['Al Basrah'] = [
-    createLocation('Village', [2000, 760]),
-    createLocation('US Airfield', [770, 1070]),
-    createLocation('US Checkpoint', [1550, 1530]),
-    createLocation('Outskirts', [2050, 1600]),
-    createLocation('Refinery', [1939, 2070]),
-    createLocation('Mosque', [2107, 1882]),
-    createLocation('Oasis', [2448, 1575]),
-    createLocation('Suburbs', [2307, 1941]),
-    createLocation('Alleys', [2238, 2243]),
-    createLocation('Fringe', [2713, 1541]),
-    createLocation('Estates', [2705, 2087]),
-  ];
-
-  fo['Chora Valley'] = [
-    createLocation('Russia Main', [2730, 600]),
-    createLocation('Monolith', [2345, 850]),
-    createLocation('SW Nursery', [2529, 1213]),
-    createLocation('Orchard', [1835, 1428]),
-    createLocation('Radio Station', [2224, 1898]),
-    createLocation('Hemp Farm', [1755, 2148]),
-    createLocation('Gas Station', [1817, 2511]),
-    createLocation('US Main', [1795, 2905]),
-  ];
 
   const grid = L.squadGrid({
     redraw: 'moveend',
@@ -209,6 +185,9 @@
   const calcLayer = L.calculator();
   calcLayer.addTo(map);
 
+  const flagsLayer = L.flags();
+  flagsLayer.addTo(map);
+
   // L.easyButton('fas fa-binoculars', function (btn, map) {
   //     DEBUG = !DEBUG;
   // }).addTo(map);
@@ -226,27 +205,6 @@
 
   map.on('baselayerchange', onBaseLayerChange);
   function reInit(bounds, layerName) {
-    try {
-      flagMarkerGroup.eachLayer((layer) => {
-        flagMarkerGroup.removeLayer(layer);
-      });
-      const m = layerName;
-      for (const f in fo[m]) {
-        console.log('f:', fo[m][f]);
-        fo[m][f].addTo(flagMarkerGroup);
-      }
-    } catch (e) {
-      console.log('reIniting flagMarkers failed:', e);
-    }
-    try {
-      markerGroup.eachLayer((layer) => {
-        markerGroup.removeLayer(layer);
-      });
-      mo = {};
-    } catch (e) {
-      // do nothing
-    }
-
     console.log('reInit with bounds:', bounds);
     map.setMaxBounds(bounds);
     map.fitBounds(bounds);

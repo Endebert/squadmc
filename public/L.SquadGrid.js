@@ -40,19 +40,21 @@ L.SquadGrid = L.LayerGroup.extend({
   initialize(options) {
     L.LayerGroup.prototype.initialize.call(this);
     L.Util.setOptions(this, options);
+
+    this.draw = -1;
   },
 
   onAdd(map) {
     this.map = map;
-    this.grid = this.redraw();
+    // this.grid = this.redrawAsync();
 
-    map.on(`viewreset ${this.options.redraw}`, this.grid.redraw, this.grid);
+    map.on(`viewreset ${this.options.redraw}`, this.redrawAsync, this);
 
-    this.eachLayer(map.addLayer, map);
+    // this.eachLayer(map.addLayer, map);
   },
 
   onRemove(map) {
-    map.off(`viewreset ${this.options.redraw}`, this.grid.redraw, this.grid);
+    map.off(`viewreset ${this.options.redraw}`, this.redrawAsync, this);
     this.eachLayer(map.removeLayer, map);
   },
 
@@ -66,6 +68,14 @@ L.SquadGrid = L.LayerGroup.extend({
     this.redraw();
   },
 
+  redrawAsync() {
+    if (this.draw >= 0)
+      clearTimeout(this.draw);
+    this.draw = setTimeout(() => {
+      this.redraw();
+    }, 50);
+  },
+
   redraw() {
     console.log('redrawing');
     this.bounds = this.map.getBounds();
@@ -74,7 +84,7 @@ L.SquadGrid = L.LayerGroup.extend({
     this.clearLayers();
     const currentZoom = Math.round(this.map.getZoom());
 
-    console.log('zoom:', this.map.getZoom());
+    // console.log('zoom:', this.map.getZoom());
 
     const kp = 300 / (3 ** 0);
     const s1 = 300 / (3 ** 1);
