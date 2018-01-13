@@ -114,3 +114,43 @@ function isMultiple(x, y) {
 function pad(num, size) {
   return (`0000${num}`).substr(-size);
 }
+
+let iMortarPos, iTargetPos, iAngle, iElevation;
+
+function setMortarPosText(text) {
+  if (!iMortarPos)
+    iMortarPos = document.getElementById('mortarPos').innerText;
+
+  if (text)
+    document.getElementById('mortarPos').innerText = text;
+  else
+    document.getElementById('mortarPos').innerText = iMortarPos;
+}
+
+function setTargetPosText(text) {
+  if (!iTargetPos)
+    iTargetPos = document.getElementById('targetPos').innerText;
+
+  if (text)
+    document.getElementById('targetPos').innerText = text;
+  else
+    document.getElementById('targetPos').innerText = iTargetPos;
+}
+function setAngleText(text) {
+  if (!iAngle)
+    iAngle = document.getElementById('mapAngle').innerText;
+
+  if (text)
+    document.getElementById('mapAngle').innerText = text;
+  else
+    document.getElementById('mapAngle').innerText = iAngle;
+}
+function setElevationText(text) {
+  if (!iElevation)
+    iElevation = document.getElementById('mapBearing').innerText;
+
+  if (text)
+    document.getElementById('mapBearing').innerText = text;
+  else
+    document.getElementById('mapBearing').innerText = iElevation;
+}

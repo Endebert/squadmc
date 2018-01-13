@@ -32,10 +32,15 @@ L.Calculator = L.LayerGroup.extend({
   },
 
   resetVars() {
+    console.log("resetVars");
     this.angle = 0;
     this.elevation = 0;
     this.mo = {};
     this.dragged = false;
+    setMortarPosText();
+    setTargetPosText();
+    setAngleText();
+    setElevationText();
   },
 
   drawLine() {
@@ -78,8 +83,8 @@ L.Calculator = L.LayerGroup.extend({
 
     const strElevation = isNaN(this.elevation) ? 'XXXX' : (`0000${this.elevation}`).substr(-4);
 
-    document.getElementById('mapAngle').innerText = `${strAngle}°`;
-    document.getElementById('mapBearing').innerText = strElevation;
+    setAngleText(`${strAngle}°`);
+    setElevationText(strElevation);
   },
 
   setMortar(latlng) {
@@ -129,13 +134,12 @@ L.Calculator = L.LayerGroup.extend({
     }
 
     this.calcAndDraw();
-    document.getElementById('mortarPos').innerText = getKP(latlng.lat, latlng.lng);
+    setMortarPosText(getKP(latlng.lat, latlng.lng));
 
     if (this.mo.targetMarker) {
       this.mo.targetMarker.openPopup();
     }
   },
-
   calcAndDraw() {
     this.calculate();
     this.drawLine();
@@ -166,7 +170,7 @@ L.Calculator = L.LayerGroup.extend({
       this.mo.targetMarker.setLatLng(latlng);
     }
     this.calcAndDraw();
-    document.getElementById('targetPos').innerText = getKP(latlng.lat, latlng.lng);
+    setTargetPosText(getKP(latlng.lat, latlng.lng));
     // this.mo.targetMarker.openPopup();
   },
 
