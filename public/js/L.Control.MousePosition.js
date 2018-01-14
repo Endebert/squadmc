@@ -39,7 +39,9 @@ L.Control.MousePosition = L.Control.extend({
     let kp = Utils.getKP(e.latlng.lat, e.latlng.lng);
 
     // in debug mode we want to display the map coordinates instead of the keypad
-    if (window.DEBUG) { kp = `${Utils.pad(Math.round(e.latlng.lat), 4)} | ${Utils.pad(Math.round(e.latlng.lng), 4)}`; }
+    if (window.DEBUG) {
+      kp = `${Utils.pad(Math.round(e.latlng.lat), 4)} | ${Utils.pad(Math.round(e.latlng.lng), 4)}`;
+    }
 
     this.container.innerHTML = kp;
     this.onMouseContainer.innerHTML = kp;

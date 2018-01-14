@@ -19,6 +19,11 @@ L.Locations = L.LayerGroup.extend({
   onAdd(map) {
     this.map = map;
     this.map.on("baselayerchange", this.onBaseLayerChange, this);
+
+    // try to restore locations of (hopefully current) layer
+    if (this.latestLayer) {
+      this.setLocations(this.latestLayer);
+    }
   },
 
   onRemove() {
@@ -39,7 +44,9 @@ L.Locations = L.LayerGroup.extend({
    *
    * @param mapName - map name that matches one of the keys in MAPDATA.maps
    */
-  setMapFlags(mapName) {
+  setLocations(mapName) {
+    // save latest layer so that when location layer gets hidden and readded, it knows which locations to load
+    this.latestLayer = mapName;
     // clear old markers first
     this.reset();
 
@@ -54,7 +61,7 @@ L.Locations = L.LayerGroup.extend({
   },
 
   onBaseLayerChange(e) {
-    this.setMapFlags(e.name);
+    this.setLocations(e.name);
   },
 
 });

@@ -1,4 +1,4 @@
-/* eslint-disable camelcase */
+/* eslint-disable camelcase,dot-notation */
 /**
  * This file holds all static map data.
  * MAPDATA holds the maps and their imageOverlays, as well as their location markers.
@@ -110,7 +110,17 @@ MAPDATA.locations["Fool's Road"] = [
   Utils.createLocation("Hill 123", [686, 1555]),
 ];
 
-// eslint-disable-next-line dot-notation
+MAPDATA.locations["Operation First Light"] = [
+  Utils.createLocation("Militia Main", [139, 852]),
+  Utils.createLocation("Railroad Village", [469, 882]),
+  Utils.createLocation("The Castle", [352, 502]),
+  Utils.createLocation("Storage Site", [632, 375]),
+  Utils.createLocation("Nirem Village", [870, 458]),
+  Utils.createLocation("Rail Docks", [788, 773]),
+  Utils.createLocation("US Main", [1049, 767]),
+
+];
+
 MAPDATA.locations["Gorodok"] = [
   window.Utils.createLocation("Militia Camp", [3608, 775]),
   window.Utils.createLocation("Desna", [3264, 1405]),
@@ -120,6 +130,98 @@ MAPDATA.locations["Gorodok"] = [
   window.Utils.createLocation("The Mound", [2289, 3449]),
   window.Utils.createLocation("Industrial Park", [3205, 3413]),
   window.Utils.createLocation("Russian Main", [3681, 3626]),
+];
+
+MAPDATA.locations["Jensen's Range"] = [
+  Utils.createLocation("US Main", [336, 800]),
+  Utils.createLocation("Vehicles", [599, 977]),
+];
+
+MAPDATA.locations["Kohat Toi River Valley"] = [
+  Utils.createLocation("US Main", [1453, 2666]),
+  Utils.createLocation("Jouzara", [2603, 2855]),
+  Utils.createLocation("Chakar Kot", [1423, 1755]),
+  Utils.createLocation("Malak Abad", [2070, 1856]),
+  Utils.createLocation("Mohd Zai", [2548, 1822]),
+  Utils.createLocation("Togh Sarai", [2435, 1196]),
+  Utils.createLocation("Sarozai", [1877, 281]),
+  Utils.createLocation("Russian Main", [2750, 638]),
+];
+
+MAPDATA.locations["Kokan"] = [
+  Utils.createLocation("INS Main", [185, 1543]),
+  Utils.createLocation("Stonebend", [308, 996]),
+  Utils.createLocation("Ruins", [480, 717]),
+  Utils.createLocation("Market", [717, 897]),
+  Utils.createLocation("Tempest Estate", [1087, 803]),
+  Utils.createLocation("Village", [1350, 905]),
+  Utils.createLocation("Nexus", [1272, 1423]),
+  Utils.createLocation("First Stand", [1468, 1543]),
+  Utils.createLocation("US Main", [1838, 1770]),
+];
+
+MAPDATA.locations["Logar Valley"] = [
+  Utils.createLocation("Militia Main", [692, 144]),
+  Utils.createLocation("Mechanic Shop", [1018, 123]),
+  Utils.createLocation("South Residence", [1331, 455]),
+  Utils.createLocation("South DC", [1099, 813]),
+  Utils.createLocation("North DC", [834, 839]),
+  Utils.createLocation("North Residence", [574, 1077]),
+  Utils.createLocation("Poppy Farm", [718, 1423]),
+  Utils.createLocation("Murika Main", [1113, 1483]),
+];
+
+MAPDATA.locations["Mestia"] = [
+  Utils.createLocation("Militia Main", [1062, 233]),
+  Utils.createLocation("The Armory", [1318, 594]),
+  Utils.createLocation("Fortification", [1017, 854]),
+  Utils.createLocation("Warehouse", [1769, 819]),
+  Utils.createLocation("Crucible Beta", [1233, 1275]),
+  Utils.createLocation("Crucible Alpha", [1123, 1305]),
+  Utils.createLocation("Quarry", [586, 1684]),
+  Utils.createLocation("Crucible Gamma", [1118, 1503]),
+  Utils.createLocation("Farmstead", [1381, 1794]),
+  Utils.createLocation("Russian Main", [1656, 2235]),
+];
+
+MAPDATA.locations["Narva"] = [
+  Utils.createLocation("US Main", [536, 842]),
+  Utils.createLocation("Loading Dock", [598, 1032]),
+  Utils.createLocation("Alpha", [782, 865]),
+  Utils.createLocation("Bravo", [819, 1175]),
+  Utils.createLocation("Charlie", [1037, 1249]),
+  Utils.createLocation("Delta", [1249, 1299]),
+  Utils.createLocation("Echo", [1412, 1343]),
+  Utils.createLocation("Foxtrot", [1444, 1605]),
+  // Utils.createLocation("PAAS Alpha", [1557, 1150]),
+  // Utils.createLocation("PAAS Bravo", [1322, 1462]),
+  // Utils.createLocation("PAAS Charlie", [1249, 1124]),
+  // Utils.createLocation("PAAS Delta", [1014, 1474]),
+  // Utils.createLocation("PAAS Echo", [874, 862]),
+  // Utils.createLocation("PAAS Foxtrot", [720, 1200]),
+  Utils.createLocation("Ruins", [1511, 1370]),
+  Utils.createLocation("Russian Main", [1685, 1566]),
+];
+
+MAPDATA.locations["Sumari Bala"] = [
+  Utils.createLocation("US Main", [743, 137]),
+  Utils.createLocation("Junction", [700, 362]),
+  Utils.createLocation("Police Station", [630, 575]),
+  Utils.createLocation("Ancient Qanat", [531, 716]),
+  Utils.createLocation("Raisin Dryers", [833, 479]),
+  Utils.createLocation("Palace", [712, 759]),
+  Utils.createLocation("Training Camp", [610, 1008]),
+  Utils.createLocation("INS Main", [517, 1181]),
+];
+
+MAPDATA.locations["Yehorivka"] = [
+  Utils.createLocation("Russian Main", [864, 986]),
+  Utils.createLocation("Central Petrivka", [1306, 1837]),
+  Utils.createLocation("Lower Petrivka", [1479, 2229]),
+  Utils.createLocation("Storage Site", [2141, 1605]),
+  Utils.createLocation("Central Novo", [2642, 2204]),
+  Utils.createLocation("Airfield", [3143, 2212]),
+  Utils.createLocation("US Main", [3455, 2827]),
 ];
 
 window.MAPDATA = MAPDATA;
