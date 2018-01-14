@@ -6,7 +6,6 @@
   padding-right: 0.25em;
   /*margin:0;*/
   color: #fff;
-  /*font: 11px/1.5 "Helvetica Neue", Arial, Helvetica, sans-serif;*/
   font-size: large;
   font-family: monospace;
 }
@@ -23,7 +22,6 @@
   /*background: #000;*/
   /*margin: 0;*/
   color: #fff;
-  /*font: 11px/1.5 "Helvetica Neue", Arial, Helvetica, sans-serif;*/
   position: absolute;
   z-index: 900;
   pointer-events: none;

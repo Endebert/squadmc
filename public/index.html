@@ -21,38 +21,38 @@
   <link rel="icon" type="image/png" sizes="96x96" href="./favicon/favicon-96x96.png">
   <link rel="icon" type="image/png" sizes="16x16" href="./favicon/favicon-16x16.png">
   <link rel="manifest" href="./favicon/manifest.json">
+
   <meta name="msapplication-TileColor" content="#000000">
   <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
   <meta name="theme-color" content="#000000">
+
   <title>Robert's Mortar Calculator for Squad</title>
-  <link rel="stylesheet" href="./leaflet.css"/>
-  <link rel="stylesheet" href="./L.Control.MousePosition.css"/>
-  <link rel="stylesheet" href="./L.easyButton.css">
-  <link rel="stylesheet" href="./custom.css"/>
 
-  <style type="text/css">
-    html,
-    body,
-    #photo {
-      width: 100%;
-      height: 100%;
-      padding: 0;
-      margin: 0;
-      overflow: hidden;
-    }
-  </style>
-  <script defer src="https://use.fontawesome.com/releases/v5.0.2/js/all.js"></script>
+  <!--leaflet-->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css"
+        integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ=="
+        crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"
+          integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log=="
+          crossorigin=""></script>
 
+  <!--leaflet source file (use for debugging)-->
+  <!--<script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet-src.js"-->
+  <!--crossorigin=""></script>-->
 
+  <link rel="stylesheet" href="css/L.Control.MousePosition.css"/>
+  <link rel="stylesheet" href="css/custom.css"/>
 <body>
+
+<!--Top ribbon containing map name, etc.-->
 <div id="mapTitle" align="center">
-  <div id="mapName">Al Basrah</div>
+  <div id="mapName"></div>
   <table>
     <tr>
-      <td><img class="inline" src="mortar.png" width="16px" height="16px"/>
+      <td><img class="inline" src="images/mortar.png" width="16px" height="16px"/>
         <div class="inline keypad" id="mortarPos">&nbsp;&nbsp;-&nbsp;-&nbsp;</div>
       </td>
-      <td><img class="inline" src="target.png" width="16px" height="16px"/>
+      <td><img class="inline" src="images/target.png" width="16px" height="16px"/>
         <div class="inline keypad" id="targetPos">&nbsp;&nbsp;-&nbsp;-&nbsp;</div>
       </td>
     </tr>
@@ -60,162 +60,24 @@
   <div class="keypad" id="mapAngle">&nbsp;&nbsp;&nbsp;°</div>&nbsp;<div class="keypad" id="mapBearing">&nbsp;&nbsp;&nbsp;&nbsp;</div>
 </div>
 
-<div id="mousecoord" class="leaflet-control-mouseposition-target">THIS IS A TEST</div>
-<div id="photo"></div>
-<script src="./leaflet-src.js"></script>
-<script src="./squadcalc.js"></script>
-<script src="./utils.js"></script>
-<script type="text/javascript" src="./L.CRS.SimpleTopLeft.js"></script>
-<script type="text/javascript" src="./L.Calculator.js"></script>
-<script type="text/javascript" src="./L.Flags.js"></script>
-<script type="text/javascript" src="./L.SquadGrid.js"></script>
-<script type="text/javascript" src="./L.Control.MousePosition.js"></script>
-<script src="./L.easyButton.js"></script>
-<script type="text/javascript">
+<!--Leaflet map holder-->
+<div id="map"></div>
 
-  const DEBUG = false;
+<!--div used for displaying mouse coordinates-->
+<div id="mousecoord" class="leaflet-control-mouseposition-target"></div>
 
-  const iSize = 48; // icon size
+<!--Utils needs to be loaded first-->
+<script type="text/javascript" src="js/Utils.js"></script>
 
-  const mortarIcon = L.icon({
-    iconUrl: 'mortar.png',
+<script type="text/javascript" src="js/MAPDATA.js"></script>
+<script type="text/javascript" src="js/L.CRS.SimpleTopLeft.js"></script>
+<script type="text/javascript" src="js/L.Mortar.js"></script>
+<script type="text/javascript" src="js/L.Locations.js"></script>
+<script type="text/javascript" src="js/L.SquadGrid.js"></script>
+<script type="text/javascript" src="js/L.Control.MousePosition.js"></script>
 
-    iconSize: [iSize, iSize], // size of the icon
-    iconAnchor: [iSize / 2, iSize / 2], // point of the icon which will correspond to marker's location
-    popupAnchor: [0, -iSize / 2], // point from which the popup should open relative to the iconAnchor
-  });
+<!--page logic, setting up map, etc.-->
+<script type="text/javascript" src="js/main.js"></script>
 
-  const targetIcon = L.icon({
-    iconUrl: 'target.png',
-
-    iconSize: [iSize, iSize], // size of the icon
-    iconAnchor: [iSize / 2, iSize / 2], // point of the icon which will correspond to marker's location
-    popupAnchor: [0, -iSize / 2], // point from which the popup should open relative to the iconAnchor
-  });
-
-  const albasrah = L.imageOverlay('./maps/albasrah.jpg', [[0, 0], [3200, 3200]]);
-  const chora = L.imageOverlay('./maps/chora.jpg', [[0, 0], [4073, 4073]]);
-  const foolsroad = L.imageOverlay('./maps/foolsroad.jpg', [[0, 0], [1775, 1739]]);
-  const forest = L.imageOverlay('./maps/forest.jpg', [[0, 0], [1200, 1200]]);
-  const gorodok = L.imageOverlay('./maps/gorodok.jpg', [[0, 0], [4347, 4347]]);
-  const jensens = L.imageOverlay('./maps/jensens.jpg', [[0, 0], [1513, 1513]]);
-  const kohat = L.imageOverlay('./maps/kohat.jpg', [[0, 0], [4026, 4026]]);
-  const kokan = L.imageOverlay('./maps/kokan.jpg', [[0, 0], [2500, 2500]]);
-  const logarvalley = L.imageOverlay('./maps/logarvalley.jpg', [[0, 0], [1765, 1765]]);
-  const mestia = L.imageOverlay('./maps/mestia.jpg', [[0, 0], [2403, 2403]]);
-  const narva = L.imageOverlay('./maps/narva.jpg', [[0, 0], [2205, 2205]]);
-  const sumari = L.imageOverlay('./maps/sumari.jpg', [[0, 0], [1303, 1303]]);
-  const yehorivka = L.imageOverlay('./maps/yehorivka.jpg', [[0, 0], [4041, 4041]]);
-
-  // debug maps
-  const albasrah_l = L.imageOverlay('./maps/albasrah_l.jpg', [[0, 0], [3200, 3200]]);
-  const chora_l = L.imageOverlay('./maps/chora_l.jpg', [[0, 0], [4073, 4073]]);
-  const foolsroad_l = L.imageOverlay('./maps/foolsroad_l.jpg', [[0, 0], [1775, 1739]]);
-  const forest_l = L.imageOverlay('./maps/forest_l.jpg', [[0, 0], [1200, 1200]]);
-  const gorodok_l = L.imageOverlay('./maps/gorodok_l.jpg', [[0, 0], [4347, 4347]]);
-  const jensens_l = L.imageOverlay('./maps/jensens_l.jpg', [[0, 0], [1513, 1513]]);
-  const kohat_l = L.imageOverlay('./maps/kohat_l.jpg', [[0, 0], [4026, 4026]]);
-  const kokan_l = L.imageOverlay('./maps/kokan_l.jpg', [[0, 0], [2500, 2500]]);
-  const logarvalley_l = L.imageOverlay('./maps/logarvalley_l.jpg', [[0, 0], [1765, 1765]]);
-  const mestia_l = L.imageOverlay('./maps/mestia_l.jpg', [[0, 0], [2403, 2403]]);
-  const narva_l = L.imageOverlay('./maps/narva_l.jpg', [[0, 0], [2205, 2205]]);
-  const sumari_l = L.imageOverlay('./maps/sumari_l.jpg', [[0, 0], [1303, 1303]]);
-  const yehorivka_l = L.imageOverlay('./maps/yehorivka_l.jpg', [[0, 0], [4041, 4041]]);
-
-  const baseMaps = {
-    'Al Basrah': albasrah,
-    'Chora Valley': chora,
-    "Fool's Road": foolsroad,
-    'Operation First Light': forest,
-    Gorodok: gorodok,
-    "Jensen's Range": jensens,
-    'Kohat Toi River Valley': kohat,
-    Kokan: kokan,
-    'Logar Valley': logarvalley,
-    Mestia: mestia,
-    Narva: narva,
-    'Sumari Bala': sumari,
-    Yehorivka: yehorivka,
-
-    'DEBUG: Al Basrah': albasrah_l,
-    'DEBUG: Chora Valley': chora_l,
-    "DEBUG: Fool's Road": foolsroad_l,
-    'DEBUG: Operation First Light': forest_l,
-    'DEBUG: Gorodok': gorodok_l,
-    "DEBUG: Jensen's Range": jensens_l,
-    'DEBUG: Kohat Toi River Valley': kohat_l,
-    'DEBUG: Kokan': kokan_l,
-    'DEBUG: Logar Valley': logarvalley_l,
-    'DEBUG: Mestia': mestia_l,
-    'DEBUG: Narva': narva_l,
-    'DEBUG: Sumari Bala': sumari_l,
-    'DEBUG: Yehorivka': yehorivka_l,
-  };
-
-  const grid = L.squadGrid({
-    redraw: 'moveend',
-  });
-
-  const map = L.map('photo', {
-    crs: L.CRS.Simple,
-    minZoom: -3,
-    maxZoom: 2,
-    attributionControl: true,
-    layers: [grid],
-    zoomSnap: 0,
-  });
-
-  // noinspection JSNonASCIINames
-  const overlayMaps = {
-    'Keypad grid': grid,
-  };
-  const layerControl = L.control.layers(baseMaps, overlayMaps);
-  layerControl.addTo(map);
-
-  const scaleControl = L.control.scale({
-    maxWidth: 300, metric: true, imperial: false, position: 'bottomright',
-  });
-  scaleControl.addTo(map);
-
-  const mouseControl = L.control.mousePosition();
-  mouseControl.addTo(map);
-
-  const calcLayer = L.calculator();
-  calcLayer.addTo(map);
-
-  const flagsLayer = L.flags();
-  flagsLayer.addTo(map);
-
-  // L.easyButton('fas fa-binoculars', function (btn, map) {
-  //     DEBUG = !DEBUG;
-  // }).addTo(map);
-  const flagMarkerGroup = L.layerGroup();
-  map.addLayer(flagMarkerGroup);
-
-  function onBaseLayerChange(e) {
-    layerControl.collapse();
-    console.log('layer changed:', e.name);
-    document.getElementById('mapName').innerText = e.name;
-    console.log('layer:', e.layer);
-    reInit(e.layer.getBounds(), e.name);
-    localStorage.setItem('lastLayer', e.name);
-  }
-
-  map.on('baselayerchange', onBaseLayerChange);
-  function reInit(bounds, layerName) {
-    console.log('reInit with bounds:', bounds);
-    map.setMaxBounds(bounds);
-    map.fitBounds(bounds);
-  }
-
-  let m = localStorage.getItem('lastLayer');
-
-  if (!m) {
-    for (m in baseMaps) break;
-  } // get first object and stop loop
-  map.setView(baseMaps[m].getBounds().getCenter(), -5);
-  map.addLayer(baseMaps[m]);
-</script>
 </body>
-
 </html>
