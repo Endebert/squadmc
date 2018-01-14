@@ -9,7 +9,7 @@ window.DEBUG = urlParams.has("debug") ? (urlParams.get("debug") === "true") : fa
 // setting up map
 const map = L.map("map", {
   crs: L.CRS.SimpleTopLeft,
-  minZoom: -3,
+  minZoom: -2,
   maxZoom: 2,
   attributionControl: true,
   layers: [],
