@@ -1,5 +1,5 @@
 # SquadMC
-SquadMC is a map-based mortar elevation and angle calculator for [Squad](http://joinsquad.com/)
+SquadMC is a map-based mortar elevation and bearing calculator for [Squad](http://joinsquad.com/)
 
  * created using [leaflet](http://leafletjs.com/)
  * elevation calculation taken from [squadcalc.com](https://squadcalc.com/) (github repository [here](https://github.com/lorenmh/sc-react))
