@@ -50,59 +50,122 @@ L.SquadGrid = L.LayerGroup.extend({
     L.Util.setOptions(this, options);
 
     this.draw = -1; // this variable is used later for optimizing draw calls
+    this.clearLines();
+  },
+
+  onBaseLayerChange() {
+    this.clearLines();
+    this.redraw();
+  },
+
+  clearLines() {
+    this.eachLayer(this.removeLayer, this);
+    this.kpLines = [];
+    this.s1Lines = [];
+    this.s2Lines = [];
   },
 
   onAdd(map) {
     this.map = map;
     // add listener for view change
-    this.map.on(`viewreset ${this.options.redraw}`, this.redrawAsync, this);
-    this.redrawAsync();
+    this.map.on(`viewreset ${this.options.redraw}`, this.updateLineOpacity, this);
+    this.map.on("baselayerchange", this.onBaseLayerChange, this);
+
+    this.redraw();
+    this.updateLineOpacity();
   },
 
   onRemove(map) {
     // remove listener for view change
-    map.off(`viewreset ${this.options.redraw}`, this.redrawAsync, this);
-    this.eachLayer(map.removeLayer, map);
-    this.redrawAsync();
+    map.off(`viewreset ${this.options.redraw}`, this.updateLineOpacity, this);
+    this.clearLines();
   },
 
   /**
-   * Redraws the grid after a 50ms timeout. Resets timer for already pending redraw request.
+   * Sets opacity of subgrid lines based on zoom level.
    */
-  redrawAsync() {
-    // if a redraw is already waiting for the timeout to pass, we cancel it
-    if (this.draw >= 0) {
-      clearTimeout(this.draw);
+  updateLineOpacity() {
+    // first check if there are lines to process
+    if (this.s2Lines.length === 0) {
+      return;
     }
 
-    this.draw = setTimeout(() => {
-      this.redraw();
-    }, 50);
+    const currentZoom = Math.round(this.map.getZoom());
+
+    if (currentZoom >= 0) {
+      // we check only the first object as we are updating all at the same time
+      // and this one check might save us iterating through the whole array
+      if (this.s2Lines[0].options.opacity !== this.lineStyleSUB2.opacity) {
+        this.s2Lines.forEach((l) => {
+          l.setStyle({
+            opacity: this.lineStyleSUB2.opacity,
+          });
+        });
+      }
+      if (this.s1Lines[0].options.opacity !== this.lineStyleSUB.opacity) {
+        this.s1Lines.forEach((l) => {
+          l.setStyle({
+            opacity: this.lineStyleSUB.opacity,
+          });
+        });
+      }
+    } else if (currentZoom >= -1) {
+      if (this.s2Lines[0].options.opacity !== 0.0) {
+        this.s2Lines.forEach((l) => {
+          l.setStyle({
+            opacity: 0.0,
+          });
+        });
+      }
+      if (this.s1Lines[0].options.opacity !== this.lineStyleSUB.opacity) {
+        this.s1Lines.forEach((l) => {
+          l.setStyle({
+            opacity: this.lineStyleSUB.opacity,
+          });
+        });
+      }
+    } else {
+      if (this.s2Lines[0].options.opacity !== 0.0) {
+        this.s2Lines.forEach((l) => {
+          l.setStyle({
+            opacity: 0.0,
+          });
+        });
+      }
+      if (this.s1Lines[0].options.opacity !== 0.0) {
+        this.s1Lines.forEach((l) => {
+          l.setStyle({
+            opacity: 0.0,
+          });
+        });
+      }
+    }
   },
 
   /**
    * Redraws the grid inside the current view bounds.
    */
   redraw() {
-    this.bounds = this.map.getBounds();
-    const viewBounds = this.viewBounds();
+    const viewBounds = this.map.options ? this.map.options.maxBounds : undefined;
 
+    if (!viewBounds) {
+      return;
+    }
     // clear old grid lines
-    this.clearLayers();
-
-    const currentZoom = Math.round(this.map.getZoom());
+    this.clearLines();
 
     const kp = 300 / (3 ** 0);
     const s1 = 300 / (3 ** 1);
     const s2 = 300 / (3 ** 2);
-    let interval;
-    if (currentZoom >= 0) {
-      interval = s2;
-    } else if (currentZoom >= -1) {
-      interval = s1;
-    } else {
-      interval = kp;
-    }
+
+    // for complete grid drawing we take lowest interval, as we want to draw all lines
+    // whether or not they will be seen is dependant on another function setting opacity based on zoom level
+    const interval = s2;
+
+    // clearing arrays
+    this.kpLines = [];
+    this.s1Lines = [];
+    this.s2Lines = [];
 
     // vertical keypad lines
     // doing some magic against floating point imprecision
@@ -113,21 +176,19 @@ L.SquadGrid = L.LayerGroup.extend({
       const bot = new L.LatLng(viewBounds.getSouth(), x);
       const top = new L.LatLng(viewBounds.getNorth(), x);
 
-      let curStyle;
       // checking which style to use for the current line
       // style is decided by whether or not current line is multiple of which (sub-) keypad interval
       // basically, main style if multiple of 300, sub1 style if multiple of 100, sub2 if multiple of 33
       // we use if-else so that we don't draw lines over each other
       if (Utils.isMultiple(kp, x)) {
-        curStyle = this.lineStyleKP;
+        this.kpLines.push(new L.Polyline([bot, top], this.lineStyleKP));
       } else if (Utils.isMultiple(s1, x)) {
-        curStyle = this.lineStyleSUB;
+        this.s1Lines.push(new L.Polyline([bot, top], this.lineStyleSUB));
       } else if (Utils.isMultiple(s2, x)) {
-        curStyle = this.lineStyleSUB2;
+        this.s2Lines.push(new L.Polyline([bot, top], this.lineStyleSUB2));
       } else {
         console.warn(`no match! x = ${x}; x%:`, [x % kp, x % s1, x % s2]); // this should never happen
       }
-      this.addLayer(new L.Polyline([bot, top], curStyle));
     }
 
     // horizontal keypad lines, almost the same as for vertical lines
@@ -137,37 +198,20 @@ L.SquadGrid = L.LayerGroup.extend({
       const left = new L.LatLng(y, viewBounds.getWest());
       const right = new L.LatLng(y, viewBounds.getEast());
 
-      let curStyle;
       if (Utils.isMultiple(kp, y)) {
-        curStyle = this.lineStyleKP;
+        this.kpLines.push(new L.Polyline([left, right], this.lineStyleKP));
       } else if (Utils.isMultiple(s1, y)) {
-        curStyle = this.lineStyleSUB;
+        this.s1Lines.push(new L.Polyline([left, right], this.lineStyleSUB));
       } else if (Utils.isMultiple(s2, y)) {
-        curStyle = this.lineStyleSUB2;
+        this.s2Lines.push(new L.Polyline([left, right], this.lineStyleSUB2));
       } else {
-        console.log(`no match! y = ${y}; y%:`, [y % kp, y % s1, y % s2]);
+        console.warn(`no match! y = ${y}; y%:`, [y % kp, y % s1, y % s2]);
       }
-      this.addLayer(new L.Polyline([left, right], curStyle));
     }
-  },
 
-  /**
-   * Returns view bounds based on map bounds, so that grid is not drawn across map borders
-   * @returns {L.LatLng} - view bounds
-   */
-  viewBounds() {
-    const maxBounds = this.map.options.maxBounds;
-
-    // some clamping going on here
-    const c1 = L.latLng(
-      Math.max(this.bounds.getSouth(), maxBounds ? maxBounds.getSouth() : 0),
-      Math.max(this.bounds.getWest(), maxBounds ? maxBounds.getWest() : 0),
-    );
-    const c2 = L.latLng(
-      Math.min(this.bounds.getNorth(), maxBounds ? maxBounds.getNorth() : 10000),
-      Math.min(this.bounds.getEast(), maxBounds ? maxBounds.getEast() : 10000),
-    );
-    return L.latLngBounds(c1, c2);
+    this.kpLines.forEach(this.addLayer, this);
+    this.s1Lines.forEach(this.addLayer, this);
+    this.s2Lines.forEach(this.addLayer, this);
   },
 });
 
