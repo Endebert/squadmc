@@ -45,6 +45,59 @@ const main = () => {
   const mortarLayer = L.mortar();
   mortarLayer.addTo(map);
 
+  // a few buttons
+  const githubBtn = L.easyButton({
+    states: [{
+      icon: "fab fa-github",
+      title: "View the code on GitHub",
+      onClick() {
+        window.open("https://github.com/Endebert/squadmc");
+      },
+    }],
+  });
+
+  githubBtn.addTo(map);
+
+  const debugBtn = L.easyButton({
+    states: [{
+      stateName: "on",
+      icon: "fa-bug",
+      title: "Disable DEBUG mode",
+      onClick(btn) {
+        window.setOrToggleDebugMode(false);
+        btn.state("off");
+        const popup = L.popup()
+          .setLatLng(map.getBounds().getCenter())
+          .setContent("<p>Debug mode OFF</p>")
+          .openOn(map);
+
+        setTimeout(() => {
+          map.closePopup(popup);
+        }, 2500);
+      },
+    }, {
+      icon: "fa-bug disabled",
+      stateName: "off",
+      onClick(btn) {
+        window.setOrToggleDebugMode(true);
+        btn.state("on");
+
+        const popup = L.popup()
+          .setLatLng(map.getBounds().getCenter())
+          .setContent("<p>Debug mode ON</p>")
+          .openOn(map);
+
+        setTimeout(() => {
+          map.closePopup(popup);
+        }, 2500);
+      },
+      title: "Enable DEBUG mode",
+    }],
+  });
+
+  if (window.DEBUG) { debugBtn.state("on"); } else { debugBtn.state("off"); }
+  debugBtn.addTo(map);
+
   /**
    * resets the view based on displayed map
    * @param bounds - bounds of map
