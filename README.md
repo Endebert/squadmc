@@ -1,39 +1,10 @@
-# node-js-getting-started
+# SquadMC
+SquadMC is a map-based mortar elevation and angle calculator for [Squad](http://joinsquad.com/)
 
-A barebones Node.js app using [Express 4](http://expressjs.com/).
+ * created using [leaflet](http://leafletjs.com/)
+ * elevation calculation taken from [squadcalc.com](https://squadcalc.com/) (github repository [here](https://github.com/lorenmh/sc-react))
+ * Keypad grid originally based on [Leaflet.SimpleGraticule](https://github.com/ablakey/Leaflet.SimpleGraticule), but not much is left from the original code
 
-This application supports the [Getting Started with Node on Heroku](https://devcenter.heroku.com/articles/getting-started-with-nodejs) article - check it out.
+Special thanks to the people over at[https://www.airpressuretendency.net/fcsquad/squadmaps/](https://www.airpressuretendency.net/fcsquad/squadmaps/)! Their interactive maps were the inspiration for this project.
 
-## Running Locally
-
-Make sure you have [Node.js](http://nodejs.org/) and the [Heroku CLI](https://cli.heroku.com/) installed.
-
-```sh
-$ git clone git@github.com:heroku/node-js-getting-started.git # or clone your own fork
-$ cd node-js-getting-started
-$ npm install
-$ npm start
-```
-
-Your app should now be running on [localhost:5000](http://localhost:5000/).
-
-## Deploying to Heroku
-
-```
-$ heroku create
-$ git push heroku master
-$ heroku open
-```
-or
-
-[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
-
-## Documentation
-
-For more information about using Node.js on Heroku, see these Dev Center articles:
-
-- [Getting Started with Node.js on Heroku](https://devcenter.heroku.com/articles/getting-started-with-nodejs)
-- [Heroku Node.js Support](https://devcenter.heroku.com/articles/nodejs-support)
-- [Node.js on Heroku](https://devcenter.heroku.com/categories/nodejs)
-- [Best Practices for Node.js Development](https://devcenter.heroku.com/articles/node-best-practices)
-- [Using WebSockets on Heroku with Node.js](https://devcenter.heroku.com/articles/node-websockets)
+_Created by Robert Ende_
