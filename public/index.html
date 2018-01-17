@@ -57,15 +57,10 @@
   // setup log level
   Logger.useDefaults();
 
-  console.log("debug?", localStorage.getItem("debug"));
-
   window.setOrToggleDebugMode = (state) => {
-    console.log("setOrToggleDebugMode", state);
     if (state !== undefined) { window.DEBUG = state; } else { window.DEBUG = !window.DEBUG; }
     Logger.setLevel(window.DEBUG ? Logger.DEBUG : Logger.WARN);
     localStorage.setItem("debug", window.DEBUG.toString());
-
-    console.log("debug?", localStorage.getItem("debug"));
   };
 
   // first try to get last state of debug mode
