@@ -12,10 +12,16 @@
  */
 L.SquadGrid = L.LayerGroup.extend({
   options: {
-    redraw: "move",
     attribution: "SquadGrid originally based on " +
     "<a href='https://github.com/ablakey/Leaflet.SimpleGraticule'>SimpleGraticule</a>",
   },
+
+  l: Logger.get("SquadGrid"),
+
+  // grid line arrays for each (sub-)keypad
+  kpLines: [],
+  s1Lines: [],
+  s2Lines: [],
 
   // keypad line styles
   lineStyleKP: {
@@ -46,29 +52,31 @@ L.SquadGrid = L.LayerGroup.extend({
   },
 
   initialize(options) {
+    this.l.debug("initialize");
+
     L.LayerGroup.prototype.initialize.call(this);
     L.Util.setOptions(this, options);
-
-    this.draw = -1; // this variable is used later for optimizing draw calls
-    this.clearLines();
   },
 
   onBaseLayerChange() {
-    this.clearLines();
+    this.l.debug("onBaseLayerChange");
+
     this.redraw();
+    this.updateLineOpacity();
   },
 
   clearLines() {
+    this.l.debug("clearLines");
+
     this.eachLayer(this.removeLayer, this);
-    this.kpLines = [];
-    this.s1Lines = [];
-    this.s2Lines = [];
   },
 
   onAdd(map) {
+    this.l.debug("onAdd", arguments);
+
     this.map = map;
     // add listener for view change
-    this.map.on(`viewreset ${this.options.redraw}`, this.updateLineOpacity, this);
+    this.map.on(`zoomend`, this.updateLineOpacity, this);
     this.map.on("baselayerchange", this.onBaseLayerChange, this);
 
     this.redraw();
@@ -76,8 +84,10 @@ L.SquadGrid = L.LayerGroup.extend({
   },
 
   onRemove(map) {
+    this.l.debug("onRemove", arguments);
+
     // remove listener for view change
-    map.off(`viewreset ${this.options.redraw}`, this.updateLineOpacity, this);
+    map.off(`zoomend`, this.updateLineOpacity, this);
     this.clearLines();
   },
 
@@ -85,8 +95,11 @@ L.SquadGrid = L.LayerGroup.extend({
    * Sets opacity of subgrid lines based on zoom level.
    */
   updateLineOpacity() {
+    this.l.debug("updateLineOpacity");
+
     // first check if there are lines to process
     if (this.s2Lines.length === 0) {
+      this.l.debug("no lines to update, skipping...");
       return;
     }
 
@@ -146,9 +159,11 @@ L.SquadGrid = L.LayerGroup.extend({
    * Redraws the grid inside the current view bounds.
    */
   redraw() {
+    this.l.debug("redraw");
     const viewBounds = this.map.options ? this.map.options.maxBounds : undefined;
 
     if (!viewBounds) {
+      this.l.debug("no viewbounds, skipping draw");
       return;
     }
     // clear old grid lines
@@ -187,7 +202,7 @@ L.SquadGrid = L.LayerGroup.extend({
       } else if (Utils.isMultiple(s2, x)) {
         this.s2Lines.push(new L.Polyline([bot, top], this.lineStyleSUB2));
       } else {
-        console.warn(`no match! x = ${x}; x%:`, [x % kp, x % s1, x % s2]); // this should never happen
+        this.l.warn(`no match! x = ${x}; x%:`, [x % kp, x % s1, x % s2]); // this should never happen
       }
     }
 
@@ -205,7 +220,7 @@ L.SquadGrid = L.LayerGroup.extend({
       } else if (Utils.isMultiple(s2, y)) {
         this.s2Lines.push(new L.Polyline([left, right], this.lineStyleSUB2));
       } else {
-        console.warn(`no match! y = ${y}; y%:`, [y % kp, y % s1, y % s2]);
+        this.l.warn(`no match! y = ${y}; y%:`, [y % kp, y % s1, y % s2]);
       }
     }
 

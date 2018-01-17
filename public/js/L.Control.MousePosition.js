@@ -11,6 +11,8 @@ L.Control.MousePosition = L.Control.extend({
     position: "bottomleft",
   },
 
+  l: Logger.get("MousePosition"),
+
   initialize(options) {
     L.Util.setOptions(this, options);
   },

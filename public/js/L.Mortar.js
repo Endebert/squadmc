@@ -10,6 +10,8 @@ L.Mortar = L.LayerGroup.extend({
     attribution: "Created by Robert Ende",
   },
 
+  l: Logger.get("Mortar"),
+
   initialize(options) {
     L.LayerGroup.prototype.initialize.call(this);
     L.Util.setOptions(this, options);

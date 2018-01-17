@@ -42,7 +42,19 @@
 
   <link rel="stylesheet" href="css/L.Control.MousePosition.css"/>
   <link rel="stylesheet" href="css/custom.css"/>
+</head>
 <body>
+<!--logger first-->
+<script src="https://cdn.rawgit.com/jonnyreeves/js-logger/master/src/logger.min.js"></script>
+<script type="application/javascript">
+  // set debug mode based on query parameter
+  const urlParams = new URLSearchParams(window.location.search);
+  window.DEBUG = urlParams.has("debug") ? (urlParams.get("debug") === "true") : false;
+
+  // setup log level
+  Logger.useDefaults();
+  if (window.DEBUG) { Logger.setLevel(Logger.TRACE); } else { Logger.setLevel(Logger.INFO); }
+</script>
 
 <!--Top ribbon containing map name, etc.-->
 <div id="mapTitle" align="center">

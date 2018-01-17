@@ -5,6 +5,7 @@
 const iconSize = 48;
 
 window.Utils = {
+  l: Logger.get("Utils"),
   // variables representing values in top ribbon, will be set to initial value on first time access (see below)
   iMortarPos: undefined,
   iTargetPos: undefined,
@@ -130,9 +131,9 @@ window.Utils = {
     try {
       const successful = document.execCommand("copy");
       const msg = successful ? "successful" : "unsuccessful";
-      console.log(`Copying text ${text} was ${msg}`);
+      this.l.debug(`Copying text ${text} was ${msg}`);
     } catch (err) {
-      console.log("Oops, unable to copy");
+      this.l.debug("Oops, unable to copy");
     }
 
     document.body.removeChild(textArea);
@@ -163,6 +164,8 @@ window.Utils = {
       weight: 2,
       fillColor: "#ffc400",
       fillOpacity: 0.5,
+      interactive: false,
+      clickable: false, // legacy support
     });
     // bind name label to marker
     marker.bindTooltip(name, { permanent: true, direction: "top", offset: [0, -8] });

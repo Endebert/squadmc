@@ -9,6 +9,8 @@ L.Locations = L.LayerGroup.extend({
     locations: undefined,
   },
 
+  l: Logger.get("Locations"),
+
   initialize(options = {}) {
     L.LayerGroup.prototype.initialize.call(this); // don't know why, but this is important
     L.Util.setOptions(this, options);
@@ -56,7 +58,7 @@ L.Locations = L.LayerGroup.extend({
         this.addLayer(flag);
       });
     } catch (e) {
-      console.warn(`loading locations of ${mapName} failed:`, e);
+      this.l.warn(`loading locations of ${mapName} failed:`, e);
     }
   },
 

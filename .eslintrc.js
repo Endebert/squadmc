@@ -17,6 +17,7 @@ module.exports = {
     "browser": true,
   },
   globals: {
+    "Logger": true,
     "L": true,
     "Utils": true,
     "MAPDATA": true,
