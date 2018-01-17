@@ -11,10 +11,6 @@
  * @type {*|void}
  */
 L.SquadGrid = L.LayerGroup.extend({
-  options: {
-    attribution: "SquadGrid originally based on " +
-    "<a href='https://github.com/ablakey/Leaflet.SimpleGraticule'>SimpleGraticule</a>",
-  },
 
   l: Logger.get("SquadGrid"),
 
