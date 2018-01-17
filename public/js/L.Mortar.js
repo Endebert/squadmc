@@ -34,9 +34,7 @@ L.Mortar = L.LayerGroup.extend({
    * Removes all markers of this layer that are currently displayed.
    */
   reset() {
-    this.eachLayer((layer) => {
-      this.removeLayer(layer);
-    });
+    this.eachLayer(this.removeLayer);
     this.resetVars();
   },
 
@@ -68,7 +66,11 @@ L.Mortar = L.LayerGroup.extend({
 
     // create or move the line
     if (!this.mo.distLine) {
-      this.mo.distLine = L.polyline([s, e], { color: "green" });
+      this.mo.distLine = L.polyline([s, e], {
+        color: "green",
+        interactive: false,
+        clickable: false, // legacy support
+      });
       // mapObjects.distLine.addTo(map);
       this.mo.distLine.addTo(this);
     } else {
@@ -124,6 +126,8 @@ L.Mortar = L.LayerGroup.extend({
         radius: 1250, // 1250 meters == 800 mill == max range of mortar
         color: "green",
         fillOpacity: 0.05,
+        interactive: false,
+        clickable: false, // legacy support
       });
 
       // create red min range circle
@@ -132,6 +136,8 @@ L.Mortar = L.LayerGroup.extend({
         radius: 50, // 50 meters == 1579 mill == min range of mortar
         color: "red",
         fillOpacity: 0.05,
+        interactive: false,
+        clickable: false, // legacy support
       });
 
       // add listeners for dragging
@@ -266,7 +272,8 @@ L.Mortar = L.LayerGroup.extend({
     }
 
     return true;
-  },
+  }
+  ,
 
 });
 
