@@ -76,7 +76,7 @@ L.SquadGrid = L.LayerGroup.extend({
 
     this.map = map;
     // add listener for view change
-    this.map.on(`zoomend`, this.updateLineOpacity, this);
+    this.map.on("zoomend", this.updateLineOpacity, this);
     this.map.on("baselayerchange", this.onBaseLayerChange, this);
 
     this.redraw();
@@ -87,7 +87,7 @@ L.SquadGrid = L.LayerGroup.extend({
     this.l.debug("onRemove", arguments);
 
     // remove listener for view change
-    map.off(`zoomend`, this.updateLineOpacity, this);
+    map.off("zoomend", this.updateLineOpacity, this);
     this.clearLines();
   },
 
