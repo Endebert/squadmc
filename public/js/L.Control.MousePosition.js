@@ -12,6 +12,7 @@ L.Control.MousePosition = L.Control.extend({
   },
 
   l: Logger.get("MousePosition"),
+  moveTimeout: undefined,
 
   initialize(options) {
     L.Util.setOptions(this, options);
@@ -49,8 +50,18 @@ L.Control.MousePosition = L.Control.extend({
     this.onMouseContainer.innerHTML = kp;
 
     // move onMouseContainer to mouse cursor (with offset)
+    this.onMouseContainer.style.opacity = "1.0";
     this.onMouseContainer.style.left = `${e.originalEvent.pageX + 5}px`;
     this.onMouseContainer.style.top = `${e.originalEvent.pageY + 5}px`;
+
+    // hide container after 1 second (fix for mobile)
+    if (this.moveTimeout) {
+      clearTimeout(this.moveTimeout);
+    }
+
+    this.moveTimeout = setTimeout(() => {
+      this.onMouseContainer.style.opacity = "0.0";
+    }, 1000);
   },
 });
 
