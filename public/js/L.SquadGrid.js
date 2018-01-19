@@ -23,13 +23,13 @@ L.SquadGrid = L.LayerGroup.extend({
   lineStyleKP: {
     stroke: true,
     color: "#000",
-    opacity: 1.0,
-    weight: 1,
+    opacity: 0.5,
+    weight: 2,
     interactive: false,
     clickable: false, // legacy support
   },
 
-  lineStyleSUB: {
+  lineStyleSUB1: {
     stroke: true,
     color: "#000",
     opacity: 0.5,
@@ -57,13 +57,13 @@ L.SquadGrid = L.LayerGroup.extend({
   onBaseLayerChange() {
     this.l.debug("onBaseLayerChange");
 
+    // new map means new bounds, so we have to adjust/redraw the grid
     this.redraw();
     this.updateLineOpacity();
   },
 
   clearLines() {
     this.l.debug("clearLines");
-
     this.eachLayer(this.removeLayer, this);
   },
 
@@ -71,7 +71,7 @@ L.SquadGrid = L.LayerGroup.extend({
     this.l.debug("onAdd", arguments);
 
     this.map = map;
-    // add listener for view change
+    // add listener for view change, so that we can show (sub-)keypads based on zoom level
     this.map.on("zoomend", this.updateLineOpacity, this);
     this.map.on("baselayerchange", this.onBaseLayerChange, this);
 
@@ -91,63 +91,38 @@ L.SquadGrid = L.LayerGroup.extend({
    * Sets opacity of subgrid lines based on zoom level.
    */
   updateLineOpacity() {
-    this.l.debug("updateLineOpacity");
-
-    // first check if there are lines to process
-    if (this.s2Lines.length === 0) {
-      this.l.debug("no lines to update, skipping...");
-      return;
-    }
-
     const currentZoom = Math.round(this.map.getZoom());
+    this.l.debug("updateLineOpacity with zoom:", currentZoom);
 
     if (currentZoom >= 0) {
-      // we check only the first object as we are updating all at the same time
-      // and this one check might save us iterating through the whole array
-      if (this.s2Lines[0].options.opacity !== this.lineStyleSUB2.opacity) {
-        this.s2Lines.forEach((l) => {
-          l.setStyle({
-            opacity: this.lineStyleSUB2.opacity,
-          });
-        });
-      }
-      if (this.s1Lines[0].options.opacity !== this.lineStyleSUB.opacity) {
-        this.s1Lines.forEach((l) => {
-          l.setStyle({
-            opacity: this.lineStyleSUB.opacity,
-          });
-        });
-      }
+      this.setLinesOpacity(this.s2Lines, this.lineStyleSUB2.opacity);
+      this.setLinesOpacity(this.s1Lines, this.lineStyleSUB1.opacity);
     } else if (currentZoom >= -1) {
-      if (this.s2Lines[0].options.opacity !== 0.0) {
-        this.s2Lines.forEach((l) => {
-          l.setStyle({
-            opacity: 0.0,
-          });
-        });
-      }
-      if (this.s1Lines[0].options.opacity !== this.lineStyleSUB.opacity) {
-        this.s1Lines.forEach((l) => {
-          l.setStyle({
-            opacity: this.lineStyleSUB.opacity,
-          });
-        });
-      }
+      this.setLinesOpacity(this.s2Lines, 0.0);
+      this.setLinesOpacity(this.s1Lines, this.lineStyleSUB1.opacity);
     } else {
-      if (this.s2Lines[0].options.opacity !== 0.0) {
-        this.s2Lines.forEach((l) => {
-          l.setStyle({
-            opacity: 0.0,
-          });
+      this.setLinesOpacity(this.s2Lines, 0.0);
+      this.setLinesOpacity(this.s1Lines, 0.0);
+    }
+  },
+
+  /**
+   * Updates the opacity for all lines in the lines array to the desired opacity value.
+   * @param {Array} lines - array of lines to update
+   * @param {Number} opacity - desired opacity value
+   */
+  setLinesOpacity(lines, opacity = 0.5) {
+    // we check only the first object as we are updating all at the same time
+    // and this one check might save us iterating through the whole array
+    if (lines.length === 0 || lines[0].options.opacity === opacity) {
+      // this.l.debug("nothing to do");
+    } else {
+      this.l.debug("setLinesOpacity:", [lines, opacity]);
+      lines.forEach((l) => {
+        l.setStyle({
+          opacity,
         });
-      }
-      if (this.s1Lines[0].options.opacity !== 0.0) {
-        this.s1Lines.forEach((l) => {
-          l.setStyle({
-            opacity: 0.0,
-          });
-        });
-      }
+      });
     }
   },
 
@@ -194,7 +169,7 @@ L.SquadGrid = L.LayerGroup.extend({
       if (Utils.isMultiple(kp, x)) {
         this.kpLines.push(new L.Polyline([bot, top], this.lineStyleKP));
       } else if (Utils.isMultiple(s1, x)) {
-        this.s1Lines.push(new L.Polyline([bot, top], this.lineStyleSUB));
+        this.s1Lines.push(new L.Polyline([bot, top], this.lineStyleSUB1));
       } else if (Utils.isMultiple(s2, x)) {
         this.s2Lines.push(new L.Polyline([bot, top], this.lineStyleSUB2));
       } else {
@@ -212,7 +187,7 @@ L.SquadGrid = L.LayerGroup.extend({
       if (Utils.isMultiple(kp, y)) {
         this.kpLines.push(new L.Polyline([left, right], this.lineStyleKP));
       } else if (Utils.isMultiple(s1, y)) {
-        this.s1Lines.push(new L.Polyline([left, right], this.lineStyleSUB));
+        this.s1Lines.push(new L.Polyline([left, right], this.lineStyleSUB1));
       } else if (Utils.isMultiple(s2, y)) {
         this.s2Lines.push(new L.Polyline([left, right], this.lineStyleSUB2));
       } else {
