@@ -1,6 +1,6 @@
 # SquadMC
 
-![Nexus 6 Screenshot](./public/images/nexus6_screenshot.jpg)
+![Nexus 6 Screenshot](./public/images/nexus6_screenshot.png)
 
 SquadMC is a map-based mortar elevation and bearing calculator for [Squad](http://joinsquad.com/)
 
