@@ -10,7 +10,9 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "express": "^4.15.2"
+    "express": "^4.15.2",
+    "express-minify": "^1.0.0",
+    "compression": "^1.7.1"
   },
   "repository": {
     "type": "git",
