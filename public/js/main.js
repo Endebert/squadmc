@@ -9,7 +9,7 @@ const main = () => {
   const map = L.map("map", {
     crs: L.CRS.SimpleTopLeft,
     minZoom: -3,
-    maxZoom: 2,
+    maxZoom: 3,
     attributionControl: true,
     layers: [],
     zoomSnap: 0,
