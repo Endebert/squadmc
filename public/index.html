@@ -58,7 +58,11 @@
   Logger.useDefaults();
 
   window.setOrToggleDebugMode = (state) => {
-    if (state !== undefined) { window.DEBUG = state; } else { window.DEBUG = !window.DEBUG; }
+    if (state !== undefined) {
+      window.DEBUG = state;
+    } else {
+      window.DEBUG = !window.DEBUG;
+    }
     Logger.setLevel(window.DEBUG ? Logger.DEBUG : Logger.WARN);
     localStorage.setItem("debug", window.DEBUG.toString());
   };
@@ -108,5 +112,18 @@
 <!--page logic, setting up map, etc.-->
 <script type="text/javascript" src="js/main.js"></script>
 
+<!-- Global Site Tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-112778630-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag() {
+    dataLayer.push(arguments);
+  }
+
+  gtag("js", new Date());
+
+  gtag("config", "UA-112778630-1");
+</script>
 </body>
 </html>
