@@ -13,12 +13,14 @@ L.Mortar = L.LayerGroup.extend({
   l: Logger.get("Mortar"),
 
   initialize(options) {
+    this.l.debug("initialize:", options);
     L.LayerGroup.prototype.initialize.call(this);
     L.Util.setOptions(this, options);
     this.resetVars();
   },
 
   onAdd(map) {
+    this.l.debug("onAdd:", map);
     this.map = map;
     this.map.on("click", this.onMapClick, this);
     this.map.on("baselayerchange", this.reset, this);
@@ -27,6 +29,7 @@ L.Mortar = L.LayerGroup.extend({
   },
 
   onRemove() {
+    this.l.debug("onRemove");
     this.reset();
   },
 
@@ -34,7 +37,8 @@ L.Mortar = L.LayerGroup.extend({
    * Removes all markers of this layer that are currently displayed.
    */
   reset() {
-    this.eachLayer(this.removeLayer);
+    this.l.debug("reset");
+    this.eachLayer(this.removeLayer, this);
     this.resetVars();
   },
 
@@ -42,6 +46,7 @@ L.Mortar = L.LayerGroup.extend({
    * Resets all variables to their original value;
    */
   resetVars() {
+    this.l.debug("resetVars");
     this.angle = 0;
     this.elevation = 0;
     this.mo = {};
@@ -110,7 +115,26 @@ L.Mortar = L.LayerGroup.extend({
     Utils.setElevationText(strElevation);
   },
 
-  /**
+  createMaxRangeCircle(latlng) {
+    this.mo.maxRangeCircle = new L.circle(latlng, {
+      draggable: "false",
+      radius: 1250, // 1250 meters == 800 mill == max range of mortar
+      color: "green",
+      fillOpacity: 0.05,
+      interactive: false,
+      clickable: false, // legacy support
+    });
+  },
+  createMinRangeCircle(latlng) {
+    this.mo.minRangeCircle = new L.circle(latlng, {
+      draggable: "false",
+      radius: 50, // 50 meters == 1579 mill == min range of mortar
+      color: "red",
+      fillOpacity: 0.05,
+      interactive: false,
+      clickable: false, // legacy support
+    });
+  }, /**
    * Sets the position of the mortar marker
    * @param latlng - target position of mortar marker
    */
@@ -121,24 +145,10 @@ L.Mortar = L.LayerGroup.extend({
       this.mo.mortarMarker = new L.marker(latlng, { draggable: "true", icon: Utils.mortarIcon });
 
       // create green max range circle
-      this.mo.maxRangeCircle = new L.circle(latlng, {
-        draggable: "false",
-        radius: 1250, // 1250 meters == 800 mill == max range of mortar
-        color: "green",
-        fillOpacity: 0.05,
-        interactive: false,
-        clickable: false, // legacy support
-      });
+      this.createMaxRangeCircle(latlng);
 
       // create red min range circle
-      this.mo.minRangeCircle = new L.circle(latlng, {
-        draggable: "false",
-        radius: 50, // 50 meters == 1579 mill == min range of mortar
-        color: "red",
-        fillOpacity: 0.05,
-        interactive: false,
-        clickable: false, // legacy support
-      });
+      this.createMinRangeCircle(latlng);
 
       // add listeners for dragging
       this.mo.mortarMarker.on("dragstart", () => {
@@ -178,6 +188,7 @@ L.Mortar = L.LayerGroup.extend({
    * Convenience function to invoke calculation and line drawing, as they are always updated at the same time.
    */
   calcAndDraw() {
+    this.l.debug("calcAndDraw");
     this.calculate();
     this.drawLine();
   },
@@ -187,6 +198,7 @@ L.Mortar = L.LayerGroup.extend({
    * @param latlng - target position of target marker
    */
   setTarget(latlng) {
+    this.l.debug("setTarget:", latlng);
     // if target marker doesn't exist, we have to create it first
     if (!this.mo.targetMarker) {
       this.mo.targetMarker = new L.marker(latlng, { draggable: "true", icon: Utils.targetIcon });
@@ -226,6 +238,7 @@ L.Mortar = L.LayerGroup.extend({
    * @returns {boolean} - always returns true
    */
   onMapClick(e) {
+    this.l.debug("onMapClick:", e);
     // black magic to not trigger click after drag
     if (this.dragged) {
       return true;
