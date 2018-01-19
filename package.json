@@ -1,6 +1,6 @@
 {
   "name": "squadmc",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "A map based mortar calculator for Squad",
   "engines": {
     "node": "8.9.1"
@@ -10,9 +10,8 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "express": "^4.15.2",
-    "express-minify": "^1.0.0",
-    "compression": "^1.7.1"
+    "compression": "^1.7.1",
+    "express": "^4.15.2"
   },
   "repository": {
     "type": "git",
