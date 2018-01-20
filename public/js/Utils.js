@@ -14,6 +14,39 @@ window.Utils = {
 
   iSize: iconSize, // icon size
 
+  MORTAR_TABLE: [
+    [50, 1579],
+    [100, 1558],
+    [150, 1538],
+    [200, 1517],
+    [250, 1496],
+    [300, 1475],
+    [350, 1453],
+    [400, 1431],
+    [450, 1409],
+    [500, 1387],
+    [550, 1364],
+    [600, 1341],
+    [650, 1317],
+    [700, 1292],
+    [750, 1267],
+    [800, 1240],
+    [850, 1212],
+    [900, 1183],
+    [950, 1152],
+    [1000, 1118],
+    [1050, 1081],
+    [1100, 1039],
+    [1150, 988],
+    [1200, 918],
+    [1250, 800],
+  ],
+  MIN_DISTANCE: 50,
+  MAX_DISTANCE: 1250,
+  TOO_FAR: "TOO_FAR",
+  TOO_CLOSE: "TOO_CLOSE",
+  ERROR: "ERROR",
+
   // icon for mortar marker
   mortarIcon: L.icon({
     iconUrl: "images/mortar.png",
@@ -24,13 +57,14 @@ window.Utils = {
   }),
 
   // icon for target marker
-  targetIcon: L.icon({
-    iconUrl: "images/target.png",
+  targetIcon:
+    L.icon({
+      iconUrl: "images/target.png",
 
-    iconSize: [iconSize, iconSize], // size of the icon
-    iconAnchor: [iconSize / 2, iconSize / 2], // point of the icon which will correspond to marker's location
-    popupAnchor: [0, -iconSize / 2], // point from which the popup should open relative to the iconAnchor
-  }),
+      iconSize: [iconSize, iconSize], // size of the icon
+      iconAnchor: [iconSize / 2, iconSize / 2], // point of the icon which will correspond to marker's location
+      popupAnchor: [0, -iconSize / 2], // point from which the popup should open relative to the iconAnchor
+    }),
 
   /**
    * Calculates the keypad coordinates for a given latlng coordinate, e.g. "A5-3-7"
@@ -270,47 +304,12 @@ window.Utils = {
    * @returns {*} - mill for in-game mortar, "TOO_FAR" if target is too far away, "TOO_CLOSE" if target is too close.
    */
   interpolateElevation(distance) {
-    const MORTAR_TABLE = [
-      [50, 1579],
-      [100, 1558],
-      [150, 1538],
-      [200, 1517],
-      [250, 1496],
-      [300, 1475],
-      [350, 1453],
-      [400, 1431],
-      [450, 1409],
-      [500, 1387],
-      [550, 1364],
-      [600, 1341],
-      [650, 1317],
-      [700, 1292],
-      [750, 1267],
-      [800, 1240],
-      [850, 1212],
-      [900, 1183],
-      [950, 1152],
-      [1000, 1118],
-      [1050, 1081],
-      [1100, 1039],
-      [1150, 988],
-      [1200, 918],
-      [1250, 800],
-    ];
+    if (distance < this.MIN_DISTANCE) return this.TOO_CLOSE;
+    if (distance > this.MAX_DISTANCE) return this.TOO_FAR;
 
-    const MIN_DISTANCE = MORTAR_TABLE[0][0];
-    const MAX_DISTANCE = MORTAR_TABLE[MORTAR_TABLE.length - 1][0];
-
-    const TOO_FAR = "TOO_FAR";
-    const TOO_CLOSE = "TOO_CLOSE";
-    const ERROR = "ERROR";
-
-    if (distance < MIN_DISTANCE) return TOO_CLOSE;
-    if (distance > MAX_DISTANCE) return TOO_FAR;
-
-    for (let i = 0; i < MORTAR_TABLE.length; i++) {
-      const currentTableEntry = MORTAR_TABLE[i];
-      const nextTableEntry = MORTAR_TABLE[i + 1];
+    for (let i = 0; i < this.MORTAR_TABLE.length; i++) {
+      const currentTableEntry = this.MORTAR_TABLE[i];
+      const nextTableEntry = this.MORTAR_TABLE[i + 1];
       const currentX = currentTableEntry[0];
       const currentY = currentTableEntry[1];
       if (distance === currentX) return currentY;
@@ -324,10 +323,12 @@ window.Utils = {
       const slope = (nextY - currentY) / (nextX - currentX);
       const deltaX = distance - currentX;
 
-      // rounded to nearest .1
-      return Math.round(((slope * deltaX) + currentY) * 10) / 10;
+      // we don't need decimals
+      return Math.round((slope * deltaX) + currentY);
     }
 
-    return ERROR;
-  },
+    return this.ERROR;
+  }
+  ,
 };
+
