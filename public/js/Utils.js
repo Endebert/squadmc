@@ -285,6 +285,38 @@ window.Utils = {
   },
 
   /**
+   * Return a map from MAPDATA matching the given name.
+   * @param name - map name
+   */
+  getMap(name) {
+    return window.MAPDATA[name].map;
+  },
+
+  /**
+   * Returns bounds of the map matching given name.
+   * @param name - map name
+   * @returns {*}
+   */
+  getMapBounds(name) {
+    try {
+      const map = window.MAPDATA[name].map;
+      return map.options.bounds || map.getBounds();
+    } catch (e) {
+      this.l.debug("failed to get map bounds for:", name);
+      return undefined;
+    }
+  },
+
+  /**
+   * Returns locations of the map matching given name.
+   * @param name - map name
+   * @returns {*}
+   */
+  getMapLocations(name) {
+    return window.MAPDATA[name].locations;
+  },
+
+  /**
    * Create a button with the given contents, to be bound to the given container.
    * @param label - button contents
    * @param container - container for button to be bound to

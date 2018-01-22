@@ -5,17 +5,12 @@
  * @type {*|void}
  */
 L.Locations = L.LayerGroup.extend({
-  options: {
-    locations: undefined,
-  },
 
   l: Logger.get("Locations"),
 
   initialize(options = {}) {
     L.LayerGroup.prototype.initialize.call(this); // don't know why, but this is important
     L.Util.setOptions(this, options);
-
-    this.locations = options.locations || MAPDATA.locations;
   },
 
   onAdd(map) {
@@ -53,7 +48,7 @@ L.Locations = L.LayerGroup.extend({
     this.reset();
 
     try {
-      const mapFlags = this.locations[mapName];
+      const mapFlags = Utils.getMapLocations(mapName);
       Object.values(mapFlags).forEach((flag) => {
         this.addLayer(flag);
       });

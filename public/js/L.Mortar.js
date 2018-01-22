@@ -13,14 +13,14 @@ L.Mortar = L.LayerGroup.extend({
   l: Logger.get("Mortar"),
 
   initialize(options) {
-    this.l.debug("initialize:", options);
+    this.l.debug("initialize");
     L.LayerGroup.prototype.initialize.call(this);
     L.Util.setOptions(this, options);
     this.resetVars();
   },
 
   onAdd(map) {
-    this.l.debug("onAdd:", map);
+    this.l.debug("onAdd");
     this.map = map;
     this.map.on("click", this.onMapClick, this);
     this.map.on("baselayerchange", this.reset, this);
@@ -125,6 +125,7 @@ L.Mortar = L.LayerGroup.extend({
       clickable: false, // legacy support
     });
   },
+
   createMinRangeCircle(latlng) {
     this.mo.minRangeCircle = new L.circle(latlng, {
       draggable: "false",
@@ -134,11 +135,14 @@ L.Mortar = L.LayerGroup.extend({
       interactive: false,
       clickable: false, // legacy support
     });
-  }, /**
+  },
+
+  /**
    * Sets the position of the mortar marker
    * @param latlng - target position of mortar marker
    */
   setMortar(latlng) {
+    this.l.debug("setMortar:", latlng);
     // if marker doesn't exist, we have to create it and its components first
     if (!this.mo.mortarMarker) {
       // create marker

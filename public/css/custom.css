@@ -148,3 +148,11 @@ body,
 .disabled {
     opacity: 0.33;
 }
+
+/*.leaflet-tile-container img {*/
+    /*box-shadow: 0 0 1px rgba(0, 0, 0, 0.05);*/
+/*}*/
+
+/*img {*/
+    /*image-rendering: pixelated*/
+/*}*/

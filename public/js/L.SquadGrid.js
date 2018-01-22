@@ -14,6 +14,8 @@ L.SquadGrid = L.LayerGroup.extend({
 
   l: Logger.get("SquadGrid"),
 
+  curMap: "",
+
   // grid line arrays for each (sub-)keypad
   kpLines: [],
   s1Lines: [],
@@ -54,9 +56,9 @@ L.SquadGrid = L.LayerGroup.extend({
     L.Util.setOptions(this, options);
   },
 
-  onBaseLayerChange() {
+  onBaseLayerChange(e) {
     this.l.debug("onBaseLayerChange");
-
+    this.curMap = e.name;
     // new map means new bounds, so we have to adjust/redraw the grid
     this.redraw();
     this.updateLineOpacity();
@@ -68,7 +70,7 @@ L.SquadGrid = L.LayerGroup.extend({
   },
 
   onAdd(map) {
-    this.l.debug("onAdd", arguments);
+    this.l.debug("onAdd");
 
     this.map = map;
     // add listener for view change, so that we can show (sub-)keypads based on zoom level
@@ -80,7 +82,7 @@ L.SquadGrid = L.LayerGroup.extend({
   },
 
   onRemove(map) {
-    this.l.debug("onRemove", arguments);
+    this.l.debug("onRemove");
 
     // remove listener for view change
     map.off("zoomend", this.updateLineOpacity, this);
@@ -94,10 +96,10 @@ L.SquadGrid = L.LayerGroup.extend({
     const currentZoom = Math.round(this.map.getZoom());
     this.l.debug("updateLineOpacity with zoom:", currentZoom);
 
-    if (currentZoom >= 0) {
+    if (currentZoom >= 4) {
       this.setLinesOpacity(this.s2Lines, this.lineStyleSUB2.opacity);
       this.setLinesOpacity(this.s1Lines, this.lineStyleSUB1.opacity);
-    } else if (currentZoom >= -1) {
+    } else if (currentZoom >= 2) {
       this.setLinesOpacity(this.s2Lines, 0.0);
       this.setLinesOpacity(this.s1Lines, this.lineStyleSUB1.opacity);
     } else {
@@ -130,10 +132,11 @@ L.SquadGrid = L.LayerGroup.extend({
    * Redraws the grid inside the current view bounds.
    */
   redraw() {
-    this.l.debug("redraw");
-    const viewBounds = this.map.options ? this.map.options.maxBounds : undefined;
+    const bounds = Utils.getMapBounds(this.curMap);
+    this.l.debug("redraw:", bounds);
+    // const bounds = this.map.options ? this.map.options.maxBounds : undefined;
 
-    if (!viewBounds) {
+    if (!bounds) {
       this.l.debug("no viewbounds, skipping draw");
       return;
     }
@@ -155,12 +158,12 @@ L.SquadGrid = L.LayerGroup.extend({
 
     // vertical keypad lines
     // doing some magic against floating point imprecision
-    const startX = Math.ceil(viewBounds.getWest() / interval) * interval;
-    const endX = Math.floor(viewBounds.getEast() / interval) * interval;
+    const startX = Math.ceil(bounds.getWest() / interval) * interval;
+    const endX = Math.floor(bounds.getEast() / interval) * interval;
 
     for (let x = startX; x <= endX; x += interval) {
-      const bot = new L.LatLng(viewBounds.getSouth(), x);
-      const top = new L.LatLng(viewBounds.getNorth(), x);
+      const bot = new L.LatLng(bounds.getSouth(), x);
+      const top = new L.LatLng(bounds.getNorth(), x);
 
       // checking which style to use for the current line
       // style is decided by whether or not current line is multiple of which (sub-) keypad interval
@@ -178,11 +181,11 @@ L.SquadGrid = L.LayerGroup.extend({
     }
 
     // horizontal keypad lines, almost the same as for vertical lines
-    const startY = Math.ceil(viewBounds.getSouth() / interval) * interval;
-    const endY = Math.floor(viewBounds.getNorth() / interval) * interval;
+    const startY = Math.ceil(bounds.getSouth() / interval) * interval;
+    const endY = Math.floor(bounds.getNorth() / interval) * interval;
     for (let y = startY; y <= endY; y += interval) {
-      const left = new L.LatLng(y, viewBounds.getWest());
-      const right = new L.LatLng(y, viewBounds.getEast());
+      const left = new L.LatLng(y, bounds.getWest());
+      const right = new L.LatLng(y, bounds.getEast());
 
       if (Utils.isMultiple(kp, y)) {
         this.kpLines.push(new L.Polyline([left, right], this.lineStyleKP));

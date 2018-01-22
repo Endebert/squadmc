@@ -7,12 +7,12 @@ const main = () => {
 
   // setting up map
   const map = L.map("map", {
-    crs: L.CRS.SimpleTopLeft,
-    minZoom: -3,
-    maxZoom: 3,
+    crs: L.CRS.Simple,
+    minZoom: 0,
+    maxZoom: 5,
     attributionControl: true,
     layers: [],
-    zoomSnap: 0,
+    // zoomSnap: 0, // not needed for new scaling with tile layers
   });
 
   const grid = L.squadGrid();
@@ -27,8 +27,14 @@ const main = () => {
     "Location markers": locations,
   };
 
+  // prepare map list for layer control
+  const maps = {};
+  Object.entries(MAPDATA).forEach(([mapName, props]) => {
+    maps[mapName] = props.map;
+  });
+
   // lets you select the map and whether or not to display grid/locations
-  const layerControl = L.control.layers(MAPDATA.maps, overlayMaps);
+  const layerControl = L.control.layers(maps, overlayMaps);
   layerControl.addTo(map);
 
   // shows map scale on bottom right
@@ -95,7 +101,11 @@ const main = () => {
     }],
   });
 
-  if (window.DEBUG) { debugBtn.state("on"); } else { debugBtn.state("off"); }
+  if (window.DEBUG) {
+    debugBtn.state("on");
+  } else {
+    debugBtn.state("off");
+  }
   debugBtn.addTo(map);
 
   /**
@@ -103,33 +113,54 @@ const main = () => {
    * @param bounds - bounds of map
    */
   const setBounds = (bounds) => {
-    map.setMaxBounds(bounds);
+    this.l.debug("setBounds:", bounds);
+    this.l.debug("test:", bounds.getNorthEast());
+    map.setMaxBounds(bounds.getNorthEast());
     map.fitBounds(bounds);
   };
+
+  /**
+   * Updates the CRS scaling factor based on the map that is laoded. Uses some black magic so it works properly.
+   * @param {String} mapName - name of loaded map
+   */
+  function updateCRS(mapName) {
+    const bounds = window.Utils.getMapBounds(mapName);
+    const x = 256 / bounds.getNorth();
+    const y = 256 / bounds.getEast();
+    map.options.crs.transformation = L.transformation(x, 0, y, 0);
+
+    // manually invoke resetting view so we don't get tile loading errors
+    // eslint-disable-next-line no-underscore-dangle
+    map._resetView(map.getCenter(), map.getZoom());
+  }
 
   /**
    * Handles baselayerchange event
    * @param e - baselayerchange event object
    */
   const onBaseLayerChange = (e) => {
+    this.l.debug("onBaseLayerChange");
     // closes layerControl (otherwise annoying on mobile)
     layerControl.collapse();
 
     // update map name in top ribbon
     document.getElementById("mapName").innerText = e.name;
 
-    setBounds(e.layer.getBounds(), e.name);
+    this.l.debug("related MAPDATA:", window.MAPDATA[e.name]);
+    updateCRS(e.name);
+    setBounds(window.Utils.getMapBounds(e.name));
     localStorage.setItem("lastLayer", e.name); // save layer name that is displayed
   };
 
   map.on("baselayerchange", onBaseLayerChange);
 
   // display last selected layer if page was used before
-  const m = localStorage.getItem("lastLayer") || Object.keys(MAPDATA.maps)[0];
-
+  const m = localStorage.getItem("lastLayer") || Object.keys(MAPDATA)[0];
   // try to show the complete map, but reInit will be run anyway
-  map.setView(MAPDATA.maps[m].getBounds().getCenter(), -3);
-  map.addLayer(MAPDATA.maps[m]); // finally add the map overlay
+  map.setView(window.Utils.getMapBounds(m).getCenter(), 0);
+  map.addLayer(MAPDATA[m].map); // finally add the map overlay
+
+  this.l.info("SquadMC Main code executed successfully!");
 };
 
 main();
