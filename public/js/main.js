@@ -2,7 +2,7 @@
  * This is the page logic. It sets up the map and its layers.
  */
 
-const main = () => {
+(() => {
   this.l = Logger.get("main");
 
   // setting up map
@@ -161,6 +161,4 @@ const main = () => {
   map.addLayer(MAPDATA[m].map); // finally add the map overlay
 
   this.l.info("SquadMC Main code executed successfully!");
-};
-
-main();
+})();

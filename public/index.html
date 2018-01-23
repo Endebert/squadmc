@@ -57,6 +57,7 @@
   // setup log level
   Logger.useDefaults();
 
+  // small helper function to set/toggle global DEBUG variable
   window.setOrToggleDebugMode = (state) => {
     if (state !== undefined) {
       window.DEBUG = state;
