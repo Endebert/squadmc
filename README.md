@@ -10,5 +10,3 @@ The most recent version is hosted on heroku: https://squadmc.ende.pro
  * Keypad grid originally based on [Leaflet.SimpleGraticule](https://github.com/ablakey/Leaflet.SimpleGraticule), but not much is left from the original code
 
 Special thanks to the people over at [www.airpressuretendency.net](https://www.airpressuretendency.net/fcsquad/squadmaps/). Their interactive maps were the inspiration for this project.
-
-_Created by Robert Ende_

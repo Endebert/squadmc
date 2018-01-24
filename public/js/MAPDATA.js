@@ -10,6 +10,7 @@
     minNativeZoom: 0,
     maxNativeZoom: 4,
     // zoomOffset: -3,
+    attribution: "Map &copy; <a href='http://joinsquad.com/'>Offworld Inc.</a>",
   };
 
   // returns a copy of tileOps including custom bounds
