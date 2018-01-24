@@ -36,10 +36,6 @@
           integrity="sha512-C7BBF9irt5R7hqbUm2uxtODlUVs+IsNu2UULGuZN7gM+k/mmeG4xvIEac01BtQa4YIkUpp23zZC4wIwuXaPMQA=="
           crossorigin=""></script>
 
-  <!--leaflet source file (use for debugging)-->
-  <!--<script src="https://unpkg.com/leaflet@1.3.0/dist/leaflet-src.js"-->
-  <!--crossorigin=""></script>-->
-
   <!--EasyButton-->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.css">
   <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
@@ -49,34 +45,6 @@
 </head>
 <body>
 <script defer src="https://use.fontawesome.com/releases/v5.0.2/js/all.js"></script>
-
-<!--logger first-->
-<script src="https://cdn.rawgit.com/jonnyreeves/js-logger/master/src/logger.min.js"></script>
-<script type="application/javascript">
-
-  // setup log level
-  Logger.useDefaults();
-
-  // small helper function to set/toggle global DEBUG variable
-  window.setOrToggleDebugMode = (state) => {
-    if (state !== undefined) {
-      window.DEBUG = state;
-    } else {
-      window.DEBUG = !window.DEBUG;
-    }
-    Logger.setLevel(window.DEBUG ? Logger.DEBUG : Logger.WARN);
-    localStorage.setItem("debug", window.DEBUG.toString());
-  };
-
-  // first try to get last state of debug mode
-  window.DEBUG = localStorage.getItem("debug") === "true";
-
-  // set debug mode based on query parameter. has priority over saved state
-  const urlParams = new URLSearchParams(window.location.search);
-  window.DEBUG = urlParams.has("debug") ? (urlParams.get("debug") === "true") : window.DEBUG;
-
-  window.setOrToggleDebugMode(window.DEBUG);
-</script>
 
 <!--Top ribbon containing map name, etc.-->
 <div id="mapTitle" align="center">
@@ -100,11 +68,14 @@
 <!--div used for displaying mouse coordinates-->
 <div id="mousecoord" class="leaflet-control-mouseposition-target"></div>
 
+<!--logger-->
+<script src="https://cdn.rawgit.com/jonnyreeves/js-logger/master/src/logger.min.js"></script>
+
 <!--Utils needs to be loaded first-->
 <script type="text/javascript" src="js/Utils.js"></script>
 
+<!--now all the leaflet components-->
 <script type="text/javascript" src="js/MAPDATA.js"></script>
-<script type="text/javascript" src="js/L.CRS.SimpleTopLeft.js"></script>
 <script type="text/javascript" src="js/L.Mortar.js"></script>
 <script type="text/javascript" src="js/L.Locations.js"></script>
 <script type="text/javascript" src="js/L.SquadGrid.js"></script>

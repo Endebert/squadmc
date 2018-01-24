@@ -3,7 +3,7 @@
  * The Mortar layer group holds the mortar and target icons, their popups, and does the bearing and angle calculations.
  * Also updates the top ribbon of page.
  *
- * @type {*|void}
+ * @type {L.Mortar} - mortar layer object
  */
 L.Mortar = L.LayerGroup.extend({
   options: {
@@ -284,7 +284,7 @@ L.Mortar = L.LayerGroup.extend({
     }
 
     // in debug mode we copy the click coordinates to the clipboard
-    if (window.DEBUG) {
+    if (Utils.isDebug()) {
       Utils.copyTextToClipboard(`[${Math.round(e.latlng.lat)}, ${Math.round(e.latlng.lng)}]`);
     }
 

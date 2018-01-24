@@ -2,7 +2,7 @@
  * This Layergroup holds all location markers for the current map.
  * Automatically loads correct location markers on map layer change.
  *
- * @type {*|void}
+ * @type {L.Locations} - locations layer
  */
 L.Locations = L.LayerGroup.extend({
 

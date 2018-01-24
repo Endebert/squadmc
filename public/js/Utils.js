@@ -4,7 +4,7 @@
 
 const iconSize = 48;
 
-window.Utils = {
+const Utils = {
   l: Logger.get("Utils"),
   // variables representing values in top ribbon, will be set to initial value on first time access (see below)
   iMortarPos: undefined,
@@ -13,6 +13,7 @@ window.Utils = {
   iElevation: undefined,
 
   iSize: iconSize, // icon size
+  DEBUG: localStorage.getItem("debug") === "true",
 
   MORTAR_TABLE: [
     [50, 1579],
@@ -289,7 +290,7 @@ window.Utils = {
    * @param name - map name
    */
   getMap(name) {
-    return window.MAPDATA[name].map;
+    return MAPDATA[name].map;
   },
 
   /**
@@ -299,7 +300,7 @@ window.Utils = {
    */
   getMapBounds(name) {
     try {
-      const map = window.MAPDATA[name].map;
+      const map = MAPDATA[name].map;
       return map.options.bounds || map.getBounds();
     } catch (e) {
       this.l.debug("failed to get map bounds for:", name);
@@ -313,7 +314,7 @@ window.Utils = {
    * @returns {*}
    */
   getMapLocations(name) {
-    return window.MAPDATA[name].locations;
+    return MAPDATA[name].locations;
   },
 
   /**
@@ -360,7 +361,54 @@ window.Utils = {
     }
 
     return this.ERROR;
-  }
-  ,
+  },
+
+  /**
+   * Sets up the logger
+   */
+  setupLogger() {
+    // setup log level
+    Logger.useDefaults();
+
+    // set debug mode based on query parameter. has priority over saved state
+    const urlParams = new URLSearchParams(window.location.search);
+    const debugState = urlParams.has("debug") ? (urlParams.get("debug") === "true") : this.DEBUG;
+
+    this.setDebugMode(debugState);
+  },
+
+  /**
+   * Small helper function to set global DEBUG variable
+   * @param state - debug state flag. true for debug mode, false otherwise
+   */
+  setDebugMode(state = false) {
+    console.log("setOrToggleDebugMode:", state);
+    if (state) {
+      this.DEBUG = state;
+    } else {
+      this.DEBUG = !this.DEBUG;
+    }
+    Logger.setLevel(this.DEBUG ? Logger.DEBUG : Logger.WARN);
+    localStorage.setItem("debug", this.DEBUG.toString());
+  },
+
+  /**
+   * Toggles debug mode
+   */
+  toggleDebugMode() {
+    this.setDebugMode(!this.DEBUG);
+  },
+
+  /**
+   * Returns the debug mode state
+   * @returns {boolean} flag - returns true if debug mode is enabled, false otherwise
+   */
+  isDebug() {
+    return this.DEBUG;
+  },
 };
 
+// initialize Logger
+Utils.setupLogger();
+
+window.Utils = Utils;

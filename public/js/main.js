@@ -70,7 +70,7 @@
       icon: "fa-bug",
       title: "Disable DEBUG mode",
       onClick(btn) {
-        window.setOrToggleDebugMode(false);
+        Utils.setDebugMode(false);
         btn.state("off");
         const popup = L.popup()
           .setLatLng(map.getBounds().getCenter())
@@ -85,7 +85,7 @@
       icon: "fa-bug disabled",
       stateName: "off",
       onClick(btn) {
-        window.setOrToggleDebugMode(true);
+        Utils.setDebugMode(true);
         btn.state("on");
 
         const popup = L.popup()
@@ -101,7 +101,7 @@
     }],
   });
 
-  if (window.DEBUG) {
+  if (Utils.isDebug()) {
     debugBtn.state("on");
   } else {
     debugBtn.state("off");
@@ -124,7 +124,7 @@
    * @param {String} mapName - name of loaded map
    */
   function updateCRS(mapName) {
-    const bounds = window.Utils.getMapBounds(mapName);
+    const bounds = Utils.getMapBounds(mapName);
     const x = 256 / bounds.getNorth();
     const y = 256 / bounds.getEast();
     map.options.crs.transformation = L.transformation(x, 0, y, 0);
@@ -146,9 +146,9 @@
     // update map name in top ribbon
     document.getElementById("mapName").innerText = e.name;
 
-    this.l.debug("related MAPDATA:", window.MAPDATA[e.name]);
+    this.l.debug("related MAPDATA:", MAPDATA[e.name]);
     updateCRS(e.name);
-    setBounds(window.Utils.getMapBounds(e.name));
+    setBounds(Utils.getMapBounds(e.name));
     localStorage.setItem("lastLayer", e.name); // save layer name that is displayed
   };
 
@@ -157,7 +157,7 @@
   // display last selected layer if page was used before
   const m = localStorage.getItem("lastLayer") || Object.keys(MAPDATA)[0];
   // try to show the complete map, but reInit will be run anyway
-  map.setView(window.Utils.getMapBounds(m).getCenter(), 0);
+  map.setView(Utils.getMapBounds(m).getCenter(), 0);
   map.addLayer(MAPDATA[m].map); // finally add the map overlay
 
   this.l.info("SquadMC Main code executed successfully!");

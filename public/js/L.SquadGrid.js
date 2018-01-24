@@ -8,7 +8,8 @@
  * This Layergroup displays the grid in the same way it is displayed in-game.
  * SquadGrid was originally based on SimpleGraticule, but underwent massive changes.
  * See https://github.com/ablakey/Leaflet.SimpleGraticule for more information.
- * @type {*|void}
+ *
+ * @type {L.SquadGrid} - squadGrid layer object
  */
 L.SquadGrid = L.LayerGroup.extend({
 
