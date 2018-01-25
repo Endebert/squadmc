@@ -71,15 +71,17 @@ const Utils = {
    * Calculates the keypad coordinates for a given latlng coordinate, e.g. "A5-3-7"
    * @param lat - latitude coordinate
    * @param lng - longitude coordinate
-   * @returns {string} - keypad coordinates as string
+   * @returns {string} keypad coordinates as string
    */
   getKP(lat, lng) {
+    this.l.debug("getKP:", [lat, lng]);
+
     // to minimize confusion
     const x = lng;
     const y = lat;
 
     if (x < 0 || y < 0) {
-      return "XX-X-X"; // when outside of min bounds
+      return "XXX-X-X"; // when outside of min bounds
     }
     const kp = 300 / (3 ** 0); // interval of main keypad, e.g "A5"
     const s1 = 300 / (3 ** 1); // interval of first sub keypad
@@ -110,7 +112,7 @@ const Utils = {
     let sub2Number = 10 - ((sub2Y + 1) * 3);
     sub2Number += Math.floor(x / s2) % 3;
 
-    return `${kpLetter}${kpNumber}-${subNumber}-${sub2Number}`;
+    return `${kpLetter}${Utils.pad(kpNumber, 2)}-${subNumber}-${sub2Number}`;
   },
 
   /**
@@ -178,7 +180,7 @@ const Utils = {
    * 0-padding for numbers.
    * @param num - number to be padded
    * @param size - size of target string length, e.g. size == 4 == 4 digits
-   * @returns {string} - padded number as string
+   * @returns {string} padded number as string
    */
   pad(num, size) {
     return (`0000${num}`).substr(-size);
@@ -188,7 +190,7 @@ const Utils = {
    * Create location marker with the given name at the given location
    * @param name - name of the location
    * @param latlng - target position of marker
-   * @returns {L.CircleMarker} - generated marker
+   * @returns {L.CircleMarker} generated marker
    */
   createLocation(name, latlng) {
     const marker = L.circleMarker(latlng, {
@@ -212,45 +214,13 @@ const Utils = {
    *
    * @param a
    * @param b
-   * @returns {boolean}
+   * @returns {boolean} true if 'a' is a multiple of 'b' with a precision up to 4 decimals, false otherwise
    */
   isMultiple(a, b) {
     const t = b / a;
     const r = Math.round(t);
     const d = t >= r ? t - r : r - t;
     return d < 0.0001;
-  },
-
-  /**
-   * Update mortar position in top ribbon.
-   * @param text - updated mortar position, leave undefined to reset to initial value
-   */
-  setMortarPosText(text) {
-    if (!this.iMortarPos) {
-      this.iMortarPos = document.getElementById("mortarPos").innerText;
-    }
-
-    if (text) {
-      document.getElementById("mortarPos").innerText = text;
-    } else {
-      document.getElementById("mortarPos").innerText = this.iMortarPos;
-    }
-  },
-
-  /**
-   * Update target position in top ribbon.
-   * @param text - updated target position, leave undefined to reset to initial value
-   */
-  setTargetPosText(text) {
-    if (!this.iTargetPos) {
-      this.iTargetPos = document.getElementById("targetPos").innerText;
-    }
-
-    if (text) {
-      document.getElementById("targetPos").innerText = text;
-    } else {
-      document.getElementById("targetPos").innerText = this.iTargetPos;
-    }
   },
 
   /**
@@ -296,7 +266,7 @@ const Utils = {
   /**
    * Returns bounds of the map matching given name.
    * @param name - map name
-   * @returns {*}
+   * @returns {L.LatLngBounds} map bounds if available, undefined otherwise
    */
   getMapBounds(name) {
     try {
@@ -311,7 +281,7 @@ const Utils = {
   /**
    * Returns locations of the map matching given name.
    * @param name - map name
-   * @returns {*}
+   * @returns {L.CircleMarker[]} array of location markers
    */
   getMapLocations(name) {
     return MAPDATA[name].locations;
@@ -321,7 +291,7 @@ const Utils = {
    * Create a button with the given contents, to be bound to the given container.
    * @param label - button contents
    * @param container - container for button to be bound to
-   * @returns {button} - bound button
+   * @returns {button} bound button
    */
   createButton(label, container) {
     const btn = L.DomUtil.create("button", "", container);
@@ -334,7 +304,7 @@ const Utils = {
    * bearing calculation returning the correct mill for the mortar in-game based on distance.
    * Taken from https://github.com/lorenmh/sc-react.
    * @param distance - distance between mortar and target
-   * @returns {*} - mill for in-game mortar, "TOO_FAR" if target is too far away, "TOO_CLOSE" if target is too close.
+   * @returns {Number || String} milliradians if target in range, "TOO_FAR" or "TOO_CLOSE" otherwise
    */
   interpolateElevation(distance) {
     if (distance < this.MIN_DISTANCE) return this.TOO_CLOSE;
@@ -397,10 +367,111 @@ const Utils = {
 
   /**
    * Returns the debug mode state
-   * @returns {boolean} flag - returns true if debug mode is enabled, false otherwise
+   * @returns {boolean} true if debug mode is enabled, false otherwise
    */
   isDebug() {
     return this.DEBUG;
+  },
+
+  /**
+   * Format keypad input, setting text to uppercase and adding dashes
+   * @param {string} text - keypad string to be formatted
+   * @returns {string} formatted string
+   */
+  formatKeyPad(text = "") {
+    this.l.debug("formatKeyPad:", text);
+
+    // special case if people prefer to input "A2-3-4" over "A0234"
+    // check if length is 3 and third letter is a dash, then just convert to padded
+    if (text.length === 3 && text[2] === "-") {
+      // eslint-disable-next-line no-param-reassign
+      text = text[0] + Utils.pad(text[1], 2);
+    }
+    const textND = text.toUpperCase().split("-").join("");
+    const textParts = [];
+
+    textParts.push(textND.slice(0, 3));
+
+    // iteration through sub-keypads
+    let i = 3;
+    while (i < textND.length) {
+      textParts.push(textND.slice(i, i + 1));
+      i++;
+    }
+
+    const formattedText = textParts.join("-");
+    this.l.debug("formattedText:", formattedText);
+    return formattedText;
+  },
+
+  /**
+   * Returns the latlng coordinates based on the given keypad string. Supports unlimited amount of sub-keypads.
+   * Throws error if keypad string is too short or parsing results in invalid latlng coordinates.
+   * @param {string} kp - keypad coordinates, e.g. "A02-3-5-2"
+   * @returns {L.LatLng} converted coordinates
+   */
+  getPos(kp) {
+    this.l.debug("getPos:", kp);
+    if (!kp || kp.length < 2) {
+      throw new Error(`invalid keypad string: ${kp}`);
+    }
+
+    const parts = kp.split("-");
+    let x = 0;
+    let y = 0;
+
+    // "i" is is our (sub-)keypad indicator
+    let i = 0;
+    while (i < parts.length) {
+      if (i === 0) {
+        // special case, i.e. letter + number combo
+        const letterCode = parts[i].charCodeAt(0);
+        const letterIndex = letterCode - 65;
+        const kpNr = Number(parts[i].slice(1)) - 1;
+
+        x += 300 * letterIndex;
+        y += 300 * kpNr;
+      } else {
+        // opposite of calculations in getKP()
+        const sub = Number(parts[i]);
+        const subX = (sub - 1) % 3;
+        const subY = 2 - (Math.ceil(sub / 3) - 1);
+
+        const interval = 300 / (3 ** i);
+        x += (interval * subX);
+        y += (interval * subY);
+      }
+      i++;
+    }
+    i--;
+
+    // at the end, add half of last interval, so it points to the center of the deepest sub-keypad
+    const interval = 300 / (3 ** i);
+    x += interval / 2;
+    y += interval / 2;
+
+    this.l.debug("calculated pos:", [y, x]);
+
+    // might throw error
+    return L.latLng(y, x);
+  },
+
+  /**
+   * Resizes input elements when their content changes.
+   * Also listens on a custom event that can be invoked by the L.Mortar layer to signal a programmatic change.
+   * @param el - element to be watched for value changes
+   */
+  resizeHandler(el) {
+    const resize = () => {
+      // console.log("resize:", e);
+      // eslint-disable-next-line no-param-reassign
+      el.style.width = `${((el.value.length + 1) / 10 * 5.5)}em`;
+    };
+    const events = "keyup,keydown,keypress,focus,blur,change,custom".split(",");
+    events.forEach((e) => {
+      el.addEventListener(e, resize, false);
+    });
+    resize();
   },
 };
 

@@ -48,7 +48,10 @@
   mouseControl.addTo(map);
 
   // the most important part, the mortar layer
-  const mortarLayer = L.mortar();
+  const mortarLayer = L.mortar({
+    mortarPosElement: document.getElementById("mortarPos"),
+    targetPosElement: document.getElementById("targetPos"),
+  });
   mortarLayer.addTo(map);
 
   // a few buttons
@@ -121,7 +124,7 @@
 
   /**
    * Updates the CRS scaling factor based on the map that is laoded. Uses some black magic so it works properly.
-   * @param {String} mapName - name of loaded map
+   * @param {string} mapName - name of loaded map
    */
   function updateCRS(mapName) {
     const bounds = Utils.getMapBounds(mapName);

@@ -52,14 +52,15 @@
   <table>
     <tr>
       <td><img class="inline" src="images/mortar.png" width="16px" height="16px"/>
-        <div class="inline keypad" id="mortarPos">&nbsp;&nbsp;-&nbsp;-&nbsp;</div>
+        <input type="text" class="inline keypad" id="mortarPos" style="pointer-events: all;" value="TEST"/>
       </td>
       <td><img class="inline" src="images/target.png" width="16px" height="16px"/>
-        <div class="inline keypad" id="targetPos">&nbsp;&nbsp;-&nbsp;-&nbsp;</div>
+        <input type="text" class="inline keypad" id="targetPos" style="pointer-events: all;" value="TEST" />
       </td>
     </tr>
   </table>
-  <div class="keypad" id="mapAngle">&nbsp;&nbsp;&nbsp;°</div>&nbsp;<div class="keypad" id="mapBearing">&nbsp;&nbsp;&nbsp;&nbsp;</div>
+  <div style="display: flex; width: 10em">  <div class="keypad" id="mapAngle">&nbsp;&nbsp;&nbsp;°</div>&nbsp;<div class="keypad" id="mapBearing">&nbsp;&nbsp;&nbsp;&nbsp;</div>
+  </div>
 </div>
 
 <!--Leaflet map holder-->

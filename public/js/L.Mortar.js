@@ -8,15 +8,25 @@
 L.Mortar = L.LayerGroup.extend({
   options: {
     attribution: "Created by Robert Ende",
+    mortarPosElement: undefined,
+    targetPosElement: undefined,
   },
 
   l: Logger.get("Mortar"),
 
   initialize(options) {
-    this.l.debug("initialize");
+    this.l.debug("initialize:", options);
     L.LayerGroup.prototype.initialize.call(this);
     L.Util.setOptions(this, options);
     this.resetVars();
+    Utils.resizeHandler(options.mortarPosElement);
+    Utils.resizeHandler(options.targetPosElement);
+    this.setOnChangeHandler(options.mortarPosElement);
+    this.setOnChangeHandler(options.targetPosElement);
+    this.ogColor = {
+      mortar: options.mortarPosElement.style.color,
+      target: options.targetPosElement.style.color,
+    };
   },
 
   onAdd(map) {
@@ -51,8 +61,8 @@ L.Mortar = L.LayerGroup.extend({
     this.elevation = 0;
     this.mo = {};
     this.dragged = false;
-    Utils.setMortarPosText();
-    Utils.setTargetPosText();
+    this.setMortarPosText();
+    this.setTargetPosText();
     Utils.setAngleText();
     Utils.setElevationText();
   },
@@ -112,7 +122,7 @@ L.Mortar = L.LayerGroup.extend({
     const strElevation = Number.isNaN(this.elevation) ? "XXXX" : (`0000${this.elevation}`).substr(-4);
 
     Utils.setAngleText(`${strAngle}°`);
-    Utils.setElevationText(strElevation);
+    Utils.setElevationText(`${strElevation}mil`);
   },
 
   createMaxRangeCircle(latlng) {
@@ -139,9 +149,10 @@ L.Mortar = L.LayerGroup.extend({
 
   /**
    * Sets the position of the mortar marker
-   * @param latlng - target position of mortar marker
+   * @param {L.LatLng} latlng - target position of mortar marker
+   * @param {boolean} updateText - whether or not to also update the position label on the page
    */
-  setMortar(latlng) {
+  setMortar(latlng, updateText = true) {
     this.l.debug("setMortar:", latlng);
     // if marker doesn't exist, we have to create it and its components first
     if (!this.mo.mortarMarker) {
@@ -162,7 +173,7 @@ L.Mortar = L.LayerGroup.extend({
         this.calcAndDraw();
         this.mo.maxRangeCircle.setLatLng(e.latlng);
         this.mo.minRangeCircle.setLatLng(e.latlng);
-        document.getElementById("mortarPos").innerText = Utils.getKP(e.latlng.lat, e.latlng.lng);
+        this.setMortarPosText(Utils.getKP(e.latlng.lat, e.latlng.lng));
       });
       this.mo.mortarMarker.on("dragend", () => {
         setTimeout(() => { // black magic to not trigger click after drag
@@ -185,7 +196,9 @@ L.Mortar = L.LayerGroup.extend({
     this.calcAndDraw();
 
     // also update top ribbon to show the correct keypad
-    Utils.setMortarPosText(Utils.getKP(latlng.lat, latlng.lng));
+    if (updateText) {
+      this.setMortarPosText(Utils.getKP(latlng.lat, latlng.lng));
+    }
   },
 
   /**
@@ -199,9 +212,10 @@ L.Mortar = L.LayerGroup.extend({
 
   /**
    * Sets the position of the target marker
-   * @param latlng - target position of target marker
+   * @param {L.LatLng} latlng - target position of target marker
+   * @param {boolean} updateText - whether or not to also update the position label on the page
    */
-  setTarget(latlng) {
+  setTarget(latlng, updateText = true) {
     this.l.debug("setTarget:", latlng);
     // if target marker doesn't exist, we have to create it first
     if (!this.mo.targetMarker) {
@@ -213,7 +227,7 @@ L.Mortar = L.LayerGroup.extend({
       });
       this.mo.targetMarker.on("drag", (e) => {
         this.calcAndDraw();
-        document.getElementById("targetPos").innerText = Utils.getKP(e.latlng.lat, e.latlng.lng);
+        this.setTargetPosText(Utils.getKP(e.latlng.lat, e.latlng.lng));
       });
       this.mo.targetMarker.on("dragend", () => {
         setTimeout(() => { // black magic to not trigger click after drag
@@ -230,7 +244,9 @@ L.Mortar = L.LayerGroup.extend({
     this.calcAndDraw();
 
     // also update top ribbon to show the correct keypad
-    Utils.setTargetPosText(Utils.getKP(latlng.lat, latlng.lng));
+    if (updateText) {
+      this.setTargetPosText(Utils.getKP(latlng.lat, latlng.lng));
+    }
   },
 
   /**
@@ -239,7 +255,7 @@ L.Mortar = L.LayerGroup.extend({
    * 2. if mortar marker exists, add target marker at click position
    * 3. if both markers exist, show popup to allow choosing which marker to put at click position
    * @param e - "click" event object
-   * @returns {boolean} - always returns true
+   * @returns {boolean} always returns true
    */
   onMapClick(e) {
     this.l.debug("onMapClick:", e);
@@ -289,9 +305,65 @@ L.Mortar = L.LayerGroup.extend({
     }
 
     return true;
-  }
-  ,
+  },
 
+  /**
+   * Update mortar position in top ribbon.
+   * @param {string} text - updated mortar position, leave undefined to reset to initial value
+   */
+  setMortarPosText(text = "") {
+    this.l.debug("setMortarPosText:", text);
+    this.options.mortarPosElement.value = text;
+    this.options.mortarPosElement.dispatchEvent(new CustomEvent("custom"));
+  },
+
+  /**
+   * Update target position in top ribbon.
+   * @param {string} text - updated target position, leave undefined to reset to initial value
+   */
+  setTargetPosText(text = "") {
+    this.l.debug("setTargetPosText:", text);
+    this.options.targetPosElement.value = text;
+    this.options.targetPosElement.dispatchEvent(new CustomEvent("custom"));
+  },
+
+  /**
+   * Sets a handler on document elements to handle change events. It updates the mortar position based on input.
+   * @param el - element for the handler to handle
+   */
+  setOnChangeHandler(el) {
+    const self = this;
+    const onChange = (e) => {
+      self.l.debug("onChange:", e, el.value);
+      const formattedVal = Utils.formatKeyPad(el.value);
+
+      // check which element to update
+      // also change text color to indicate if input is valid mortar position
+      if (e.target === self.options.mortarPosElement) {
+        try {
+          self.setMortar(Utils.getPos(formattedVal), false);
+          self.options.mortarPosElement.style.color = self.ogColor.mortar;
+        } catch (error) {
+          self.l.warn(error);
+          self.options.mortarPosElement.style.color = "red";
+        }
+        self.setMortarPosText(formattedVal);
+      } else {
+        try {
+          self.setTarget(Utils.getPos(formattedVal), false);
+          self.options.targetPosElement.style.color = self.ogColor.mortar;
+        } catch (error) {
+          self.l.warn(error);
+          self.options.targetPosElement.style.color = "red";
+        }
+        self.setTargetPosText(formattedVal);
+      }
+    };
+    const events = "keyup, keydown, keypress".split(",");
+    events.forEach((e) => {
+      el.addEventListener(e, onChange, false);
+    });
+  },
 });
 
 L.mortar = options => new L.Mortar(options);

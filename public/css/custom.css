@@ -143,16 +143,16 @@ body,
     font-size: large;
     color: white;
     background-color: rgba(0, 0, 0, .25);
+    flex: 1 1;
 }
 
 .disabled {
     opacity: 0.33;
 }
 
-/*.leaflet-tile-container img {*/
-    /*box-shadow: 0 0 1px rgba(0, 0, 0, 0.05);*/
-/*}*/
-
-/*img {*/
-    /*image-rendering: pixelated*/
-/*}*/
+input {
+    min-width:1em!important;
+    max-width:99.99%!important;
+    transition: width 0.25s;
+    text-align:center;
+}
