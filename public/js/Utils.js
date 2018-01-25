@@ -9,8 +9,6 @@ const Utils = {
   // variables representing values in top ribbon, will be set to initial value on first time access (see below)
   iMortarPos: undefined,
   iTargetPos: undefined,
-  iAngle: undefined,
-  iElevation: undefined,
 
   iSize: iconSize, // icon size
   DEBUG: localStorage.getItem("debug") === "true",
@@ -225,34 +223,26 @@ const Utils = {
 
   /**
    * Update angle in top ribbon.
-   * @param text - updated angle, leave undefined to reset to initial value
+   * @param text - updated angle
    */
-  setAngleText(text) {
-    if (!this.iAngle) {
-      this.iAngle = document.getElementById("mapAngle").innerText;
-    }
-
-    if (text) {
-      document.getElementById("mapAngle").innerText = text;
-    } else {
-      document.getElementById("mapAngle").innerText = this.iAngle;
-    }
+  setAngleText(text = "") {
+    document.getElementById("mapAngle").innerText = text;
   },
 
   /**
    * Update elevation in top ribbon.
-   * @param text - updated elevation, leave undefined to reset to initial value
+   * @param text - updated elevation
    */
-  setElevationText(text) {
-    if (!this.iElevation) {
-      this.iElevation = document.getElementById("mapBearing").innerText;
-    }
+  setElevationText(text = "") {
+    document.getElementById("mapBearing").innerText = text;
+  },
 
-    if (text) {
-      document.getElementById("mapBearing").innerText = text;
-    } else {
-      document.getElementById("mapBearing").innerText = this.iElevation;
-    }
+  /**
+   * Update distance in top ribbon.
+   * @param text - updated distance
+   */
+  setDistanceText(text = "") {
+    document.getElementById("mapDistance").innerText = text;
   },
 
   /**
@@ -412,6 +402,10 @@ const Utils = {
    */
   getPos(kp) {
     this.l.debug("getPos:", kp);
+
+    // eslint-disable-next-line no-param-reassign
+    kp = Utils.formatKeyPad(kp);
+
     if (!kp || kp.length < 2) {
       throw new Error(`invalid keypad string: ${kp}`);
     }
@@ -434,6 +428,9 @@ const Utils = {
       } else {
         // opposite of calculations in getKP()
         const sub = Number(parts[i]);
+        if (Number.isNaN(sub)) {
+          throw new Error(`Invalid keypad string: ${kp}`);
+        }
         const subX = (sub - 1) % 3;
         const subY = 2 - (Math.ceil(sub / 3) - 1);
 

@@ -123,6 +123,7 @@ L.Mortar = L.LayerGroup.extend({
 
     Utils.setAngleText(`${strAngle}°`);
     Utils.setElevationText(`${strElevation}mil`);
+    Utils.setDistanceText(`${Utils.pad(Math.round(dist), 4)}m`);
   },
 
   createMaxRangeCircle(latlng) {

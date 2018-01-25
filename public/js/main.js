@@ -57,7 +57,7 @@
   // a few buttons
   const githubBtn = L.easyButton({
     states: [{
-      icon: "fab fa-github",
+      icon: "<img class='icon' src='svg/github.svg'>",
       title: "View the code on GitHub",
       onClick() {
         window.open("https://github.com/Endebert/squadmc");
@@ -70,8 +70,8 @@
   const debugBtn = L.easyButton({
     states: [{
       stateName: "on",
-      icon: "fa-bug",
-      title: "Disable DEBUG mode",
+      icon: "<img class='icon bug' src='svg/bug.svg'>",
+      title: "Debug mode is on",
       onClick(btn) {
         Utils.setDebugMode(false);
         btn.state("off");
@@ -85,7 +85,7 @@
         }, 2500);
       },
     }, {
-      icon: "fa-bug disabled",
+      icon: "<img class='icon disabled' src='svg/bug.svg'>",
       stateName: "off",
       onClick(btn) {
         Utils.setDebugMode(true);
@@ -100,7 +100,7 @@
           map.closePopup(popup);
         }, 2500);
       },
-      title: "Enable DEBUG mode",
+      title: "Debug mode is off",
     }],
   });
 
