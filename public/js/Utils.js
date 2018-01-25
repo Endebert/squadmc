@@ -383,11 +383,7 @@ const Utils = {
    */
   setDebugMode(state = false) {
     console.log("setOrToggleDebugMode:", state);
-    if (state) {
-      this.DEBUG = state;
-    } else {
-      this.DEBUG = !this.DEBUG;
-    }
+    this.DEBUG = state;
     Logger.setLevel(this.DEBUG ? Logger.DEBUG : Logger.WARN);
     localStorage.setItem("debug", this.DEBUG.toString());
   },
