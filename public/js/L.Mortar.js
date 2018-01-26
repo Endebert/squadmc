@@ -7,7 +7,7 @@
  */
 L.Mortar = L.LayerGroup.extend({
   options: {
-    attribution: "Created by Robert Ende",
+    attribution: "Created by <a href='https://github.com/Endebert/squadmc'>Robert Ende</a>",
     mortarPosElement: undefined,
     targetPosElement: undefined,
   },
