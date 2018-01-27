@@ -2,7 +2,7 @@
  * Utility class containing helper functions and objects.
  */
 
-const iconSize = 32;
+const iconSize = 48;
 
 const Utils = {
   l: Logger.get("Utils"),
@@ -48,7 +48,7 @@ const Utils = {
 
   // icon for mortar marker
   mortarIcon: L.icon({
-    iconUrl: "images/mortar_new.png",
+    iconUrl: "images/mortar_marker.png",
 
     iconSize: [iconSize, iconSize], // size of the icon
     iconAnchor: [0, 0], // point of the icon which will correspond to marker's location
@@ -58,7 +58,7 @@ const Utils = {
   // icon for target marker
   targetIcon:
     L.icon({
-      iconUrl: "images/target_new.png",
+      iconUrl: "images/target_marker.png",
 
       iconSize: [iconSize, iconSize], // size of the icon
       iconAnchor: [0, 0], // point of the icon which will correspond to marker's location
