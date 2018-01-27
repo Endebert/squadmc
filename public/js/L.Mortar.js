@@ -276,11 +276,11 @@ L.Mortar = L.LayerGroup.extend({
       const container = L.DomUtil.create("div");
 
       const mortar = Utils.createButton(
-        `<img src="./images/mortar.png" height=${Utils.iSize} width=${Utils.iSize}>`,
+        `<img src="./images/mortar.png" height=${Utils.iSize} width=${Utils.iSize} style="display: block">`,
         container,
       );
       const target = Utils.createButton(
-        `<img src="./images/target.png" height=${Utils.iSize} width=${Utils.iSize}>`,
+        `<img src="./images/target.png" height=${Utils.iSize} width=${Utils.iSize} style="display: block">`,
         container,
       );
 
