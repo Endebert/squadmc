@@ -76,20 +76,6 @@ body,
     text-shadow: 0.1em 0.1em rgba(255, 255, 255, .33);
 }
 
-#mapBearing {
-    padding-left: 0.5em;
-    padding-right: 0.5em;
-    white-space: nowrap;
-    display: inline-block;
-    font-family: monospace;
-    font-size: large;
-    color: white;
-    background-color: rgba(0, 0, 0, .25);
-}
-
-#mortarPos #targetPos {
-}
-
 .flag-img {
     width: 32px;
     height: 16px;

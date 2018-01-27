@@ -222,11 +222,11 @@ const Utils = {
   },
 
   /**
-   * Update angle in top ribbon.
-   * @param text - updated angle
+   * Update bearing in top ribbon.
+   * @param text - updated bearing
    */
-  setAngleText(text = "") {
-    document.getElementById("mapAngle").innerText = text;
+  setBearingText(text = "") {
+    document.getElementById("mapBearing").innerText = text;
   },
 
   /**
@@ -234,7 +234,7 @@ const Utils = {
    * @param text - updated elevation
    */
   setElevationText(text = "") {
-    document.getElementById("mapBearing").innerText = text;
+    document.getElementById("mapElevation").innerText = text;
   },
 
   /**

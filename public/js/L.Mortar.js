@@ -1,7 +1,7 @@
 /* eslint-disable new-cap */
 /**
- * The Mortar layer group holds the mortar and target icons, their popups, and does the bearing and angle calculations.
- * Also updates the top ribbon of page.
+ * The Mortar layer group holds the mortar and target markers and does the bearing and elevation calculations.
+ * Also updates the top ribbon of the page.
  *
  * @type {L.Mortar} - mortar layer object
  */
@@ -57,13 +57,13 @@ L.Mortar = L.LayerGroup.extend({
    */
   resetVars() {
     this.l.debug("resetVars");
-    this.angle = 0;
+    this.bearing = 0;
     this.elevation = 0;
     this.mo = {};
     this.dragged = false;
     this.setMortarPosText();
     this.setTargetPosText();
-    Utils.setAngleText();
+    Utils.setBearingText();
     Utils.setElevationText();
   },
 
@@ -97,7 +97,7 @@ L.Mortar = L.LayerGroup.extend({
   },
 
   /**
-   * Calculates angle and bearing for the mortar in-game.
+   * Calculates bearing and elevation for the mortar in-game.
    */
   calculate() {
     if (!this.mo.mortarMarker || !this.mo.targetMarker) {
@@ -108,22 +108,23 @@ L.Mortar = L.LayerGroup.extend({
     const e = this.mo.targetMarker.getLatLng();
 
     // oh no, vector maths!
-    this.angle = Math.atan2(e.lng - s.lng, e.lat - s.lat) * 180 / Math.PI;
+    this.bearing = Math.atan2(e.lng - s.lng, e.lat - s.lat) * 180 / Math.PI;
 
     const a = s.lat - e.lat;
     const b = s.lng - e.lng;
 
     const dist = Math.sqrt(a * a + b * b);
-    this.angle = Math.round(180 - this.angle); // rotate so 0° is towards North
+    this.bearing = (180 - this.bearing).toFixed(1); // rotate so 0° is towards North, round to 1 decimal
     this.elevation = Math.round(Utils.interpolateElevation(dist));
 
-    // 0-padding for angle and elevation
-    const strAngle = (`000${this.angle}`).substr(-3);
-    const strElevation = Number.isNaN(this.elevation) ? "XXXX" : (`0000${this.elevation}`).substr(-4);
+    // 0-padding for bearing and elevation
+    const strAngle = Utils.pad(this.bearing, 5);
+    const strElevation = Number.isNaN(this.elevation) ? "XXXX" : Utils.pad(this.elevation, 4);
+    const strDist = Utils.pad(Math.round(dist), 4);
 
-    Utils.setAngleText(`${strAngle}°`);
+    Utils.setBearingText(`${strAngle}°`);
     Utils.setElevationText(`${strElevation}mil`);
-    Utils.setDistanceText(`${Utils.pad(Math.round(dist), 4)}m`);
+    Utils.setDistanceText(`${strDist}m`);
   },
 
   createMaxRangeCircle(latlng) {
@@ -193,7 +194,7 @@ L.Mortar = L.LayerGroup.extend({
       this.mo.minRangeCircle.setLatLng(latlng);
     }
 
-    // now that the position is set, we calculate angle & bearing and draw the line between mortar and target marker
+    // now that the position is set, we calculate bearing & elevation and draw the line between mortar and target marker
     this.calcAndDraw();
 
     // also update top ribbon to show the correct keypad
