@@ -157,7 +157,7 @@ input {
     height: 32px;
 }
 
-span {
+.button-state {
     display: flex!important;
     align-items: center;
 }
