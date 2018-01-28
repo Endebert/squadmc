@@ -10,6 +10,8 @@ L.Mortar = L.LayerGroup.extend({
     attribution: "Created by <a href='https://github.com/Endebert/squadmc'>Robert Ende</a>",
     mortarPosElement: undefined,
     targetPosElement: undefined,
+    mortarDeleteBtn: undefined,
+    targetDeleteBtn: undefined,
   },
 
   l: Logger.get("Mortar"),
@@ -27,6 +29,19 @@ L.Mortar = L.LayerGroup.extend({
       mortar: options.mortarPosElement.style.color,
       target: options.targetPosElement.style.color,
     };
+
+    if (options.mortarDeleteBtn) {
+      options.mortarDeleteBtn.button.addEventListener("click", () => {
+        this.removeMortar();
+        options.mortarDeleteBtn.disable();
+      });
+    }
+    if (options.targetDeleteBtn) {
+      options.targetDeleteBtn.button.addEventListener("click", () => {
+        this.removeTarget();
+        options.targetDeleteBtn.disable();
+      });
+    }
   },
 
   onAdd(map) {
@@ -64,7 +79,30 @@ L.Mortar = L.LayerGroup.extend({
     this.setMortarPosText();
     this.setTargetPosText();
     Utils.setBearingText();
+    Utils.setDistanceText();
     Utils.setElevationText();
+  },
+
+  removeMortar() {
+    let targetPos;
+    if (this.mo.targetMarker) {
+      targetPos = this.mo.targetMarker.getLatLng();
+    }
+    this.reset();
+    if (targetPos) {
+      this.setTarget(targetPos);
+    }
+  },
+
+  removeTarget() {
+    let mortarPos;
+    if (this.mo.mortarMarker) {
+      mortarPos = this.mo.mortarMarker.getLatLng();
+    }
+    this.reset();
+    if (mortarPos) {
+      this.setMortar(mortarPos);
+    }
   },
 
   /**
@@ -158,35 +196,7 @@ L.Mortar = L.LayerGroup.extend({
     this.l.debug("setMortar:", latlng);
     // if marker doesn't exist, we have to create it and its components first
     if (!this.mo.mortarMarker) {
-      // create marker
-      this.mo.mortarMarker = new L.marker(latlng, { draggable: "true", icon: Utils.mortarIcon });
-
-      // create green max range circle
-      this.createMaxRangeCircle(latlng);
-
-      // create red min range circle
-      this.createMinRangeCircle(latlng);
-
-      // add listeners for dragging
-      this.mo.mortarMarker.on("dragstart", () => {
-        this.dragged = true;
-      });
-      this.mo.mortarMarker.on("drag", (e) => {
-        this.calcAndDraw();
-        this.mo.maxRangeCircle.setLatLng(e.latlng);
-        this.mo.minRangeCircle.setLatLng(e.latlng);
-        this.setMortarPosText(Utils.getKP(e.latlng.lat, e.latlng.lng));
-      });
-      this.mo.mortarMarker.on("dragend", () => {
-        setTimeout(() => { // black magic to not trigger click after drag
-          this.dragged = false;
-        }, 10);
-      });
-
-      // add marker and components to layer
-      this.mo.mortarMarker.addTo(this);
-      this.mo.maxRangeCircle.addTo(this);
-      this.mo.minRangeCircle.addTo(this);
+      this.createMortar(latlng);
     } else {
       // if everything exists already, we just move the marker and components to the target position
       this.mo.mortarMarker.setLatLng(latlng);
@@ -200,6 +210,43 @@ L.Mortar = L.LayerGroup.extend({
     // also update top ribbon to show the correct keypad
     if (updateText) {
       this.setMortarPosText(Utils.getKP(latlng.lat, latlng.lng));
+    }
+  },
+
+  createMortar(latlng) {
+    // create marker
+    this.mo.mortarMarker = new L.marker(latlng, { draggable: "true", icon: Utils.mortarIcon });
+
+    // create green max range circle
+    this.createMaxRangeCircle(latlng);
+
+    // create red min range circle
+    this.createMinRangeCircle(latlng);
+
+    // add listeners for dragging
+    this.mo.mortarMarker.on("dragstart", () => {
+      this.dragged = true;
+    });
+    this.mo.mortarMarker.on("drag", (e) => {
+      this.calcAndDraw();
+      this.mo.maxRangeCircle.setLatLng(e.latlng);
+      this.mo.minRangeCircle.setLatLng(e.latlng);
+      this.setMortarPosText(Utils.getKP(e.latlng.lat, e.latlng.lng));
+    });
+    this.mo.mortarMarker.on("dragend", () => {
+      setTimeout(() => { // black magic to not trigger click after drag
+        this.dragged = false;
+      }, 10);
+    });
+
+    // add marker and components to layer
+    this.mo.mortarMarker.addTo(this);
+    this.mo.maxRangeCircle.addTo(this);
+    this.mo.minRangeCircle.addTo(this);
+
+    // finally, if mortar delete button is given, enable it
+    if (this.options.mortarDeleteBtn) {
+      this.options.mortarDeleteBtn.enable();
     }
   },
 
@@ -221,24 +268,7 @@ L.Mortar = L.LayerGroup.extend({
     this.l.debug("setTarget:", latlng);
     // if target marker doesn't exist, we have to create it first
     if (!this.mo.targetMarker) {
-      this.mo.targetMarker = new L.marker(latlng, { draggable: "true", icon: Utils.targetIcon });
-
-      // add listeners for dragging
-      this.mo.targetMarker.on("dragstart", () => {
-        this.dragged = true;
-      });
-      this.mo.targetMarker.on("drag", (e) => {
-        this.calcAndDraw();
-        this.setTargetPosText(Utils.getKP(e.latlng.lat, e.latlng.lng));
-      });
-      this.mo.targetMarker.on("dragend", () => {
-        setTimeout(() => { // black magic to not trigger click after drag
-          this.dragged = false;
-        }, 10);
-      });
-
-      // now add marker to layer
-      this.mo.targetMarker.addTo(this);
+      this.createTarget(latlng);
     } else {
       // if marker exists already, we just move it to the target position
       this.mo.targetMarker.setLatLng(latlng);
@@ -248,6 +278,32 @@ L.Mortar = L.LayerGroup.extend({
     // also update top ribbon to show the correct keypad
     if (updateText) {
       this.setTargetPosText(Utils.getKP(latlng.lat, latlng.lng));
+    }
+  },
+
+  createTarget(latlng) {
+    this.mo.targetMarker = new L.marker(latlng, { draggable: "true", icon: Utils.targetIcon });
+
+    // add listeners for dragging
+    this.mo.targetMarker.on("dragstart", () => {
+      this.dragged = true;
+    });
+    this.mo.targetMarker.on("drag", (e) => {
+      this.calcAndDraw();
+      this.setTargetPosText(Utils.getKP(e.latlng.lat, e.latlng.lng));
+    });
+    this.mo.targetMarker.on("dragend", () => {
+      setTimeout(() => { // black magic to not trigger click after drag
+        this.dragged = false;
+      }, 10);
+    });
+
+    // now add marker to layer
+    this.mo.targetMarker.addTo(this);
+
+    // finally, if target delete button is given, enable it
+    if (this.options.targetDeleteBtn) {
+      this.options.targetDeleteBtn.enable();
     }
   },
 
@@ -269,36 +325,36 @@ L.Mortar = L.LayerGroup.extend({
     // check what exists and what doesn't
     if (!this.mo.mortarMarker) {
       this.setMortar(e.latlng);
-    } else if (!this.mo.targetMarker) {
-      this.setTarget(e.latlng);
     } else {
-      // both markers exist, so we create the choice popup
-      const choicePopUp = L.popup();
-      const container = L.DomUtil.create("div");
-
-      const mortar = Utils.createButton(
-        `<img src="./images/mortar.png" height=${Utils.iSize} width=${Utils.iSize} style="display: block">`,
-        container,
-      );
-      const target = Utils.createButton(
-        `<img src="./images/target.png" height=${Utils.iSize} width=${Utils.iSize} style="display: block">`,
-        container,
-      );
-
-      choicePopUp
-        .setLatLng(e.latlng)
-        .setContent(container)
-        .openOn(this.map);
-
-      L.DomEvent.on(mortar, "click", () => {
-        this.map.closePopup();
-        this.setMortar(e.latlng);
-      });
-
-      L.DomEvent.on(target, "click", () => {
-        this.map.closePopup();
-        this.setTarget(e.latlng);
-      });
+      this.setTarget(e.latlng);
+      // } else {
+      //   // both markers exist, so we create the choice popup
+      //   const choicePopUp = L.popup();
+      //   const container = L.DomUtil.create("div");
+      //
+      //   const mortar = Utils.createButton(
+      //     `<img src="./images/mortar.png" height=${Utils.iSize} width=${Utils.iSize} style="display: block">`,
+      //     container,
+      //   );
+      //   const target = Utils.createButton(
+      //     `<img src="./images/target.png" height=${Utils.iSize} width=${Utils.iSize} style="display: block">`,
+      //     container,
+      //   );
+      //
+      //   choicePopUp
+      //     .setLatLng(e.latlng)
+      //     .setContent(container)
+      //     .openOn(this.map);
+      //
+      //   L.DomEvent.on(mortar, "click", () => {
+      //     this.map.closePopup();
+      //     this.setMortar(e.latlng);
+      //   });
+      //
+      //   L.DomEvent.on(target, "click", () => {
+      //     this.map.closePopup();
+      //     this.setTarget(e.latlng);
+      //   });
     }
 
     // in debug mode we copy the click coordinates to the clipboard

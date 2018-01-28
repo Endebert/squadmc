@@ -144,10 +144,20 @@ input {
 }
 
 .icon {
-    display: inline-block;
-    width: 1em;
-    height: 1em;
-    stroke-width: 0;
+    /*display: inline-block;*/
+    width: 24px;
+    height: 24px;
+    /*stroke-width: 0;*/
     /*stroke: currentColor;*/
     /*fill: currentColor;*/
+}
+
+.bigbtnicon {
+    width: 32px;
+    height: 32px;
+}
+
+span {
+    display: flex!important;
+    align-items: center;
 }

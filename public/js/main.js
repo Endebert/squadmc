@@ -36,6 +36,7 @@
   // lets you select the map and whether or not to display grid/locations
   const layerControl = L.control.layers(maps, overlayMaps);
   layerControl.addTo(map);
+  console.debug("layerControl:", layerControl);
 
   // shows map scale on bottom right
   const scaleControl = L.control.scale({
@@ -47,10 +48,45 @@
   const mouseControl = L.control.mousePosition();
   mouseControl.addTo(map);
 
+
+  const mortarDeleteBtn = L.easyButton({
+    position: "topright",
+    states: [{
+      stateName: "on",
+      icon: "<img class='bigbtnicon' src='images/mortar_remove.png'>",
+      title: "Remove mortar marker",
+    }],
+  });
+
+  mortarDeleteBtn.button.style.width = "44px";
+  mortarDeleteBtn.button.style.height = "44px";
+  // default state is disabled
+  mortarDeleteBtn.disable();
+
+  mortarDeleteBtn.addTo(map);
+
+  const targetDeleteBtn = L.easyButton({
+    position: "topright",
+    states: [{
+      stateName: "on",
+      icon: "<img class='bigbtnicon' src='images/target_remove.png'>",
+      title: "Remove target marker",
+    }],
+  });
+
+  targetDeleteBtn.button.style.width = "44px";
+  targetDeleteBtn.button.style.height = "44px";
+  // default state is disabled
+  targetDeleteBtn.disable();
+
+  targetDeleteBtn.addTo(map);
+
   // the most important part, the mortar layer
   const mortarLayer = L.mortar({
     mortarPosElement: document.getElementById("mortarPos"),
     targetPosElement: document.getElementById("targetPos"),
+    mortarDeleteBtn,
+    targetDeleteBtn,
   });
   mortarLayer.addTo(map);
 
