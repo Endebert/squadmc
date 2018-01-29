@@ -50,6 +50,8 @@ L.Mortar = L.LayerGroup.extend({
     this.map.on("click", this.onMapClick, this);
     this.map.on("baselayerchange", this.reset, this);
 
+    this.reset();
+
     // this.eachLayer(map.addLayer, map);
   },
 
@@ -65,6 +67,10 @@ L.Mortar = L.LayerGroup.extend({
     this.l.debug("reset");
     this.eachLayer(this.removeLayer, this);
     this.resetVars();
+    this.options.mortarDeleteBtn.disable();
+    this.options.targetDeleteBtn.disable();
+    L.DomUtil.removeClass(this.map._container,'target-cursor-enabled');
+    L.DomUtil.addClass(this.map._container,'mortar-cursor-enabled');
   },
 
   /**
@@ -248,6 +254,8 @@ L.Mortar = L.LayerGroup.extend({
     if (this.options.mortarDeleteBtn) {
       this.options.mortarDeleteBtn.enable();
     }
+    L.DomUtil.removeClass(this.map._container,'mortar-cursor-enabled');
+    L.DomUtil.addClass(this.map._container,'target-cursor-enabled');
   },
 
   /**

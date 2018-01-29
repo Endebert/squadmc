@@ -145,8 +145,8 @@ input {
 
 .icon {
     /*display: inline-block;*/
-    width: 24px;
-    height: 24px;
+    width: 18px;
+    height: 18px;
     /*stroke-width: 0;*/
     /*stroke: currentColor;*/
     /*fill: currentColor;*/
@@ -160,4 +160,12 @@ input {
 .button-state {
     display: flex!important;
     align-items: center;
+}
+
+.leaflet-container.mortar-cursor-enabled {
+    cursor:url("../images/mortar_cursor.png") 9 9, crosshair;
+}
+
+.leaflet-container.target-cursor-enabled {
+    cursor:url("../images/target_cursor.png") 9 9, crosshair;
 }
