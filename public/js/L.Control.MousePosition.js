@@ -52,8 +52,9 @@ L.Control.MousePosition = L.Control.extend({
 
     // move onMouseContainer to mouse cursor (with offset)
     this.onMouseContainer.style.opacity = "1.0";
-    this.onMouseContainer.style.left = `${e.originalEvent.pageX + 5}px`;
-    this.onMouseContainer.style.top = `${e.originalEvent.pageY + 5}px`;
+
+    this.onMouseContainer.style.left = `${e.originalEvent.pageX - (this.onMouseContainer.offsetWidth / 2)}px`;
+    this.onMouseContainer.style.top = `${e.originalEvent.pageY - this.onMouseContainer.offsetHeight - 12}px`;
 
     // hide container after 1 second (fix for mobile)
     if (this.moveTimeout) {
