@@ -5,6 +5,18 @@
 SquadMC is a map-based mortar elevation and bearing calculator for [Squad](http://joinsquad.com/)
 
 The most recent version is hosted here: https://squadmc.ende.pro
+
+## features
+ * highly accurate elevation and bearing calculation (currently no height difference taken into consideration)
+ * optimized for mobile
+ * quick placement and dragging of mortar & target marker
+ * min & max mortar range indication
+ * keypad grid (toggleable)
+ * keypad coordinates calculation
+ * keypad input for markers, supports infinite sub-keypad input
+ * location markers (toggleable)
+
+## attributions
  * created using [leaflet](http://leafletjs.com/)
  * elevation calculation taken from [squadcalc.com](https://squadcalc.com/) (github repository [here](https://github.com/lorenmh/sc-react))
  * Keypad grid originally based on [Leaflet.SimpleGraticule](https://github.com/ablakey/Leaflet.SimpleGraticule), but not much is left from the original code
