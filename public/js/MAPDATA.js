@@ -21,6 +21,7 @@
   // imageOverlays for each map
   // bounds calculated by taking screenshots in-game and counting pixels (of grid)
   const albasrah = L.tileLayer("./maps/albasrah/{z}_{x}_{y}.jpg", getTileOps([3200, 3200]));
+  const belaya = L.tileLayer("./maps/belaya/{z}_{x}_{y}.jpg", getTileOps([3913, 3913]));
   const chora = L.tileLayer("./maps/chora/{z}_{x}_{y}.jpg", getTileOps([4073, 4073]));
   const foolsroad = L.tileLayer("./maps/foolsroad/{z}_{x}_{y}.jpg", getTileOps([1775, 1739]));
   const forest = L.tileLayer("./maps/forest/{z}_{x}_{y}.jpg", getTileOps([1200, 1200]));
@@ -36,6 +37,7 @@
 
   // debug maps (unused)
   const albasrah_l = L.imageOverlay("./maps/albasrah_l.jpg", [[0, 0], [3200, 3200]]);
+  const belaya_l = L.imageOverlay("./maps/belaya_l.jpg", [[0, 0], [3913, 3913]]);
   const chora_l = L.imageOverlay("./maps/chora_l.jpg", [[0, 0], [4073, 4073]]);
   const foolsroad_l = L.imageOverlay("./maps/foolsroad_l.jpg", [[0, 0], [1775, 1739]]);
   const forest_l = L.imageOverlay("./maps/forest_l.jpg", [[0, 0], [1200, 1200]]);
@@ -64,6 +66,18 @@
         Utils.createLocation("Alleys", [2238, 2243]),
         Utils.createLocation("Fringe", [2713, 1541]),
         Utils.createLocation("Estates", [2705, 2087]),
+      ],
+
+    },
+    "Belaya": {
+      map: Utils.isDebug() ? belaya_l : belaya,
+      locations: [
+        Utils.createLocation("Militia Main", [3221, 554]),
+        Utils.createLocation("Radio Station", [2507, 1433]),
+        Utils.createLocation("Nikola", [2002, 1693]),
+        Utils.createLocation("Train Tunnel", [1376, 1425]),
+        Utils.createLocation("Tire Factory", [707, 1662]),
+        Utils.createLocation("Russia Main", [558, 2866]),
       ],
 
     },
