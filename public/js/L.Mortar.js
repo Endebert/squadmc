@@ -60,6 +60,9 @@ L.Mortar = L.LayerGroup.extend({
     this.reset();
   },
 
+  /**
+   * Reset the layer, removing all markers
+   */
   reset() {
     this.l.debug("reset");
     this.eachLayer(this.removeLayer, this);
@@ -88,7 +91,14 @@ L.Mortar = L.LayerGroup.extend({
     Utils.setElevationText();
   },
 
+  /**
+   * Removed the mortar marker from the layer.
+   */
   removeMortar() {
+    this.l.debug("removeMortar");
+
+    // saves targetMarker position if it exists and then completely resets the layer
+    // a bit hacky, but works well
     let targetPos;
     if (this.mo.targetMarker) {
       targetPos = this.mo.targetMarker.getLatLng();
@@ -99,7 +109,14 @@ L.Mortar = L.LayerGroup.extend({
     }
   },
 
+  /**
+   * Removed the target marker from the layer.
+   */
   removeTarget() {
+    this.l.debug("removeTarget");
+
+    // saves mortarMarker position if it exists and then completely resets the layer
+    // a bit hacky, but works well
     let mortarPos;
     if (this.mo.mortarMarker) {
       mortarPos = this.mo.mortarMarker.getLatLng();
@@ -170,7 +187,13 @@ L.Mortar = L.LayerGroup.extend({
     Utils.setDistanceText(`${strDist}m`);
   },
 
+  /**
+   * Returns a circle indicating mortar's max range at the desired position
+   * @param latlng - circle center. usually that's the position of the mortar marker
+   */
   createMaxRangeCircle(latlng) {
+    this.l.debug("createMaxRangeCircle:", latlng);
+
     this.mo.maxRangeCircle = new L.circle(latlng, {
       draggable: "false",
       radius: 1250, // 1250 meters == 800 mill == max range of mortar
@@ -181,7 +204,13 @@ L.Mortar = L.LayerGroup.extend({
     });
   },
 
+  /**
+   * Returns a circle indicating mortar's min range at the desired position
+   * @param latlng - circle center. usually that's the position of the mortar marker
+   */
   createMinRangeCircle(latlng) {
+    this.l.debug("createMinRangeCircle:", latlng);
+
     this.mo.minRangeCircle = new L.circle(latlng, {
       draggable: "false",
       radius: 50, // 50 meters == 1579 mill == min range of mortar
@@ -198,7 +227,7 @@ L.Mortar = L.LayerGroup.extend({
    * @param {boolean} updateText - whether or not to also update the position label on the page
    */
   setMortar(latlng, updateText = true) {
-    this.l.debug("setMortar:", latlng);
+    this.l.debug("setMortar:", [latlng, updateText]);
     // if marker doesn't exist, we have to create it and its components first
     if (!this.mo.mortarMarker) {
       this.createMortar(latlng);
@@ -218,7 +247,14 @@ L.Mortar = L.LayerGroup.extend({
     }
   },
 
+  /**
+   * Create the mortar marker at the desired position.
+   *
+   * @param {L.LatLng} latlng - position of mortar marker
+   */
   createMortar(latlng) {
+    this.l.debug("createMortar:", latlng);
+
     // create marker
     this.mo.mortarMarker = new L.marker(latlng, { draggable: "true", icon: Utils.mortarIcon });
 
@@ -275,7 +311,7 @@ L.Mortar = L.LayerGroup.extend({
    * @param {boolean} updateText - whether or not to also update the position label on the page
    */
   setTarget(latlng, updateText = true) {
-    this.l.debug("setTarget:", latlng);
+    this.l.debug("setTarget:", [latlng, updateText]);
     // if target marker doesn't exist, we have to create it first
     if (!this.mo.targetMarker) {
       this.createTarget(latlng);
@@ -291,7 +327,14 @@ L.Mortar = L.LayerGroup.extend({
     }
   },
 
+  /**
+   * Create the target marker at the desired position.
+   *
+   * @param {L.LatLng} latlng - position of target marker
+   */
   createTarget(latlng) {
+    this.l.debug("createTarget:", latlng);
+
     this.mo.targetMarker = new L.marker(latlng, { draggable: "true", icon: Utils.targetIcon });
 
     // add listeners for dragging
@@ -332,39 +375,11 @@ L.Mortar = L.LayerGroup.extend({
       return true;
     }
 
-    // check what exists and what doesn't
+    // first time, set mortar marker. Once that exists, always set target marker
     if (!this.mo.mortarMarker) {
       this.setMortar(e.latlng);
     } else {
       this.setTarget(e.latlng);
-      // } else {
-      //   // both markers exist, so we create the choice popup
-      //   const choicePopUp = L.popup();
-      //   const container = L.DomUtil.create("div");
-      //
-      //   const mortar = Utils.createButton(
-      //     `<img src="./images/mortar.png" height=${Utils.iSize} width=${Utils.iSize} style="display: block">`,
-      //     container,
-      //   );
-      //   const target = Utils.createButton(
-      //     `<img src="./images/target.png" height=${Utils.iSize} width=${Utils.iSize} style="display: block">`,
-      //     container,
-      //   );
-      //
-      //   choicePopUp
-      //     .setLatLng(e.latlng)
-      //     .setContent(container)
-      //     .openOn(this.map);
-      //
-      //   L.DomEvent.on(mortar, "click", () => {
-      //     this.map.closePopup();
-      //     this.setMortar(e.latlng);
-      //   });
-      //
-      //   L.DomEvent.on(target, "click", () => {
-      //     this.map.closePopup();
-      //     this.setTarget(e.latlng);
-      //   });
     }
 
     // in debug mode we copy the click coordinates to the clipboard
