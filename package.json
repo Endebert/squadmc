@@ -5,11 +5,9 @@
   "engines": {
     "node": "8.9.1"
   },
-  "main": "index.js",
   "scripts": {
-    "build": "babel public --out-dir legacy --presets babel-preset-env --source-maps --copy-files"
+    "build": "babel public --out-dir legacy --presets @babel/preset-env --source-maps --copy-files"
   },
-  "dependencies": {},
   "repository": {
     "type": "git",
     "url": "https://github.com/Endebert/squadmc"
@@ -21,8 +19,9 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-preset-env": "^1.6.1",
+    "@babel/cli": "7.0.0-beta.37",
+    "@babel/core": "7.0.0-beta.37",
+    "@babel/preset-env": "7.0.0-beta.37",
     "eslint": "^4.15.0",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-html": "^4.0.1",
