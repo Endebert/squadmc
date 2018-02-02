@@ -20,19 +20,19 @@
 
   // imageOverlays for each map
   // bounds calculated by taking screenshots in-game and counting pixels (of grid)
-  const albasrah = L.tileLayer("./maps/albasrah/{z}/{x}/{y}.jpg", getTileOps([3200, 3200]));
-  const chora = L.tileLayer("./maps/chora/{z}/{x}/{y}.jpg", getTileOps([4073, 4073]));
-  const foolsroad = L.tileLayer("./maps/foolsroad/{z}/{x}/{y}.jpg", getTileOps([1775, 1739]));
-  const forest = L.tileLayer("./maps/forest/{z}/{x}/{y}.jpg", getTileOps([1200, 1200]));
-  const gorodok = L.tileLayer("./maps/gorodok/{z}/{x}/{y}.jpg", getTileOps([4347, 4347]));
-  const jensens = L.tileLayer("./maps/jensens/{z}/{x}/{y}.jpg", getTileOps([1513, 1513]));
-  const kohat = L.tileLayer("./maps/kohat/{z}/{x}/{y}.jpg", getTileOps([4026, 4026]));
-  const kokan = L.tileLayer("./maps/kokan/{z}/{x}/{y}.jpg", getTileOps([2500, 2500]));
-  const logarvalley = L.tileLayer("./maps/logarvalley/{z}/{x}/{y}.jpg", getTileOps([1765, 1765]));
-  const mestia = L.tileLayer("./maps/mestia/{z}/{x}/{y}.jpg", getTileOps([2403, 2403]));
-  const narva = L.tileLayer("./maps/narva/{z}/{x}/{y}.jpg", getTileOps([2205, 2205]));
-  const sumari = L.tileLayer("./maps/sumari/{z}/{x}/{y}.jpg", getTileOps([1303, 1303]));
-  const yehorivka = L.tileLayer("./maps/yehorivka/{z}/{x}/{y}.jpg", getTileOps([4041, 4041]));
+  const albasrah = L.tileLayer("./maps/albasrah/{z}_{x}_{y}.jpg", getTileOps([3200, 3200]));
+  const chora = L.tileLayer("./maps/chora/{z}_{x}_{y}.jpg", getTileOps([4073, 4073]));
+  const foolsroad = L.tileLayer("./maps/foolsroad/{z}_{x}_{y}.jpg", getTileOps([1775, 1739]));
+  const forest = L.tileLayer("./maps/forest/{z}_{x}_{y}.jpg", getTileOps([1200, 1200]));
+  const gorodok = L.tileLayer("./maps/gorodok/{z}_{x}_{y}.jpg", getTileOps([4347, 4347]));
+  const jensens = L.tileLayer("./maps/jensens/{z}_{x}_{y}.jpg", getTileOps([1513, 1513]));
+  const kohat = L.tileLayer("./maps/kohat/{z}_{x}_{y}.jpg", getTileOps([4026, 4026]));
+  const kokan = L.tileLayer("./maps/kokan/{z}_{x}_{y}.jpg", getTileOps([2500, 2500]));
+  const logarvalley = L.tileLayer("./maps/logarvalley/{z}_{x}_{y}.jpg", getTileOps([1765, 1765]));
+  const mestia = L.tileLayer("./maps/mestia/{z}_{x}_{y}.jpg", getTileOps([2403, 2403]));
+  const narva = L.tileLayer("./maps/narva/{z}_{x}_{y}.jpg", getTileOps([2205, 2205]));
+  const sumari = L.tileLayer("./maps/sumari/{z}_{x}_{y}.jpg", getTileOps([1303, 1303]));
+  const yehorivka = L.tileLayer("./maps/yehorivka/{z}_{x}_{y}.jpg", getTileOps([4041, 4041]));
 
   // debug maps (unused)
   const albasrah_l = L.imageOverlay("./maps/albasrah_l.jpg", [[0, 0], [3200, 3200]]);
