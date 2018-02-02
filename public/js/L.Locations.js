@@ -6,7 +6,7 @@
  */
 L.Locations = L.LayerGroup.extend({
 
-  l: Logger.get("Locations"),
+  l: log.getLogger("Locations"),
 
   initialize(options = {}) {
     L.LayerGroup.prototype.initialize.call(this); // don't know why, but this is important

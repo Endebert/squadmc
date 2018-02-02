@@ -13,7 +13,7 @@
  */
 L.SquadGrid = L.LayerGroup.extend({
 
-  l: Logger.get("SquadGrid"),
+  l: log.getLogger("SquadGrid"),
 
   curMap: "",
 

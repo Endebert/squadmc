@@ -11,7 +11,7 @@ L.Control.MousePosition = L.Control.extend({
     position: "bottomleft",
   },
 
-  l: Logger.get("MousePosition"),
+  l: log.getLogger("MousePosition"),
   moveTimeout: undefined,
 
   initialize(options) {

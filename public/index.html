@@ -22,24 +22,15 @@
   <link rel="icon" type="image/png" sizes="16x16" href="./favicon/favicon-16x16.png">
   <link rel="manifest" href="./favicon/manifest.json">
 
-  <meta name="msapplication-TileColor" content="#000000">
+  <meta name="msapplication-TileColor" content="#212121">
   <meta name="msapplication-TileImage" content="./favicon/ms-icon-144x144.png">
-  <meta name="theme-color" content="#000000">
+  <meta name="theme-color" content="#212121">
 
   <title>SquadMC - A map-based mortar elevation and bearing calculator for Squad</title>
 
-  <!--leaflet-->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.0/dist/leaflet.css"
-        integrity="sha512-Rksm5RenBEKSKFjgI3a41vrjkw4EVPlJ3+OiI65vTjIdo9brlAacEuKOiQ5OFh7cOI1bkDwLqdLw3Zg0cRJAAQ=="
-        crossorigin=""/>
-  <script src="https://unpkg.com/leaflet@1.3.0/dist/leaflet.js"
-          integrity="sha512-C7BBF9irt5R7hqbUm2uxtODlUVs+IsNu2UULGuZN7gM+k/mmeG4xvIEac01BtQa4YIkUpp23zZC4wIwuXaPMQA=="
-          crossorigin=""></script>
-
-  <!--EasyButton-->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.css">
-  <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
-
+  <!--css files-->
+  <link rel="stylesheet" href="lib/leaflet/leaflet.css"/>
+  <link rel="stylesheet" href="lib/leaflet-easybutton/easy-button.css"/>
   <link rel="stylesheet" href="css/L.Control.MousePosition.css"/>
   <link rel="stylesheet" href="css/custom.css"/>
 </head>
@@ -50,15 +41,15 @@
   <div id="mapName"></div>
   <table>
     <tr>
-      <td><img class="inline" src="images/mortar.png" width="16px" height="16px"/>
-        <input type="text" class="inline keypad" id="mortarPos" style="pointer-events: all;" value=""/>
+      <td>
+        <label for="mortarPos"><img class="inline" src="images/mortar.png" width="16px" height="16px"/></label><input type="text" class="inline keypad" id="mortarPos" style="pointer-events: all;" value=""/>
       </td>
-      <td><img class="inline" src="images/target.png" width="16px" height="16px"/>
-        <input type="text" class="inline keypad" id="targetPos" style="pointer-events: all;" value="" />
+      <td>
+        <label for="targetPos"><img class="inline" src="images/target.png" width="16px" height="16px"/></label><input type="text" class="inline keypad" id="targetPos" style="pointer-events: all;" value="" />
       </td>
     </tr>
   </table>
-  <div style="display: flex; width: 16em">  <div class="keypad" id="mapBearing"></div>&nbsp;<div class="keypad" id="mapDistance"></div>&nbsp;<div class="keypad" id="mapElevation"></div>
+  <div class="keypad-holder"><div class="keypad" id="mapBearing"></div>&nbsp;<div class="keypad" id="mapDistance"></div>&nbsp;<div class="keypad" id="mapElevation"></div>
   </div>
 </div>
 
@@ -68,20 +59,16 @@
 <!--div used for displaying mouse coordinates-->
 <div id="mousecoord" class="leaflet-control-mouseposition-target"></div>
 
-<!--logger-->
-<script src="https://cdn.rawgit.com/jonnyreeves/js-logger/master/src/logger.min.js"></script>
-
-<!--Utils needs to be loaded first-->
+<!--Now all js files and libraries-->
+<script type="text/javascript" src="lib/leaflet/leaflet-src.js"></script>
+<script type="text/javascript" src="lib/leaflet-easybutton/easy-button.js"></script>
+<script type="text/javascript" src="lib/loglevel/loglevel.js"></script>
 <script type="text/javascript" src="js/Utils.js"></script>
-
-<!--now all the leaflet components-->
 <script type="text/javascript" src="js/MAPDATA.js"></script>
 <script type="text/javascript" src="js/L.Mortar.js"></script>
 <script type="text/javascript" src="js/L.Locations.js"></script>
 <script type="text/javascript" src="js/L.SquadGrid.js"></script>
 <script type="text/javascript" src="js/L.Control.MousePosition.js"></script>
-
-<!--page logic, setting up map, etc.-->
 <script type="text/javascript" src="js/main.js"></script>
 
 </body>

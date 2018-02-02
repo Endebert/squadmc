@@ -14,7 +14,7 @@ L.Mortar = L.LayerGroup.extend({
     targetDeleteBtn: undefined,
   },
 
-  l: Logger.get("Mortar"),
+  l: log.getLogger("Mortar"),
 
   initialize(options) {
     this.l.debug("initialize:", options);
@@ -60,17 +60,16 @@ L.Mortar = L.LayerGroup.extend({
     this.reset();
   },
 
-  /**
-   * Removes all markers of this layer that are currently displayed.
-   */
   reset() {
     this.l.debug("reset");
     this.eachLayer(this.removeLayer, this);
     this.resetVars();
     this.options.mortarDeleteBtn.disable();
     this.options.targetDeleteBtn.disable();
-    L.DomUtil.removeClass(this.map._container,'target-cursor-enabled');
-    L.DomUtil.addClass(this.map._container,'mortar-cursor-enabled');
+    // eslint-disable-next-line no-underscore-dangle
+    L.DomUtil.removeClass(this.map._container, "target-cursor-enabled");
+    // eslint-disable-next-line no-underscore-dangle
+    L.DomUtil.addClass(this.map._container, "mortar-cursor-enabled");
   },
 
   /**
@@ -254,8 +253,11 @@ L.Mortar = L.LayerGroup.extend({
     if (this.options.mortarDeleteBtn) {
       this.options.mortarDeleteBtn.enable();
     }
-    L.DomUtil.removeClass(this.map._container,'mortar-cursor-enabled');
-    L.DomUtil.addClass(this.map._container,'target-cursor-enabled');
+
+    // eslint-disable-next-line no-underscore-dangle
+    L.DomUtil.removeClass(this.map._container, "mortar-cursor-enabled");
+    // eslint-disable-next-line no-underscore-dangle
+    L.DomUtil.addClass(this.map._container, "target-cursor-enabled");
   },
 
   /**

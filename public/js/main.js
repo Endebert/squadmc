@@ -3,7 +3,7 @@
  */
 
 (() => {
-  this.l = Logger.get("main");
+  this.l = log.getLogger("main");
 
   // setting up map
   const map = L.map("map", {
@@ -36,7 +36,6 @@
   // lets you select the map and whether or not to display grid/locations
   const layerControl = L.control.layers(maps, overlayMaps);
   layerControl.addTo(map);
-  console.debug("layerControl:", layerControl);
 
   // shows map scale on bottom right
   const scaleControl = L.control.scale({

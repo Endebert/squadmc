@@ -9,17 +9,13 @@
   "scripts": {
     "start": "node index.js"
   },
-  "dependencies": {
-    "compression": "^1.7.1",
-    "express": "^4.15.2"
-  },
+  "dependencies": {},
   "repository": {
     "type": "git",
     "url": "https://github.com/Endebert/squadmc"
   },
   "keywords": [
     "squad",
-    "joinsquad",
     "mortar",
     "calculator"
   ],

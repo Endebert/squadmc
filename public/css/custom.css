@@ -132,6 +132,11 @@ body,
     flex: 1 1;
 }
 
+.keypad-holder {
+    display: flex;
+    width: 16em;
+}
+
 .disabled {
     opacity: 0.33;
 }

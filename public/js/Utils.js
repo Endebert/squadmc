@@ -5,7 +5,7 @@
 const iconSize = 48;
 
 const Utils = {
-  l: Logger.get("Utils"),
+  l: log.getLogger("Utils"),
   // variables representing values in top ribbon, will be set to initial value on first time access (see below)
   iMortarPos: undefined,
   iTargetPos: undefined,
@@ -327,9 +327,6 @@ const Utils = {
    * Sets up the logger
    */
   setupLogger() {
-    // setup log level
-    Logger.useDefaults();
-
     // set debug mode based on query parameter. has priority over saved state
     const urlParams = new URLSearchParams(window.location.search);
     const debugState = urlParams.has("debug") ? (urlParams.get("debug") === "true") : this.DEBUG;
@@ -342,9 +339,9 @@ const Utils = {
    * @param state - debug state flag. true for debug mode, false otherwise
    */
   setDebugMode(state = false) {
-    console.log("setOrToggleDebugMode:", state);
+    log.debug("setDebugMode:", state);
     this.DEBUG = state;
-    Logger.setLevel(this.DEBUG ? Logger.DEBUG : Logger.WARN);
+    log.setDefaultLevel(this.DEBUG ? log.levels.DEBUG : log.levels.INFO);
     localStorage.setItem("debug", this.DEBUG.toString());
   },
 
@@ -460,7 +457,6 @@ const Utils = {
    */
   resizeHandler(el) {
     const resize = () => {
-      // console.log("resize:", e);
       // eslint-disable-next-line no-param-reassign
       el.style.width = `${((el.value.length + 1) / 10 * 5.5)}em`;
     };
