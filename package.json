@@ -6,7 +6,7 @@
     "node": "8.9.1"
   },
   "scripts": {
-    "build": "babel public --out-dir legacy --presets @babel/preset-env --source-maps --copy-files"
+    "build": "babel public --out-dir legacy --source-maps --copy-files"
   },
   "repository": {
     "type": "git",
