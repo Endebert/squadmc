@@ -458,6 +458,6 @@ const Utils = {
 };
 
 // initialize Logger
-Utils.setupLogger();
+Utils.setDebugMode(Utils.DEBUG);
 
 window.Utils = Utils;
