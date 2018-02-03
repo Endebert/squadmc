@@ -324,17 +324,6 @@ const Utils = {
   },
 
   /**
-   * Sets up the logger
-   */
-  setupLogger() {
-    // set debug mode based on query parameter. has priority over saved state
-    const urlParams = new URLSearchParams(window.location.search);
-    const debugState = urlParams.has("debug") ? (urlParams.get("debug") === "true") : this.DEBUG;
-
-    this.setDebugMode(debugState);
-  },
-
-  /**
    * Small helper function to set global DEBUG variable
    * @param state - debug state flag. true for debug mode, false otherwise
    */
@@ -469,6 +458,6 @@ const Utils = {
 };
 
 // initialize Logger
-Utils.setupLogger();
+Utils.setDebugMode(Utils.DEBUG);
 
 window.Utils = Utils;
