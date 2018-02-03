@@ -55,8 +55,7 @@ L.Control.MousePosition = L.Control.extend({
     // move onMouseContainer to mouse cursor (with offset)
     this.onMouseContainer.style.opacity = "1.0";
 
-    const point = this.map.latLngToLayerPoint([lat, lng]);
-    console.log("point:", point);
+    const point = this.map.latLngToContainerPoint([lat, lng]);
     this.onMouseContainer.style.left = `${point.x - (this.onMouseContainer.offsetWidth / 2)}px`;
     this.onMouseContainer.style.top = `${point.y - this.onMouseContainer.offsetHeight - 12}px`;
 
