@@ -9,6 +9,7 @@
 L.Control.MousePosition = L.Control.extend({
   options: {
     position: "bottomleft",
+    enabled: true,
   },
 
   l: log.getLogger("MousePosition"),
@@ -21,6 +22,7 @@ L.Control.MousePosition = L.Control.extend({
   onAdd(map) {
     // register the listener
     map.on("mousemove", this.onMouseMove, this);
+    this.map = map;
 
     // create the display for the map corner
     this.container = L.DomUtil.create("div", "leaflet-control-mouseposition");
@@ -38,13 +40,13 @@ L.Control.MousePosition = L.Control.extend({
     map.off("mousemove", this.onMouseMove);
   },
 
-  onMouseMove(e) {
-    // this.l.debug("onMouseMove",e);
-    let kp = Utils.getKP(e.latlng.lat, e.latlng.lng);
+  setPosition(lat, lng) {
+    this.l.debug("setPosition:", [lat, lng]);
+    let kp = Utils.getKP(lat, lng);
 
     // in debug mode we want to display the map coordinates instead of the keypad
     if (Utils.isDebug()) {
-      kp = `${Utils.pad(Math.round(e.latlng.lat), 4)} | ${Utils.pad(Math.round(e.latlng.lng), 4)}`;
+      kp = `${Utils.pad(Math.round(lat), 4)} | ${Utils.pad(Math.round(lng), 4)}`;
     }
 
     this.container.innerHTML = kp;
@@ -53,8 +55,10 @@ L.Control.MousePosition = L.Control.extend({
     // move onMouseContainer to mouse cursor (with offset)
     this.onMouseContainer.style.opacity = "1.0";
 
-    this.onMouseContainer.style.left = `${e.originalEvent.pageX - (this.onMouseContainer.offsetWidth / 2)}px`;
-    this.onMouseContainer.style.top = `${e.originalEvent.pageY - this.onMouseContainer.offsetHeight - 12}px`;
+    const point = this.map.latLngToLayerPoint([lat, lng]);
+    console.log("point:", point);
+    this.onMouseContainer.style.left = `${point.x - (this.onMouseContainer.offsetWidth / 2)}px`;
+    this.onMouseContainer.style.top = `${point.y - this.onMouseContainer.offsetHeight - 12}px`;
 
     // hide container after 1 second (fix for mobile)
     if (this.moveTimeout) {
@@ -65,6 +69,19 @@ L.Control.MousePosition = L.Control.extend({
       this.onMouseContainer.style.opacity = "0.0";
     }, 1000);
   },
+  onMouseMove(e) {
+    if (this.options.enabled) {
+      this.setPosition(e.latlng.lat, e.latlng.lng);
+    }
+
+    // this.l.debug("onMouseMove",e);
+  },
+
+  setEnabled(enabled = true) {
+    this.l.debug("setEnabled:", enabled);
+    this.options.enabled = enabled;
+  },
+
 });
 
 L.control.mousePosition = options => new L.Control.MousePosition(options);

@@ -47,7 +47,6 @@
   const mouseControl = L.control.mousePosition();
   mouseControl.addTo(map);
 
-
   const mortarDeleteBtn = L.easyButton({
     position: "topright",
     states: [{
@@ -86,6 +85,7 @@
     targetPosElement: document.getElementById("targetPos"),
     mortarDeleteBtn,
     targetDeleteBtn,
+    mousePosition: mouseControl,
   });
   mortarLayer.addTo(map);
 

@@ -12,6 +12,7 @@ L.Mortar = L.LayerGroup.extend({
     targetPosElement: undefined,
     mortarDeleteBtn: undefined,
     targetDeleteBtn: undefined,
+    mousePosition: undefined,
   },
 
   l: log.getLogger("Mortar"),
@@ -222,6 +223,108 @@ L.Mortar = L.LayerGroup.extend({
   },
 
   /**
+   * Create the mortar marker at the desired position.
+   *
+   * @param {L.LatLng} latlng - position of mortar marker
+   */
+  createMortar(latlng) {
+    this.l.debug("createMortar:", latlng);
+
+    // create marker
+    this.mo.mortarMarker = new L.marker(latlng, { draggable: "true", icon: Utils.mortarIcon });
+
+    // create green max range circle
+    this.createMaxRangeCircle(latlng);
+
+    // create red min range circle
+    this.createMinRangeCircle(latlng);
+
+    // add listeners for dragging
+    this.mo.mortarMarker.on("dragstart", () => {
+      this.dragged = true;
+      if (this.options.mousePosition) {
+        this.options.mousePosition.setEnabled(false);
+      }
+    });
+    this.mo.mortarMarker.on("drag", (e) => {
+      this.calcAndDraw();
+      this.mo.maxRangeCircle.setLatLng(e.latlng);
+      this.mo.minRangeCircle.setLatLng(e.latlng);
+      this.setMortarPosText(Utils.getKP(e.latlng.lat, e.latlng.lng));
+
+      if (this.options.mousePosition) {
+        this.options.mousePosition.setPosition(e.latlng.lat, e.latlng.lng);
+      }
+    });
+    this.mo.mortarMarker.on("dragend", () => {
+      setTimeout(() => { // black magic to not trigger click after drag
+        this.dragged = false;
+        if (this.options.mousePosition) {
+          this.options.mousePosition.setEnabled(true);
+        }
+      }, 10);
+    });
+
+    // add marker and components to layer
+    this.mo.mortarMarker.addTo(this);
+    this.mo.maxRangeCircle.addTo(this);
+    this.mo.minRangeCircle.addTo(this);
+
+    // finally, if mortar delete button is given, enable it
+    if (this.options.mortarDeleteBtn) {
+      this.options.mortarDeleteBtn.enable();
+    }
+
+    // eslint-disable-next-line no-underscore-dangle
+    L.DomUtil.removeClass(this.map._container, "mortar-cursor-enabled");
+    // eslint-disable-next-line no-underscore-dangle
+    L.DomUtil.addClass(this.map._container, "target-cursor-enabled");
+  },
+
+  /**
+   * Create the target marker at the desired position.
+   *
+   * @param {L.LatLng} latlng - position of target marker
+   */
+  createTarget(latlng) {
+    this.l.debug("createTarget:", latlng);
+
+    this.mo.targetMarker = new L.marker(latlng, { draggable: "true", icon: Utils.targetIcon });
+
+    // add listeners for dragging
+    this.mo.targetMarker.on("dragstart", () => {
+      this.dragged = true;
+      if (this.options.mousePosition) {
+        this.options.mousePosition.setEnabled(false);
+      }
+    });
+    this.mo.targetMarker.on("drag", (e) => {
+      this.calcAndDraw();
+      this.setTargetPosText(Utils.getKP(e.latlng.lat, e.latlng.lng));
+
+      if (this.options.mousePosition) {
+        this.options.mousePosition.setPosition(e.latlng.lat, e.latlng.lng);
+      }
+    });
+    this.mo.targetMarker.on("dragend", () => {
+      setTimeout(() => { // black magic to not trigger click after drag
+        this.dragged = false;
+        if (this.options.mousePosition) {
+          this.options.mousePosition.setEnabled(true);
+        }
+      }, 10);
+    });
+
+    // now add marker to layer
+    this.mo.targetMarker.addTo(this);
+
+    // finally, if target delete button is given, enable it
+    if (this.options.targetDeleteBtn) {
+      this.options.targetDeleteBtn.enable();
+    }
+  },
+
+  /**
    * Sets the position of the mortar marker
    * @param {L.LatLng} latlng - target position of mortar marker
    * @param {boolean} updateText - whether or not to also update the position label on the page
@@ -248,64 +351,6 @@ L.Mortar = L.LayerGroup.extend({
   },
 
   /**
-   * Create the mortar marker at the desired position.
-   *
-   * @param {L.LatLng} latlng - position of mortar marker
-   */
-  createMortar(latlng) {
-    this.l.debug("createMortar:", latlng);
-
-    // create marker
-    this.mo.mortarMarker = new L.marker(latlng, { draggable: "true", icon: Utils.mortarIcon });
-
-    // create green max range circle
-    this.createMaxRangeCircle(latlng);
-
-    // create red min range circle
-    this.createMinRangeCircle(latlng);
-
-    // add listeners for dragging
-    this.mo.mortarMarker.on("dragstart", () => {
-      this.dragged = true;
-    });
-    this.mo.mortarMarker.on("drag", (e) => {
-      this.calcAndDraw();
-      this.mo.maxRangeCircle.setLatLng(e.latlng);
-      this.mo.minRangeCircle.setLatLng(e.latlng);
-      this.setMortarPosText(Utils.getKP(e.latlng.lat, e.latlng.lng));
-    });
-    this.mo.mortarMarker.on("dragend", () => {
-      setTimeout(() => { // black magic to not trigger click after drag
-        this.dragged = false;
-      }, 10);
-    });
-
-    // add marker and components to layer
-    this.mo.mortarMarker.addTo(this);
-    this.mo.maxRangeCircle.addTo(this);
-    this.mo.minRangeCircle.addTo(this);
-
-    // finally, if mortar delete button is given, enable it
-    if (this.options.mortarDeleteBtn) {
-      this.options.mortarDeleteBtn.enable();
-    }
-
-    // eslint-disable-next-line no-underscore-dangle
-    L.DomUtil.removeClass(this.map._container, "mortar-cursor-enabled");
-    // eslint-disable-next-line no-underscore-dangle
-    L.DomUtil.addClass(this.map._container, "target-cursor-enabled");
-  },
-
-  /**
-   * Convenience function to invoke calculation and line drawing, as they are always updated at the same time.
-   */
-  calcAndDraw() {
-    this.l.debug("calcAndDraw");
-    this.calculate();
-    this.drawLine();
-  },
-
-  /**
    * Sets the position of the target marker
    * @param {L.LatLng} latlng - target position of target marker
    * @param {boolean} updateText - whether or not to also update the position label on the page
@@ -328,36 +373,12 @@ L.Mortar = L.LayerGroup.extend({
   },
 
   /**
-   * Create the target marker at the desired position.
-   *
-   * @param {L.LatLng} latlng - position of target marker
+   * Convenience function to invoke calculation and line drawing, as they are always updated at the same time.
    */
-  createTarget(latlng) {
-    this.l.debug("createTarget:", latlng);
-
-    this.mo.targetMarker = new L.marker(latlng, { draggable: "true", icon: Utils.targetIcon });
-
-    // add listeners for dragging
-    this.mo.targetMarker.on("dragstart", () => {
-      this.dragged = true;
-    });
-    this.mo.targetMarker.on("drag", (e) => {
-      this.calcAndDraw();
-      this.setTargetPosText(Utils.getKP(e.latlng.lat, e.latlng.lng));
-    });
-    this.mo.targetMarker.on("dragend", () => {
-      setTimeout(() => { // black magic to not trigger click after drag
-        this.dragged = false;
-      }, 10);
-    });
-
-    // now add marker to layer
-    this.mo.targetMarker.addTo(this);
-
-    // finally, if target delete button is given, enable it
-    if (this.options.targetDeleteBtn) {
-      this.options.targetDeleteBtn.enable();
-    }
+  calcAndDraw() {
+    this.l.debug("calcAndDraw");
+    this.calculate();
+    this.drawLine();
   },
 
   /**
