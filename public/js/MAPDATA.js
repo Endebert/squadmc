@@ -30,8 +30,10 @@
   const kohat = L.tileLayer("./maps/kohat/{z}_{x}_{y}.jpg", getTileOps([4026, 4026]));
   const kokan = L.tileLayer("./maps/kokan/{z}_{x}_{y}.jpg", getTileOps([2500, 2500]));
   const logarvalley = L.tileLayer("./maps/logarvalley/{z}_{x}_{y}.jpg", getTileOps([1765, 1765]));
+  const logarvalleyV10 = L.tileLayer("./maps/logarvalleyV10/{z}_{x}_{y}.jpg", getTileOps([1765, 1765]));
   const mestia = L.tileLayer("./maps/mestia/{z}_{x}_{y}.jpg", getTileOps([2403, 2403]));
   const narva = L.tileLayer("./maps/narva/{z}_{x}_{y}.jpg", getTileOps([2205, 2205]));
+  const narvaV10 = L.tileLayer("./maps/narvaV10/{z}_{x}_{y}.jpg", getTileOps([2805, 2805]));
   const sumari = L.tileLayer("./maps/sumari/{z}_{x}_{y}.jpg", getTileOps([1303, 1303]));
   const yehorivka = L.tileLayer("./maps/yehorivka/{z}_{x}_{y}.jpg", getTileOps([4041, 4041]));
 
@@ -46,8 +48,10 @@
   const kohat_l = L.imageOverlay("./maps/kohat_l.jpg", [[0, 0], [4026, 4026]]);
   const kokan_l = L.imageOverlay("./maps/kokan_l.jpg", [[0, 0], [2500, 2500]]);
   const logarvalley_l = L.imageOverlay("./maps/logarvalley_l.jpg", [[0, 0], [1765, 1765]]);
+  const logarvalleyV10_l = L.imageOverlay("./maps/logarvalleyV10_l.jpg", [[0, 0], [1765, 1765]]);
   const mestia_l = L.imageOverlay("./maps/mestia_l.jpg", [[0, 0], [2403, 2403]]);
   const narva_l = L.imageOverlay("./maps/narva_l.jpg", [[0, 0], [2205, 2205]]);
+  const narvaV10_l = L.imageOverlay("./maps/narvaV10_l.jpg", [[0, 0], [2805, 2805]]);
   const sumari_l = L.imageOverlay("./maps/sumari_l.jpg", [[0, 0], [1303, 1303]]);
   const yehorivka_l = L.imageOverlay("./maps/yehorivka_l.jpg", [[0, 0], [4041, 4041]]);
 
@@ -193,6 +197,24 @@
         Utils.createLocation("Murika Main", [1113, 1483]),
       ],
     },
+    "Logar Valley V10": {
+      map: Utils.isDebug() ? logarvalleyV10_l : logarvalleyV10,
+      locations: [
+        Utils.createLocation("Old Militia Main", [692, 144]),
+        Utils.createLocation("Mechanic Shop", [1018, 123]),
+        Utils.createLocation("Bend", [1193, 302]),
+        Utils.createLocation("South Residence / Compound", [1331, 455]),
+        Utils.createLocation("Lower / South DC", [1107, 749]),
+        Utils.createLocation("Lower Central DC", [1013, 774]),
+        Utils.createLocation("Upper Central DC", [909, 802]),
+        Utils.createLocation("Upper / North DC", [818, 857]),
+        Utils.createLocation("North Residence", [574, 1077]),
+        Utils.createLocation("Residence", [693, 1231]),
+        Utils.createLocation("Poppy Farm", [718, 1423]),
+        Utils.createLocation("Militia Main", [696, 1564]),
+        Utils.createLocation("Old Murika Main", [1113, 1483]),
+      ],
+    },
     "Mestia": {
       map: Utils.isDebug() ? mestia_l : mestia,
       locations: [
@@ -221,6 +243,38 @@
         Utils.createLocation("Playground", [705, 1334]),
         Utils.createLocation("Ruins", [1511, 1370]),
         Utils.createLocation("Russian Main", [1685, 1566]),
+      ],
+    },
+    "Narva V10": {
+      map: Utils.isDebug() ? narvaV10_l : narvaV10,
+      locations: [
+        Utils.createLocation("US Main", [570, 215]),
+        Utils.createLocation("Abandoned Airfield", [778, 598]),
+        Utils.createLocation("Ring Road", [1311, 717]),
+        Utils.createLocation("Quarry", [2000, 1181]),
+        Utils.createLocation("Shipping Yard", [1730, 1655]),
+        Utils.createLocation("Radio Station", [628, 836]),
+        Utils.createLocation("Old Barracks", [690, 1290]),
+        Utils.createLocation("Old Hospital", [1085, 1268]),
+        Utils.createLocation("Oru Village", [1540, 1129]),
+        Utils.createLocation("Kanepi Rd", [1831, 1372]),
+        Utils.createLocation("Power Plant", [1969, 1844]),
+        Utils.createLocation("Casle", [1242, 1898]),
+        Utils.createLocation("Church", [832, 1127]),
+        Utils.createLocation("Train Depot", [1343, 1647]),
+        Utils.createLocation("Fuel Storage", [1661, 853]),
+        Utils.createLocation("Foundry", [1744, 1103]),
+        Utils.createLocation("Lakeshore", [1683, 1464]),
+        Utils.createLocation("Warehouse", [1625, 1744]),
+        Utils.createLocation("Storefronts", [1118, 1641]),
+        Utils.createLocation("Factories", [1223, 1044]),
+        Utils.createLocation("Shopping Centre", [1024, 1524]),
+        Utils.createLocation("Council Towers", [1085, 1151]),
+        Utils.createLocation("University", [858, 1628]),
+        Utils.createLocation("Geneva Apts", [1249, 1417]),
+        Utils.createLocation("Kalda Court", [1550, 1587]),
+        Utils.createLocation("Parusinka", [1780, 2190]),
+        Utils.createLocation("Russian Main", [1757, 2658]),
       ],
     },
     "Sumari Bala": {
