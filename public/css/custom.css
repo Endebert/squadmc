@@ -168,9 +168,9 @@ input {
 }
 
 .leaflet-container.mortar-cursor-enabled {
-    cursor:url("../images/mortar_cursor.png") 9 9, crosshair;
+    cursor:url("../images/mortar_cursor.png") 10 10, crosshair;
 }
 
 .leaflet-container.target-cursor-enabled {
-    cursor:url("../images/target_cursor.png") 9 9, crosshair;
+    cursor:url("../images/target_cursor.png") 10 10, crosshair;
 }
