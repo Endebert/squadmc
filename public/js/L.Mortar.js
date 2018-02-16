@@ -153,7 +153,7 @@ L.Mortar = L.LayerGroup.extend({
       this.mo.distLine.setLatLngs([s, e]);
     }
 
-    // isNaN is used as elevation might be "TOO_FAR" or "TOO_CLOSE"
+    // isNaN is used as elevation might NaN
     this.mo.distLine.setStyle({ color: Number.isNaN(this.elevation) ? "red" : "green" });
   },
 
@@ -175,8 +175,10 @@ L.Mortar = L.LayerGroup.extend({
     const b = s.lng - e.lng;
 
     const dist = Math.sqrt(a * a + b * b);
-    this.bearing = (180 - this.bearing).toFixed(1); // rotate so 0° is towards North, round to 1 decimal
-    this.elevation = Math.round(Utils.interpolateElevation(dist));
+
+    // rotate so 0° is towards North, round to 1 decimal, force showing decimal
+    this.bearing = (Math.round((180 - this.bearing) * 10) / 10).toFixed(1);
+    this.elevation = Math.round(Utils.calcMortarAngle(dist));
 
     // 0-padding for bearing and elevation
     const strAngle = Utils.pad(this.bearing, 5);
@@ -197,7 +199,7 @@ L.Mortar = L.LayerGroup.extend({
 
     this.mo.maxRangeCircle = new L.circle(latlng, {
       draggable: "false",
-      radius: 1250, // 1250 meters == 800 mill == max range of mortar
+      radius: Utils.MAX_DISTANCE,
       color: "green",
       fillOpacity: 0.05,
       interactive: false,
@@ -214,7 +216,7 @@ L.Mortar = L.LayerGroup.extend({
 
     this.mo.minRangeCircle = new L.circle(latlng, {
       draggable: "false",
-      radius: 50, // 50 meters == 1579 mill == min range of mortar
+      radius: Utils.MIN_DISTANCE,
       color: "red",
       fillOpacity: 0.05,
       interactive: false,
