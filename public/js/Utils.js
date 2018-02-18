@@ -48,20 +48,20 @@ const Utils = {
 
   // icon for mortar marker
   mortarIcon: L.icon({
-    iconUrl: "images/mortar_marker.png",
+    iconUrl: "svg/mortar_cursor.svg",
 
     iconSize: [iconSize, iconSize], // size of the icon
-    iconAnchor: [8, 8], // point of the icon which will correspond to marker's location
+    iconAnchor: [10, 10], // point of the icon which will correspond to marker's location
     popupAnchor: [0, -iconSize / 2], // point from which the popup should open relative to the iconAnchor
   }),
 
   // icon for target marker
   targetIcon:
     L.icon({
-      iconUrl: "images/target_marker.png",
+      iconUrl: "svg/target_cursor.svg",
 
       iconSize: [iconSize, iconSize], // size of the icon
-      iconAnchor: [8, 8], // point of the icon which will correspond to marker's location
+      iconAnchor: [10, 10], // point of the icon which will correspond to marker's location
       popupAnchor: [0, -iconSize / 2], // point from which the popup should open relative to the iconAnchor
     }),
 

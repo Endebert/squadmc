@@ -51,7 +51,7 @@
     position: "topright",
     states: [{
       stateName: "on",
-      icon: "<img class='bigbtnicon' src='images/mortar_remove.png'>",
+      icon: "<img class='bigbtnicon' src='svg/mortar_remove.svg'>",
       title: "Remove mortar marker",
     }],
   });
@@ -67,7 +67,7 @@
     position: "topright",
     states: [{
       stateName: "on",
-      icon: "<img class='bigbtnicon' src='images/target_remove.png'>",
+      icon: "<img class='bigbtnicon' src='svg/target_remove.svg'>",
       title: "Remove target marker",
     }],
   });
