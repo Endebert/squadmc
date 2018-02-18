@@ -207,7 +207,7 @@ L.Mortar = L.LayerGroup.extend({
     }
 
     // isNaN is used as elevation might NaN
-    this.mo.distLine.setStyle({ color: Number.isNaN(this.elevation) ? "red" : "green" });
+    this.mo.distLine.setStyle({ color: Number.isNaN(this.elevation) || this.elevation > 1579 ? "red" : "green" });
   },
 
   /**
@@ -254,7 +254,7 @@ L.Mortar = L.LayerGroup.extend({
 
     // 0-padding for bearing and elevation
     const strAngle = Utils.pad(this.bearing.toFixed(1), 5);
-    const strElevation = Number.isNaN(this.elevation) || dist < Utils.MIN_DISTANCE ?
+    const strElevation = Number.isNaN(this.elevation) || this.elevation > 1579 ?
       "XXXX" : Utils.pad(this.elevation, 4);
     const strDist = Utils.pad(Math.round(dist), 4);
 
