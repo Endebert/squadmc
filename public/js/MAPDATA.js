@@ -27,7 +27,7 @@
   const forest = L.tileLayer("./maps/forest/{z}_{x}_{y}.jpg", getTileOps([1200, 1200]));
   const gorodok = L.tileLayer("./maps/gorodok/{z}_{x}_{y}.jpg", getTileOps([4347, 4347]));
   const jensens = L.tileLayer("./maps/jensens/{z}_{x}_{y}.jpg", getTileOps([1513, 1513]));
-  const kohat = L.tileLayer("./maps/kohat/{z}_{x}_{y}.jpg", getTileOps([4026, 4026]));
+  const kohat = L.tileLayer("./maps/kohat/{z}_{x}_{y}.jpg", getTileOps([4017, 4017]));
   const kokan = L.tileLayer("./maps/kokan/{z}_{x}_{y}.jpg", getTileOps([2500, 2500]));
   const logarvalley = L.tileLayer("./maps/logarvalley/{z}_{x}_{y}.jpg", getTileOps([1765, 1765]));
   const logarvalleyV10 = L.tileLayer("./maps/logarvalleyV10/{z}_{x}_{y}.jpg", getTileOps([1765, 1765]));
