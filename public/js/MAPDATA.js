@@ -37,27 +37,9 @@
   const sumari = L.tileLayer("./maps/sumari/{z}_{x}_{y}.jpg", getTileOps([1303, 1303]));
   const yehorivka = L.tileLayer("./maps/yehorivka/{z}_{x}_{y}.jpg", getTileOps([4041, 4041]));
 
-  // debug maps (unused)
-  const albasrah_l = L.imageOverlay("./maps/albasrah_l.jpg", [[0, 0], [3200, 3200]]);
-  const belaya_l = L.imageOverlay("./maps/belaya_l.jpg", [[0, 0], [3913, 3913]]);
-  const chora_l = L.imageOverlay("./maps/chora_l.jpg", [[0, 0], [4073, 4073]]);
-  const foolsroad_l = L.imageOverlay("./maps/foolsroad_l.jpg", [[0, 0], [1775, 1739]]);
-  const forest_l = L.imageOverlay("./maps/forest_l.jpg", [[0, 0], [1200, 1200]]);
-  const gorodok_l = L.imageOverlay("./maps/gorodok_l.jpg", [[0, 0], [4347, 4347]]);
-  const jensens_l = L.imageOverlay("./maps/jensens_l.jpg", [[0, 0], [1513, 1513]]);
-  const kohat_l = L.imageOverlay("./maps/kohat_l.jpg", [[0, 0], [4026, 4026]]);
-  const kokan_l = L.imageOverlay("./maps/kokan_l.jpg", [[0, 0], [2500, 2500]]);
-  const logarvalley_l = L.imageOverlay("./maps/logarvalley_l.jpg", [[0, 0], [1765, 1765]]);
-  const logarvalleyV10_l = L.imageOverlay("./maps/logarvalleyV10_l.jpg", [[0, 0], [1765, 1765]]);
-  const mestia_l = L.imageOverlay("./maps/mestia_l.jpg", [[0, 0], [2403, 2403]]);
-  const narva_l = L.imageOverlay("./maps/narva_l.jpg", [[0, 0], [2205, 2205]]);
-  const narvaV10_l = L.imageOverlay("./maps/narvaV10_l.jpg", [[0, 0], [2805, 2805]]);
-  const sumari_l = L.imageOverlay("./maps/sumari_l.jpg", [[0, 0], [1303, 1303]]);
-  const yehorivka_l = L.imageOverlay("./maps/yehorivka_l.jpg", [[0, 0], [4041, 4041]]);
-
   MAPDATA = {
     "Al Basrah": {
-      map: Utils.isDebug() ? albasrah_l : albasrah,
+      map: albasrah,
       locations: [
         Utils.createLocation("Village", [2000, 760]),
         Utils.createLocation("US Airfield", [770, 1070]),
@@ -74,7 +56,7 @@
 
     },
     "Belaya": {
-      map: Utils.isDebug() ? belaya_l : belaya,
+      map: belaya,
       locations: [
         Utils.createLocation("Militia Main", [3221, 554]),
         Utils.createLocation("Radio Station", [2507, 1433]),
@@ -86,7 +68,7 @@
 
     },
     "Chora Valley": {
-      map: Utils.isDebug() ? chora_l : chora,
+      map: chora,
       locations: [
         Utils.createLocation("Russia Main", [2730, 600]),
         Utils.createLocation("Monolith", [2345, 850]),
@@ -106,7 +88,7 @@
       ],
     },
     "Fool's Road": {
-      map: Utils.isDebug() ? foolsroad_l : foolsroad,
+      map: foolsroad,
       locations: [
         Utils.createLocation("Russian Main", [1718, 1584]),
         Utils.createLocation("Mine Entrance", [1205, 962]),
@@ -121,7 +103,7 @@
       ],
     },
     "Operation First Light": {
-      map: Utils.isDebug() ? forest_l : forest,
+      map: forest,
       locations: [
         Utils.createLocation("Militia Main", [139, 852]),
         Utils.createLocation("Railroad Village", [469, 882]),
@@ -133,7 +115,7 @@
       ],
     },
     "Gorodok": {
-      map: Utils.isDebug() ? gorodok_l : gorodok,
+      map: gorodok,
       locations: [
         Utils.createLocation("Militia Camp", [3608, 775]),
         Utils.createLocation("Desna", [3264, 1405]),
@@ -146,14 +128,14 @@
       ],
     },
     "Jensen's Range": {
-      map: Utils.isDebug() ? jensens_l : jensens,
+      map: jensens,
       locations: [
         Utils.createLocation("US Main", [336, 800]),
         Utils.createLocation("Vehicles", [599, 977]),
       ],
     },
     "Kohat Toi River Valley": {
-      map: Utils.isDebug() ? kohat_l : kohat,
+      map: kohat,
       heightmap: {
         url: "./maps/kohat/heightmap.jpg",
         scale: 256 / (512 * 0.75),
@@ -175,7 +157,7 @@
       ],
     },
     "Kokan": {
-      map: Utils.isDebug() ? kokan_l : kokan,
+      map: kokan,
       locations: [
         Utils.createLocation("INS Main", [185, 1543]),
         Utils.createLocation("Stonebend", [308, 996]),
@@ -189,7 +171,7 @@
       ],
     },
     "Logar Valley": {
-      map: Utils.isDebug() ? logarvalley_l : logarvalley,
+      map: logarvalley,
       locations: [
         Utils.createLocation("Militia Main", [692, 144]),
         Utils.createLocation("Mechanic Shop", [1018, 123]),
@@ -202,7 +184,7 @@
       ],
     },
     "Logar Valley V10": {
-      map: Utils.isDebug() ? logarvalleyV10_l : logarvalleyV10,
+      map: logarvalleyV10,
       locations: [
         Utils.createLocation("Old Militia Main", [692, 144]),
         Utils.createLocation("Mechanic Shop", [1018, 123]),
@@ -220,7 +202,7 @@
       ],
     },
     "Mestia": {
-      map: Utils.isDebug() ? mestia_l : mestia,
+      map: mestia,
       locations: [
         Utils.createLocation("Militia Main", [1062, 233]),
         Utils.createLocation("The Armory", [1318, 594]),
@@ -235,7 +217,7 @@
       ],
     },
     "Narva": {
-      map: Utils.isDebug() ? narva_l : narva,
+      map: narva,
       locations: [
         Utils.createLocation("US Main", [536, 842]),
         Utils.createLocation("Loading Dock", [598, 1032]),
@@ -250,7 +232,7 @@
       ],
     },
     "Narva V10": {
-      map: Utils.isDebug() ? narvaV10_l : narvaV10,
+      map: narvaV10,
       locations: [
         Utils.createLocation("US Main", [570, 215]),
         Utils.createLocation("Abandoned Airfield", [778, 598]),
@@ -282,7 +264,7 @@
       ],
     },
     "Sumari Bala": {
-      map: Utils.isDebug() ? sumari_l : sumari,
+      map: sumari,
       locations: [
         Utils.createLocation("US Main", [743, 137]),
         Utils.createLocation("Junction", [700, 362]),
@@ -301,7 +283,7 @@
       ],
     },
     "Yehorivka": {
-      map: Utils.isDebug() ? yehorivka_l : yehorivka,
+      map: yehorivka,
       locations: [
         Utils.createLocation("Russian Main", [864, 986]),
         Utils.createLocation("Upper Petrivka", [1090, 2206]),
