@@ -30,10 +30,8 @@
   const kohat = L.tileLayer("./maps/kohat/{z}_{x}_{y}.jpg", getTileOps([4017, 4017]));
   const kokan = L.tileLayer("./maps/kokan/{z}_{x}_{y}.jpg", getTileOps([2500, 2500]));
   const logarvalley = L.tileLayer("./maps/logarvalley/{z}_{x}_{y}.jpg", getTileOps([1765, 1765]));
-  const logarvalleyV10 = L.tileLayer("./maps/logarvalleyV10/{z}_{x}_{y}.jpg", getTileOps([1765, 1765]));
   const mestia = L.tileLayer("./maps/mestia/{z}_{x}_{y}.jpg", getTileOps([2403, 2403]));
-  const narva = L.tileLayer("./maps/narva/{z}_{x}_{y}.jpg", getTileOps([2205, 2205]));
-  const narvaV10 = L.tileLayer("./maps/narvaV10/{z}_{x}_{y}.jpg", getTileOps([2805, 2805]));
+  const narva = L.tileLayer("./maps/narva/{z}_{x}_{y}.jpg", getTileOps([2805, 2805]));
   const sumari = L.tileLayer("./maps/sumari/{z}_{x}_{y}.jpg", getTileOps([1303, 1303]));
   const yehorivka = L.tileLayer("./maps/yehorivka/{z}_{x}_{y}.jpg", getTileOps([4041, 4041]));
 
@@ -173,19 +171,6 @@
     "Logar Valley": {
       map: logarvalley,
       locations: [
-        Utils.createLocation("Militia Main", [692, 144]),
-        Utils.createLocation("Mechanic Shop", [1018, 123]),
-        Utils.createLocation("South Residence", [1331, 455]),
-        Utils.createLocation("South DC", [1099, 813]),
-        Utils.createLocation("North DC", [834, 839]),
-        Utils.createLocation("North Residence", [574, 1077]),
-        Utils.createLocation("Poppy Farm", [718, 1423]),
-        Utils.createLocation("Murika Main", [1113, 1483]),
-      ],
-    },
-    "Logar Valley V10": {
-      map: logarvalleyV10,
-      locations: [
         Utils.createLocation("Old Militia Main", [692, 144]),
         Utils.createLocation("Mechanic Shop", [1018, 123]),
         Utils.createLocation("Bend", [1193, 302]),
@@ -218,21 +203,6 @@
     },
     "Narva": {
       map: narva,
-      locations: [
-        Utils.createLocation("US Main", [536, 842]),
-        Utils.createLocation("Loading Dock", [598, 1032]),
-        Utils.createLocation("Outskirts", [1603, 1141]),
-        Utils.createLocation("Residences", [1423, 1434]),
-        Utils.createLocation("Trash Pile", [1254, 1302]),
-        Utils.createLocation("Train Station", [1049, 1359]),
-        Utils.createLocation("Castle", [933, 1606]),
-        Utils.createLocation("Playground", [705, 1334]),
-        Utils.createLocation("Ruins", [1511, 1370]),
-        Utils.createLocation("Russian Main", [1685, 1566]),
-      ],
-    },
-    "Narva V10": {
-      map: narvaV10,
       locations: [
         Utils.createLocation("US Main", [570, 215]),
         Utils.createLocation("Abandoned Airfield", [778, 598]),
