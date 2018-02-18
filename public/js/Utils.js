@@ -302,6 +302,15 @@ const Utils = {
   },
 
   /**
+   * Returns heightmap of the map matching given name.
+   * @param name - map name
+   * @returns {Object} object containing url and scale
+   */
+  getHeightmap(name) {
+    return MAPDATA[name].heightmap;
+  },
+
+  /**
    * Create a button with the given contents, to be bound to the given container.
    * @param label - button contents
    * @param container - container for button to be bound to

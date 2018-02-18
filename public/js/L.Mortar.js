@@ -13,9 +13,11 @@ L.Mortar = L.LayerGroup.extend({
     mortarDeleteBtn: undefined,
     targetDeleteBtn: undefined,
     mousePosition: undefined,
+    canvas: document.createElement("canvas"),
   },
 
   l: log.getLogger("Mortar"),
+  heightData: [],
 
   initialize(options) {
     this.l.debug("initialize:", options);
@@ -46,10 +48,10 @@ L.Mortar = L.LayerGroup.extend({
   },
 
   onAdd(map) {
-    this.l.debug("onAdd");
+    this.l.debug("onAdd:", map);
     this.map = map;
     this.map.on("click", this.onMapClick, this);
-    this.map.on("baselayerchange", this.reset, this);
+    this.map.on("baselayerchange", this.onBaseLayerChange, this);
 
     this.reset();
 
@@ -59,6 +61,12 @@ L.Mortar = L.LayerGroup.extend({
   onRemove() {
     this.l.debug("onRemove");
     this.reset();
+  },
+
+  onBaseLayerChange(e) {
+    this.l.debug("onBaseLayerChange");
+    this.reset();
+    this.setupHeightmap(e.name);
   },
 
   /**
@@ -90,6 +98,51 @@ L.Mortar = L.LayerGroup.extend({
     Utils.setBearingText();
     Utils.setDistanceText();
     Utils.setElevationText();
+  },
+
+  /**
+   * Loads heightmap data into memory for the given map
+   * @param {string} name - map name
+   */
+  setupHeightmap(name) {
+    this.l.debug("setupHeightmap:", name);
+    this.heightmap = Utils.getHeightmap(name); // first we check if there is a heightmap available
+    if (this.heightmap) {
+      // it is, so we clear, load the image, and draw the image on the canvas
+      const canvas = this.options.canvas;
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const img = new Image();
+      img.onload = () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+        // now we can get the image data
+        const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        // now we create a smaller array, only holding one value of the rgba set
+        const colorValues = new Array(data.length / 4);
+        for (let i = 0; i < colorValues.length; i++) {
+          colorValues[i] = data[i * 4];
+        }
+        // now we make this array available for later
+        this.heightmap.data = colorValues;
+      };
+      img.src = this.heightmap.url; // this initiates downloading the image
+    }
+  },
+
+  /**
+   * Returns the scaled height for the given coordinate
+   * @param {number} x - x-coordinate of target pixel/point
+   * @param {number} y - y-coordinate of target pixel/point
+   * @returns {number} scaled height in m, or 0 if heightmap is not available
+   */
+  getHeight(x, y) {
+    if (this.heightmap) {
+      const width = this.options.canvas.width;
+      return this.heightmap.data[(y * width + x)] * this.heightmap.scale;
+    }
+    return 0;
   },
 
   /**
@@ -176,13 +229,33 @@ L.Mortar = L.LayerGroup.extend({
 
     const dist = Math.sqrt(a * a + b * b);
 
-    // rotate so 0° is towards North, round to 1 decimal, force showing decimal
-    this.bearing = (Math.round((180 - this.bearing) * 10) / 10).toFixed(1);
-    this.elevation = Math.round(Utils.calcMortarAngle(dist));
+    // rotate so 0° is towards North, round to 1 decimal, mod 360 so that 360° = 0°
+    this.bearing = (Math.round((180 - this.bearing) * 10) / 10) % 360;
+
+    // rounding for pixel coordinates
+    const sx = Math.round(s.lng);
+    const sy = Math.round(s.lat);
+    const ex = Math.round(e.lng);
+    const ey = Math.round(e.lat);
+
+    // now we get the height and calculate the difference
+    const mortarHeight = this.getHeight(sx, sy);
+    const targetHeight = this.getHeight(ex, ey);
+
+    const heightDiff = targetHeight - mortarHeight;
+
+    if (this.l.getLevel() <= log.levels.DEBUG) {
+      this.l.debug(`mortar height @ ${sx}:${sy} = ${mortarHeight}`);
+      this.l.debug(`target height @ ${ex}:${ey} = ${targetHeight}`);
+      this.l.debug("height diff:", heightDiff);
+    }
+
+    this.elevation = Math.round(Utils.calcMortarAngle(dist, heightDiff));
 
     // 0-padding for bearing and elevation
-    const strAngle = Utils.pad(this.bearing, 5);
-    const strElevation = Number.isNaN(this.elevation) ? "XXXX" : Utils.pad(this.elevation, 4);
+    const strAngle = Utils.pad(this.bearing.toFixed(1), 5);
+    const strElevation = Number.isNaN(this.elevation) || dist < Utils.MIN_DISTANCE ?
+      "XXXX" : Utils.pad(this.elevation, 4);
     const strDist = Utils.pad(Math.round(dist), 4);
 
     Utils.setBearingText(`${strAngle}°`);

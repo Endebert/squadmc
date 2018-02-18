@@ -154,6 +154,10 @@
     },
     "Kohat Toi River Valley": {
       map: Utils.isDebug() ? kohat_l : kohat,
+      heightmap: {
+        url: "./maps/kohat/heightmap.jpg",
+        scale: 256 / (512 * 0.75),
+      },
       locations: [
         Utils.createLocation("US Main", [1453, 2666]),
         Utils.createLocation("Jouzara", [2603, 2855]),
