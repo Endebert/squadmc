@@ -41,9 +41,9 @@ L.Control.MousePosition = L.Control.extend({
   },
 
   setPosition(lat, lng) {
-    if (this.l.getLevel() <= log.levels.DEBUG) {
-      this.l.debug("setPosition:", [lat, lng]);
-    }
+    // if (this.l.getLevel() <= log.levels.DEBUG) {
+    //   this.l.debug("setPosition:", [lat, lng]);
+    // }
 
     let kp = Utils.getKP(lat, lng);
 

@@ -97,6 +97,7 @@ L.Mortar = L.LayerGroup.extend({
     this.setTargetPosText();
     Utils.setBearingText();
     Utils.setDistanceText();
+    Utils.setHeightDiffText();
     Utils.setElevationText();
   },
 
@@ -140,6 +141,10 @@ L.Mortar = L.LayerGroup.extend({
   getHeight(x, y) {
     if (this.heightmap) {
       const width = this.options.canvas.width;
+      const height = this.options.canvas.height;
+      if (x < 0 || x >= width || y < 0 || y >= height) { // return NaN if x or y outside of canvas
+        return Number.NaN;
+      }
       return this.heightmap.data[(y * width + x)] * this.heightmap.scale;
     }
     return 0;
@@ -257,10 +262,12 @@ L.Mortar = L.LayerGroup.extend({
     const strElevation = Number.isNaN(this.elevation) || this.elevation > 1579 ?
       "XXXX" : Utils.pad(this.elevation, 4);
     const strDist = Utils.pad(Math.round(dist), 4);
+    const hDiff = heightDiff >= 0 ? `+${Utils.pad(Math.round(heightDiff), 3)}` : `-${Utils.pad(Math.round(-heightDiff), 3)}`;
 
     Utils.setBearingText(`${strAngle}°`);
     Utils.setElevationText(`${strElevation}mil`);
     Utils.setDistanceText(`${strDist}m`);
+    Utils.setHeightDiffText(`${hDiff}m`);
   },
 
   /**

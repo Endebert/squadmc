@@ -32,7 +32,7 @@
   const logarvalley = L.tileLayer("./maps/logarvalley/{z}_{x}_{y}.jpg", getTileOps([1765, 1765]));
   const mestia = L.tileLayer("./maps/mestia/{z}_{x}_{y}.jpg", getTileOps([2403, 2403]));
   const narva = L.tileLayer("./maps/narva/{z}_{x}_{y}.jpg", getTileOps([2805, 2805]));
-  const sumari = L.tileLayer("./maps/sumari/{z}_{x}_{y}.jpg", getTileOps([1303, 1303]));
+  const sumari = L.tileLayer("./maps/sumari/{z}_{x}_{y}.jpg", getTileOps([1300, 1300]));
   const yehorivka = L.tileLayer("./maps/yehorivka/{z}_{x}_{y}.jpg", getTileOps([4041, 4041]));
 
   MAPDATA = {
@@ -235,6 +235,10 @@
     },
     "Sumari Bala": {
       map: sumari,
+      heightmap: {
+        url: "./maps/sumari/heightmap.jpg",
+        scale: 256 / (512 * 0.75),
+      },
       locations: [
         Utils.createLocation("US Main", [743, 137]),
         Utils.createLocation("Junction", [700, 362]),

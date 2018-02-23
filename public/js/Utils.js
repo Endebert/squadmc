@@ -250,7 +250,7 @@ const Utils = {
    * @param text - updated bearing
    */
   setBearingText(text = "") {
-    document.getElementById("mapBearing").innerText = text;
+    document.getElementById("mapBearing").innerText = `✵ ${text}`;
   },
 
   /**
@@ -258,7 +258,7 @@ const Utils = {
    * @param text - updated elevation
    */
   setElevationText(text = "") {
-    document.getElementById("mapElevation").innerText = text;
+    document.getElementById("mapElevation").innerText = `∠ ${text}`;
   },
 
   /**
@@ -266,7 +266,15 @@ const Utils = {
    * @param text - updated distance
    */
   setDistanceText(text = "") {
-    document.getElementById("mapDistance").innerText = text;
+    document.getElementById("mapDistance").innerText = `↔ ${text}`;
+  },
+
+  /**
+   * Update height difference in top ribbon.
+   * @param text - updated distance
+   */
+  setHeightDiffText(text = "") {
+    document.getElementById("mapHeightDiff").innerText = `↕ ${text}`;
   },
 
   /**

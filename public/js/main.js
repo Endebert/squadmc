@@ -31,6 +31,11 @@
   const maps = {};
   Object.entries(MAPDATA).forEach(([mapName, props]) => {
     maps[mapName] = props.map;
+
+    // check for heightmaps and add them as an overlay option
+    if (props.heightmap) {
+      overlayMaps[`${mapName} Heightmap`] = L.imageOverlay(props.heightmap.url, props.map.options.bounds);
+    }
   });
 
   // lets you select the map and whether or not to display grid/locations
