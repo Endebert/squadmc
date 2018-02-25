@@ -23,7 +23,7 @@
   const albasrah = L.tileLayer("./maps/albasrah/{z}_{x}_{y}.jpg", getTileOps([3200, 3200]));
   const belaya = L.tileLayer("./maps/belaya/{z}_{x}_{y}.jpg", getTileOps([3913, 3913]));
   const chora = L.tileLayer("./maps/chora/{z}_{x}_{y}.jpg", getTileOps([4073, 4073]));
-  const foolsroad = L.tileLayer("./maps/foolsroad/{z}_{x}_{y}.jpg", getTileOps([1775, 1739]));
+  const foolsroad = L.tileLayer("./maps/foolsroad/{z}_{x}_{y}.jpg", getTileOps([1774, 1736]));
   const forest = L.tileLayer("./maps/forest/{z}_{x}_{y}.jpg", getTileOps([1200, 1200]));
   const gorodok = L.tileLayer("./maps/gorodok/{z}_{x}_{y}.jpg", getTileOps([4347, 4347]));
   const jensens = L.tileLayer("./maps/jensens/{z}_{x}_{y}.jpg", getTileOps([1513, 1513]));
@@ -87,6 +87,10 @@
     },
     "Fool's Road": {
       map: foolsroad,
+      heightmap: {
+        url: "./maps/foolsroad/heightmap.jpg",
+        scale: (512 * 3.20) / 256,
+      },
       locations: [
         Utils.createLocation("Russian Main", [1718, 1584]),
         Utils.createLocation("Mine Entrance", [1205, 962]),
@@ -136,7 +140,7 @@
       map: kohat,
       heightmap: {
         url: "./maps/kohat/heightmap.jpg",
-        scale: 256 / (512 * 0.75),
+        scale: (512 * 0.75) / 256,
       },
       locations: [
         Utils.createLocation("US Main", [1453, 2666]),
@@ -237,7 +241,7 @@
       map: sumari,
       heightmap: {
         url: "./maps/sumari/heightmap.jpg",
-        scale: 256 / (512 * 0.75),
+        scale: (512 * 0.75) / 256,
       },
       locations: [
         Utils.createLocation("US Main", [743, 137]),
