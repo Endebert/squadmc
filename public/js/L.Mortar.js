@@ -215,10 +215,7 @@ L.Mortar = L.LayerGroup.extend({
     this.mo.distLine.setStyle({ color: Number.isNaN(this.elevation) || this.elevation > 1579 ? "red" : "green" });
   },
 
-  /**
-   * Calculates bearing and elevation for the mortar in-game.
-   */
-  calculate() {
+  calculate: function () {
     if (!this.mo.mortarMarker || !this.mo.targetMarker) {
       return;
     }
@@ -262,7 +259,18 @@ L.Mortar = L.LayerGroup.extend({
     const strElevation = Number.isNaN(this.elevation) || this.elevation > 1579 ?
       "XXXX" : Utils.pad(this.elevation, 4);
     const strDist = Utils.pad(Math.round(dist), 4);
-    const hDiff = heightDiff >= 0 ? `+${Utils.pad(Math.round(heightDiff), 3)}` : `-${Utils.pad(Math.round(-heightDiff), 3)}`;
+
+    let hDiff;
+    if (Number.isNaN(heightDiff)) {
+      hDiff = "+XXX.X";
+    } else {
+      // now making heightDiff more readable
+      // 1. get absolute value (we add sign when setting hDiff)
+      // 2. round to 1 decimal, and force showing that decimal
+      const roundedHDiffAbs = Math.abs(Math.round(heightDiff * 10) / 10).toFixed(1);
+      hDiff = heightDiff >= 0 ? `+${Utils.pad(roundedHDiffAbs, 5)}` : `-${Utils.pad(roundedHDiffAbs, 5)}`;
+    }
+
 
     Utils.setBearingText(`${strAngle}°`);
     Utils.setElevationText(`${strElevation}mil`);
