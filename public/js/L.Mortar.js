@@ -215,7 +215,7 @@ L.Mortar = L.LayerGroup.extend({
     this.mo.distLine.setStyle({ color: Number.isNaN(this.elevation) || this.elevation > 1579 ? "red" : "green" });
   },
 
-  calculate: function () {
+  calculate() {
     if (!this.mo.mortarMarker || !this.mo.targetMarker) {
       return;
     }
@@ -270,7 +270,6 @@ L.Mortar = L.LayerGroup.extend({
       const roundedHDiffAbs = Math.abs(Math.round(heightDiff * 10) / 10).toFixed(1);
       hDiff = heightDiff >= 0 ? `+${Utils.pad(roundedHDiffAbs, 5)}` : `-${Utils.pad(roundedHDiffAbs, 5)}`;
     }
-
 
     Utils.setBearingText(`${strAngle}°`);
     Utils.setElevationText(`${strElevation}mil`);
