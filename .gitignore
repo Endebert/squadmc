@@ -8,5 +8,6 @@ npm-debug.log
 # legacy folder
 legacy
 
-# but not .gitkeep
+# but not .gitkeep and _headers
 !.gitkeep
+!_headers
