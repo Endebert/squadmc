@@ -6,45 +6,15 @@ const iconSize = 48;
 
 const Utils = {
   l: log.getLogger("Utils"),
-  // variables representing values in top ribbon, will be set to initial value on first time access (see below)
-  iMortarPos: undefined,
-  iTargetPos: undefined,
 
   iSize: iconSize, // icon size
   DEBUG: localStorage.getItem("debug") === "true",
 
-  MORTAR_TABLE: [
-    [50, 1579],
-    [100, 1558],
-    [150, 1538],
-    [200, 1517],
-    [250, 1496],
-    [300, 1475],
-    [350, 1453],
-    [400, 1431],
-    [450, 1409],
-    [500, 1387],
-    [550, 1364],
-    [600, 1341],
-    [650, 1317],
-    [700, 1292],
-    [750, 1267],
-    [800, 1240],
-    [850, 1212],
-    [900, 1183],
-    [950, 1152],
-    [1000, 1118],
-    [1050, 1081],
-    [1100, 1039],
-    [1150, 988],
-    [1200, 918],
-    [1250, 800],
-  ],
   MIN_DISTANCE: 50,
-  MAX_DISTANCE: 1250,
-  TOO_FAR: "TOO_FAR",
-  TOO_CLOSE: "TOO_CLOSE",
-  ERROR: "ERROR",
+  MAX_DISTANCE: 1234,
+  VELOCITY: 110,
+  GRAVITY: 9.81,
+  MIL_TO_DEG_FACTOR: 360 / 6400,
 
   // icon for mortar marker
   mortarIcon: L.icon({
@@ -64,6 +34,60 @@ const Utils = {
       iconAnchor: [10, 10], // point of the icon which will correspond to marker's location
       popupAnchor: [0, -iconSize / 2], // point from which the popup should open relative to the iconAnchor
     }),
+
+  /**
+   * Converts NATO mils to degrees
+   * @param {number} mil - NATO mils
+   * @returns {number} degrees
+   */
+  milToDeg(mil) {
+    return mil * this.MIL_TO_DEG_FACTOR;
+  },
+
+  /**
+   * Converts degrees into radians
+   * @param {number} deg - degrees
+   * @returns {number} radians
+   */
+  degToRad(deg) {
+    return deg * Math.PI / 180;
+  },
+
+  /**
+   * Converts radians into degrees
+   * @param {number} rad - radians
+   * @returns {number} degrees
+   */
+  radToDeg(rad) {
+    return rad * 180 / Math.PI;
+  },
+
+  /**
+   * Converts degrees into NATO mils
+   * @param {number} deg - degrees
+   * @returns {number} NATO mils
+   */
+  degToMil(deg) {
+    return deg / this.MIL_TO_DEG_FACTOR;
+  },
+
+  /**
+   * Converts radians into NATO mils
+   * @param {number} rad - radians
+   * @returns {number} NATO mils
+   */
+  radToMil(rad) {
+    return this.degToMil(this.radToDeg(rad));
+  },
+
+  /**
+   * Converts NATO mils into radians
+   * @param mil - NATO mils
+   * @returns {number} radians
+   */
+  milToRad(mil) {
+    return this.degToRad(this.milToDeg(mil));
+  },
 
   /**
    * Calculates the keypad coordinates for a given latlng coordinate, e.g. "A5-3-7"
@@ -226,7 +250,7 @@ const Utils = {
    * @param text - updated bearing
    */
   setBearingText(text = "") {
-    document.getElementById("mapBearing").innerText = text;
+    document.getElementById("mapBearing").innerText = `✵ ${text}`;
   },
 
   /**
@@ -234,7 +258,7 @@ const Utils = {
    * @param text - updated elevation
    */
   setElevationText(text = "") {
-    document.getElementById("mapElevation").innerText = text;
+    document.getElementById("mapElevation").innerText = `∠ ${text}`;
   },
 
   /**
@@ -242,7 +266,15 @@ const Utils = {
    * @param text - updated distance
    */
   setDistanceText(text = "") {
-    document.getElementById("mapDistance").innerText = text;
+    document.getElementById("mapDistance").innerText = `↔ ${text}`;
+  },
+
+  /**
+   * Update height difference in top ribbon.
+   * @param text - updated distance
+   */
+  setHeightDiffText(text = "") {
+    document.getElementById("mapHeightDiff").innerText = `↕ ${text}`;
   },
 
   /**
@@ -278,6 +310,15 @@ const Utils = {
   },
 
   /**
+   * Returns heightmap of the map matching given name.
+   * @param name - map name
+   * @returns {Object} object containing url and scale
+   */
+  getHeightmap(name) {
+    return MAPDATA[name].heightmap;
+  },
+
+  /**
    * Create a button with the given contents, to be bound to the given container.
    * @param label - button contents
    * @param container - container for button to be bound to
@@ -291,36 +332,23 @@ const Utils = {
   },
 
   /**
-   * bearing calculation returning the correct mill for the mortar in-game based on distance.
-   * Taken from https://github.com/lorenmh/sc-react.
-   * @param distance - distance between mortar and target
-   * @returns {Number || String} milliradians if target in range, "TOO_FAR" or "TOO_CLOSE" otherwise
+   * Calculates the angle the mortar needs to be set,
+   * in order to hit the target at the desired distance and vertical delta.
+   *
+   * Function taken from https://en.wikipedia.org/wiki/Projectile_motion
+   *
+   * @param {number} x - distance between mortar and target
+   * @param {number} [y] - vertical delta between mortar and target
+   * @param {number} [v] - initial mortar projectile velocity
+   * @param {number} [g] - gravity force
+   * @returns {number || NaN} mil if target in range, NaN otherwise
    */
-  interpolateElevation(distance) {
-    if (distance < this.MIN_DISTANCE) return this.TOO_CLOSE;
-    if (distance > this.MAX_DISTANCE) return this.TOO_FAR;
+  calcMortarAngle(x, y = 0, v = this.VELOCITY, g = this.GRAVITY) {
+    const p1 = Math.sqrt(v ** 4 - g * (g * x ** 2 + 2 * y * v ** 2));
+    const a1 = Math.atan((v ** 2 + p1) / (g * x));
+    // const a2 = Math.atan((v ** 2 - p1) / (g * x)); // no need to calculate, angle is always below 45°/800mil
 
-    for (let i = 0; i < this.MORTAR_TABLE.length; i++) {
-      const currentTableEntry = this.MORTAR_TABLE[i];
-      const nextTableEntry = this.MORTAR_TABLE[i + 1];
-      const currentX = currentTableEntry[0];
-      const currentY = currentTableEntry[1];
-      if (distance === currentX) return currentY;
-
-      const nextX = nextTableEntry[0];
-
-      // eslint-disable-next-line no-continue
-      if (distance >= nextX) continue;
-
-      const nextY = nextTableEntry[1];
-      const slope = (nextY - currentY) / (nextX - currentX);
-      const deltaX = distance - currentX;
-
-      // we don't need decimals
-      return Math.round((slope * deltaX) + currentY);
-    }
-
-    return this.ERROR;
+    return this.radToMil(a1);
   },
 
   /**

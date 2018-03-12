@@ -13,9 +13,11 @@ L.Mortar = L.LayerGroup.extend({
     mortarDeleteBtn: undefined,
     targetDeleteBtn: undefined,
     mousePosition: undefined,
+    canvas: document.createElement("canvas"),
   },
 
   l: log.getLogger("Mortar"),
+  heightData: [],
 
   initialize(options) {
     this.l.debug("initialize:", options);
@@ -46,10 +48,10 @@ L.Mortar = L.LayerGroup.extend({
   },
 
   onAdd(map) {
-    this.l.debug("onAdd");
+    this.l.debug("onAdd:", map);
     this.map = map;
     this.map.on("click", this.onMapClick, this);
-    this.map.on("baselayerchange", this.reset, this);
+    this.map.on("baselayerchange", this.onBaseLayerChange, this);
 
     this.reset();
 
@@ -59,6 +61,12 @@ L.Mortar = L.LayerGroup.extend({
   onRemove() {
     this.l.debug("onRemove");
     this.reset();
+  },
+
+  onBaseLayerChange(e) {
+    this.l.debug("onBaseLayerChange");
+    this.reset();
+    this.setupHeightmap(e.name);
   },
 
   /**
@@ -89,7 +97,57 @@ L.Mortar = L.LayerGroup.extend({
     this.setTargetPosText();
     Utils.setBearingText();
     Utils.setDistanceText();
+    Utils.setHeightDiffText();
     Utils.setElevationText();
+  },
+
+  /**
+   * Loads heightmap data into memory for the given map
+   * @param {string} name - map name
+   */
+  setupHeightmap(name) {
+    this.l.debug("setupHeightmap:", name);
+    this.heightmap = Utils.getHeightmap(name); // first we check if there is a heightmap available
+    if (this.heightmap) {
+      // it is, so we clear, load the image, and draw the image on the canvas
+      const canvas = this.options.canvas;
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const img = new Image();
+      img.onload = () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+        // now we can get the image data
+        const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        // now we create a smaller array, only holding one value of the rgba set
+        const colorValues = new Array(data.length / 4);
+        for (let i = 0; i < colorValues.length; i++) {
+          colorValues[i] = data[i * 4];
+        }
+        // now we make this array available for later
+        this.heightmap.data = colorValues;
+      };
+      img.src = this.heightmap.url; // this initiates downloading the image
+    }
+  },
+
+  /**
+   * Returns the scaled height for the given coordinate
+   * @param {number} x - x-coordinate of target pixel/point
+   * @param {number} y - y-coordinate of target pixel/point
+   * @returns {number} scaled height in m, or 0 if heightmap is not available
+   */
+  getHeight(x, y) {
+    if (this.heightmap) {
+      const width = this.options.canvas.width;
+      const height = this.options.canvas.height;
+      if (x < 0 || x >= width || y < 0 || y >= height) { // return NaN if x or y outside of canvas
+        return Number.NaN;
+      }
+      return this.heightmap.data[(y * width + x)] * this.heightmap.scale;
+    }
+    return 0;
   },
 
   /**
@@ -153,13 +211,10 @@ L.Mortar = L.LayerGroup.extend({
       this.mo.distLine.setLatLngs([s, e]);
     }
 
-    // isNaN is used as elevation might be "TOO_FAR" or "TOO_CLOSE"
-    this.mo.distLine.setStyle({ color: Number.isNaN(this.elevation) ? "red" : "green" });
+    // isNaN is used as elevation might NaN
+    this.mo.distLine.setStyle({ color: Number.isNaN(this.elevation) || this.elevation > 1579 ? "red" : "green" });
   },
 
-  /**
-   * Calculates bearing and elevation for the mortar in-game.
-   */
   calculate() {
     if (!this.mo.mortarMarker || !this.mo.targetMarker) {
       return;
@@ -175,17 +230,51 @@ L.Mortar = L.LayerGroup.extend({
     const b = s.lng - e.lng;
 
     const dist = Math.sqrt(a * a + b * b);
-    this.bearing = (180 - this.bearing).toFixed(1); // rotate so 0° is towards North, round to 1 decimal
-    this.elevation = Math.round(Utils.interpolateElevation(dist));
+
+    // rotate so 0° is towards North, round to 1 decimal, mod 360 so that 360° = 0°
+    this.bearing = (Math.round((180 - this.bearing) * 10) / 10) % 360;
+
+    // rounding for pixel coordinates
+    const sx = Math.round(s.lng);
+    const sy = Math.round(s.lat);
+    const ex = Math.round(e.lng);
+    const ey = Math.round(e.lat);
+
+    // now we get the height and calculate the difference
+    const mortarHeight = this.getHeight(sx, sy);
+    const targetHeight = this.getHeight(ex, ey);
+
+    const heightDiff = targetHeight - mortarHeight;
+
+    if (this.l.getLevel() <= log.levels.DEBUG) {
+      this.l.debug(`mortar height @ ${sx}:${sy} = ${mortarHeight}`);
+      this.l.debug(`target height @ ${ex}:${ey} = ${targetHeight}`);
+      this.l.debug("height diff:", heightDiff);
+    }
+
+    this.elevation = Math.round(Utils.calcMortarAngle(dist, heightDiff));
 
     // 0-padding for bearing and elevation
-    const strAngle = Utils.pad(this.bearing, 5);
-    const strElevation = Number.isNaN(this.elevation) ? "XXXX" : Utils.pad(this.elevation, 4);
+    const strAngle = Utils.pad(this.bearing.toFixed(1), 5);
+    const strElevation = Number.isNaN(this.elevation) || this.elevation > 1579 ?
+      "XXXX" : Utils.pad(this.elevation, 4);
     const strDist = Utils.pad(Math.round(dist), 4);
+
+    let hDiff;
+    if (Number.isNaN(heightDiff)) {
+      hDiff = "+XXX.X";
+    } else {
+      // now making heightDiff more readable
+      // 1. get absolute value (we add sign when setting hDiff)
+      // 2. round to 1 decimal, and force showing that decimal
+      const roundedHDiffAbs = Math.abs(Math.round(heightDiff * 10) / 10).toFixed(1);
+      hDiff = heightDiff >= 0 ? `+${Utils.pad(roundedHDiffAbs, 5)}` : `-${Utils.pad(roundedHDiffAbs, 5)}`;
+    }
 
     Utils.setBearingText(`${strAngle}°`);
     Utils.setElevationText(`${strElevation}mil`);
     Utils.setDistanceText(`${strDist}m`);
+    Utils.setHeightDiffText(`${hDiff}m`);
   },
 
   /**
@@ -197,7 +286,7 @@ L.Mortar = L.LayerGroup.extend({
 
     this.mo.maxRangeCircle = new L.circle(latlng, {
       draggable: "false",
-      radius: 1250, // 1250 meters == 800 mill == max range of mortar
+      radius: Utils.MAX_DISTANCE,
       color: "green",
       fillOpacity: 0.05,
       interactive: false,
@@ -214,7 +303,7 @@ L.Mortar = L.LayerGroup.extend({
 
     this.mo.minRangeCircle = new L.circle(latlng, {
       draggable: "false",
-      radius: 50, // 50 meters == 1579 mill == min range of mortar
+      radius: Utils.MIN_DISTANCE,
       color: "red",
       fillOpacity: 0.05,
       interactive: false,

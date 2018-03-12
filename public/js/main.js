@@ -31,6 +31,11 @@
   const maps = {};
   Object.entries(MAPDATA).forEach(([mapName, props]) => {
     maps[mapName] = props.map;
+
+    // check for heightmaps and add them as an overlay option
+    if (props.heightmap) {
+      overlayMaps[`${mapName} Heightmap`] = L.imageOverlay(props.heightmap.url, props.map.options.bounds);
+    }
   });
 
   // lets you select the map and whether or not to display grid/locations
@@ -165,7 +170,7 @@
     const bounds = Utils.getMapBounds(mapName);
     const x = 256 / bounds.getNorth();
     const y = 256 / bounds.getEast();
-    map.options.crs.transformation = L.transformation(x, 0, y, 0);
+    map.options.crs.transformation = L.transformation(y, 0, x, 0);
 
     // manually invoke resetting view so we don't get tile loading errors
     // eslint-disable-next-line no-underscore-dangle
