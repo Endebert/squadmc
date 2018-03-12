@@ -28,7 +28,7 @@
   const gorodok = L.tileLayer("./maps/gorodok/{z}_{x}_{y}.jpg", getTileOps([4340, 4340]));
   const jensens = L.tileLayer("./maps/jensens/{z}_{x}_{y}.jpg", getTileOps([1510, 1510]));  
   const kohat = L.tileLayer("./maps/kohat/{z}_{x}_{y}.jpg", getTileOps([4017, 4017]));
-  const kokan = L.tileLayer("./maps/kokan/{z}_{x}_{y}.jpg", getTileOps([2500, 2500]));
+  const kokan = L.tileLayer("./maps/kokan/{z}_{x}_{y}.jpg", getTileOps([2496, 2496]));
   const logarvalley = L.tileLayer("./maps/logarvalley/{z}_{x}_{y}.jpg", getTileOps([1761, 1761]));
   const mestia = L.tileLayer("./maps/mestia/{z}_{x}_{y}.jpg", getTileOps([2400, 2400]));
   const narva = L.tileLayer("./maps/narva/{z}_{x}_{y}.jpg", getTileOps([2805, 2805]));
@@ -57,7 +57,7 @@
       map: belaya,
       heightmap: {
         url: "./maps/belaya/heightmap_optimized.jpg",
-        scale: ((20 * 2) * 1.00) / 256, // 58
+        scale: ((20 * 2) * 1.00) / 255, // unoptimized: 58
       },
       locations: [
         Utils.createLocation("Militia Main", [3221, 554]),
@@ -73,7 +73,22 @@
       map: chora,
       heightmap: {
         url: "./maps/chora/heightmap_optimized.jpg",
-        scale: ((4 * 2) * 4.00) / 256, // 57 | 5
+        // short description of the scale values for calculation:
+        // 16bit heightmap originally holds -256 to 256 meters * z-scaling
+        // we optimize black-white range using photoshops exposure
+        // image shows 256 shades of grey, representing 512 meters, therefore 256 * 2
+        // using photoshops exposure, we optimize range,
+        // e.g. from original 256 shades we only use 28-31, so 4 shades representing 512 meters now,
+        // therefore 4 * 2
+        // since base heightmap is 16bit, this is no problem
+        // from landscape transform we know that z-scaling in this case is 4
+        // we divide by 255 because we use 8bit jpeg greyscale images,
+        // i.e. color value from canvas will be 0-255
+        // examples:
+        // black = 0; 4 * 2 * 4 / 255 * 0 = 0
+        // white = 255; 4 * 2 * 4 / 255 * 255 = 32
+        // so this heightmap goes from 0-32 meters
+        scale: ((4 * 2) * 4.00) / 255, // unoptimized: 57
       },
       locations: [
         Utils.createLocation("Russia Main", [2730, 600]),
@@ -97,7 +112,7 @@
       map: foolsroad,
       heightmap: {
         url: "./maps/foolsroad/heightmap.jpg",
-        scale: ((13 * 2) * 3.20) / 256,
+        scale: ((13 * 2) * 3.20) / 255,
       },
       locations: [
         Utils.createLocation("Russian Main", [1718, 1584]),
@@ -114,6 +129,10 @@
     },
     "Operation First Light": {
       map: forest,
+      heightmap: {
+        url: "./maps/forest/heightmap.jpg",
+        scale: ((176 * 2) * 0.08) / 255,
+      },
       locations: [
         Utils.createLocation("Militia Main", [139, 852]),
         Utils.createLocation("Railroad Village", [469, 882]),
@@ -128,7 +147,7 @@
       map: gorodok,
       heightmap: {
         url: "./maps/gorodok/heightmap.jpg",
-        scale: ((4 * 2) * 10.00) / 256,
+        scale: ((4 * 2) * 10.00) / 255,
       },
       locations: [
         Utils.createLocation("Militia Camp", [3608, 775]),
@@ -145,7 +164,7 @@
       map: jensens,
       heightmap: {
         url: "./maps/jensens/heightmap.jpg",
-        scale: ((230 * 2) * 0.15) / 256,
+        scale: ((230 * 2) * 0.15) / 255,
       },
       locations: [
         Utils.createLocation("US Main", [336, 800]),
@@ -156,7 +175,7 @@
       map: kohat,
       heightmap: {
         url: "./maps/kohat/heightmap.jpg",
-        scale: ((242 * 2) * 0.75) / 256,
+        scale: ((242 * 2) * 0.75) / 255,
       },
       locations: [
         Utils.createLocation("US Main", [1453, 2666]),
@@ -176,6 +195,10 @@
     },
     "Kokan": {
       map: kokan,
+      heightmap: {
+        url: "./maps/kokan/heightmap_optimized.jpg",
+        scale: ((23 * 2) * 1.00) / 255, // unoptimized: 43
+      },
       locations: [
         Utils.createLocation("INS Main", [185, 1543]),
         Utils.createLocation("Stonebend", [308, 996]),
@@ -192,7 +215,7 @@
       map: logarvalley,
       heightmap: {
         url: "./maps/logarvalley/heightmap_optimized.jpg",
-        scale: ((68 * 2) * 0.50) / 256, // 123
+        scale: ((68 * 2) * 0.50) / 255, // unoptimized: 123
       },
       locations: [
         Utils.createLocation("Old Militia Main", [692, 144]),
@@ -214,7 +237,7 @@
       map: mestia,
       heightmap: {
         url: "./maps/mestia/heightmap_optimized.jpg",
-        scale: ((82 * 2) * 1.20) / 256, // 96
+        scale: ((82 * 2) * 1.20) / 255, // unoptimized: 96
       },
       locations: [
         Utils.createLocation("Militia Main", [1062, 233]),
@@ -265,7 +288,7 @@
       map: sumari,
       heightmap: {
         url: "./maps/sumari/heightmap_optimized.jpg",
-        scale: ((12 * 2) * 0.75) / 256, // 80
+        scale: ((12 * 2) * 0.75) / 255, // unoptimized: 80
       },
       locations: [
         Utils.createLocation("US Main", [743, 137]),
@@ -288,7 +311,7 @@
       map: yehorivka,
       heightmap: {
         url: "./maps/yehorivka/heightmap.jpg",
-        scale: ((18 * 2) * 4.00) / 256,
+        scale: ((18 * 2) * 4.00) / 255,
       },
       locations: [
         Utils.createLocation("Russian Main", [864, 986]),
