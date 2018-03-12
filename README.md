@@ -7,7 +7,7 @@ SquadMC is a map-based mortar elevation and bearing calculator for [Squad](http:
 The most recent version is hosted here: https://squadmc.ende.pro
 
 ## features
- * highly accurate elevation and bearing calculation (currently no height difference taken into consideration)
+ * highly accurate elevation and bearing calculation, using heightmaps and mortar shell velocity
  * optimized for mobile
  * quick placement and dragging of mortar & target marker
  * min & max mortar range indication
