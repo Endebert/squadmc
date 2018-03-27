@@ -192,13 +192,27 @@
     this.l.debug("related MAPDATA:", MAPDATA[e.name]);
     updateCRS(e.name);
     setBounds(Utils.getMapBounds(e.name));
-    localStorage.setItem("lastLayer", e.name); // save layer name that is displayed
+    try {
+      localStorage.setItem("lastLayer", e.name); // save layer name that is displayed
+    } catch (err) {
+      this.l.warn("Unable to save lastLayer in localStorage:", err);
+    }
   };
 
   map.on("baselayerchange", onBaseLayerChange);
 
   // display last selected layer if page was used before
-  const m = localStorage.getItem("lastLayer") || Object.keys(MAPDATA)[0];
+  let m = localStorage.getItem("lastLayer");
+
+  const mapKeys = Object.keys(MAPDATA);
+
+  this.l.info("M IS ", m);
+
+  // another check to make sure m is one of the valid map keys
+  if (!m || mapKeys.indexOf(m) === -1) {
+    m = mapKeys[0];
+  }
+
   // try to show the complete map, but reInit will be run anyway
   map.setView(Utils.getMapBounds(m).getCenter(), 0);
   map.addLayer(MAPDATA[m].map); // finally add the map overlay

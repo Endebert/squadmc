@@ -359,7 +359,11 @@ const Utils = {
     log.debug("setDebugMode:", state);
     this.DEBUG = state;
     log.setDefaultLevel(this.DEBUG ? log.levels.DEBUG : log.levels.INFO);
-    localStorage.setItem("debug", this.DEBUG.toString());
+    try {
+      localStorage.setItem("debug", this.DEBUG.toString());
+    } catch (e) {
+      log.warn("Unable to save DEBUG flag in localStorage:", e);
+    }
   },
 
   /**
