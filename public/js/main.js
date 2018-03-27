@@ -206,8 +206,6 @@
 
   const mapKeys = Object.keys(MAPDATA);
 
-  this.l.info("M IS ", m);
-
   // another check to make sure m is one of the valid map keys
   if (!m || mapKeys.indexOf(m) === -1) {
     m = mapKeys[0];
