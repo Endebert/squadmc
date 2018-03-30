@@ -114,13 +114,19 @@ L.Mortar = L.LayerGroup.extend({
       const ctx = canvas.getContext("2d");
       const img = new Image();
       img.onload = () => {
+        // set new height
         canvas.width = img.width;
         canvas.height = img.height;
 
+        // clear & draw
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0);
 
-        this.heightmap.isLoaded = true;
+        // for some reason, sometimes the heightmap object can be unloaded before image loading is done,
+        // so we check if it exists first
+        if (this.heightmap) {
+          this.heightmap.isLoaded = true;
+        }
       };
       img.src = this.heightmap.url; // this initiates downloading the image
     }
