@@ -112,21 +112,15 @@ L.Mortar = L.LayerGroup.extend({
       // it is, so we clear, load the image, and draw the image on the canvas
       const canvas = this.options.canvas;
       const ctx = canvas.getContext("2d");
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
       const img = new Image();
       img.onload = () => {
         canvas.width = img.width;
         canvas.height = img.height;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0);
-        // now we can get the image data
-        const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-        // now we create a smaller array, only holding one value of the rgba set
-        const colorValues = new Array(data.length / 4);
-        for (let i = 0; i < colorValues.length; i++) {
-          colorValues[i] = data[i * 4];
-        }
-        // now we make this array available for later
-        this.heightmap.data = colorValues;
+
+        this.heightmap.isLoaded = true;
       };
       img.src = this.heightmap.url; // this initiates downloading the image
     }
@@ -139,15 +133,16 @@ L.Mortar = L.LayerGroup.extend({
    * @returns {number} scaled height in m, or 0 if heightmap is not available
    */
   getHeight(x, y) {
-    if (this.heightmap) {
+    if (this.heightmap && this.heightmap.isLoaded) {
       const width = this.options.canvas.width;
       const height = this.options.canvas.height;
-      if (x < 0 || x >= width || y < 0 || y >= height) { // return NaN if x or y outside of canvas
-        return Number.NaN;
+      if (x >= 0 && x < width && y >= 0 && y < height) { // return data if point is on heightmap
+        // get canvas, get its context, get image data of pixel, take first value, multiply by scale
+        return this.options.canvas.getContext("2d").getImageData(x, y, 1, 1).data[0] * this.heightmap.scale;
       }
-      return this.heightmap.data[(y * width + x)] * this.heightmap.scale;
+      return Number.NaN; // return NaN when out of bounds
     }
-    return 0;
+    return 0; // let's ignore height if there is no heightmap, or heightmap is not ready yet
   },
 
   /**
@@ -274,7 +269,14 @@ L.Mortar = L.LayerGroup.extend({
     Utils.setBearingText(`${strAngle}°`);
     Utils.setElevationText(`${strElevation}mil`);
     Utils.setDistanceText(`${strDist}m`);
-    Utils.setHeightDiffText(`${hDiff}m`);
+
+    // hacky way of showing that heightmap is not ready yet
+
+    if (this.heightmap && !this.heightmap.isLoaded) {
+      Utils.setHeightDiffText("LOADING");
+    } else {
+      Utils.setHeightDiffText(`${hDiff}m`);
+    }
   },
 
   /**
