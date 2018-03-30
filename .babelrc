@@ -3,7 +3,9 @@
     ["@babel/preset-env", {
       "targets": {
         "browsers": ["last 4 years", "safari >= 7", "iOS >= 7"]
-      }
-    }]
+      },
+      "modules": false
+    }],
+    ["minify"]
   ]
 }
