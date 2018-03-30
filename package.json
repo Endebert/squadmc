@@ -22,7 +22,7 @@
     "@babel/cli": "7.0.0-beta.42",
     "@babel/core": "7.0.0-beta.42",
     "@babel/preset-env": "7.0.0-beta.42",
-    "babel-preset-minify": "^0.4.0-alpha.caaefb4c",
+    "babel-preset-minify": "0.4.0-alpha.caaefb4c",
     "eslint": "^4.15.0",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-html": "^4.0.1",
