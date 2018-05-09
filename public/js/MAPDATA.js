@@ -26,7 +26,8 @@
   const foolsroad = L.tileLayer("./maps/foolsroad/{z}_{x}_{y}.jpg", getTileOps([1774, 1736]));
   const forest = L.tileLayer("./maps/forest/{z}_{x}_{y}.jpg", getTileOps([1200, 1200]));
   const gorodok = L.tileLayer("./maps/gorodok/{z}_{x}_{y}.jpg", getTileOps([4340, 4340]));
-  const jensens = L.tileLayer("./maps/jensens/{z}_{x}_{y}.jpg", getTileOps([1510, 1510]));  
+  const jensens = L.tileLayer("./maps/jensens/{z}_{x}_{y}.jpg", getTileOps([1510, 1510]));
+  const kamdesh = L.tileLayer("./maps/kamdesh/{z}_{x}_{y}.jpg", getTileOps([4036, 4036]));
   const kohat = L.tileLayer("./maps/kohat/{z}_{x}_{y}.jpg", getTileOps([4017, 4017]));
   const kokan = L.tileLayer("./maps/kokan/{z}_{x}_{y}.jpg", getTileOps([2496, 2496]));
   const logarvalley = L.tileLayer("./maps/logarvalley/{z}_{x}_{y}.jpg", getTileOps([1761, 1761]));
@@ -169,6 +170,30 @@
       locations: [
         Utils.createLocation("US Main", [336, 800]),
         Utils.createLocation("Vehicles", [599, 977]),
+      ],
+    },
+    "Kamdesh Highlands": {
+      map: kamdesh,
+      locations: [
+        Utils.createLocation("Sao", [2142, 1066]),
+        Utils.createLocation("Naray", [1890, 1500]),
+        Utils.createLocation("Paprok", [1581, 1829]),
+        Utils.createLocation("Manyal", [1334, 2197]),
+        Utils.createLocation("Shako", [1048, 2753]),
+        Utils.createLocation("Nahrain", [2097, 1805]),
+        Utils.createLocation("Godri", [2101, 2651]),
+        Utils.createLocation("Papra", [2869, 1175]),
+        Utils.createLocation("Khune", [2992, 2089]),
+        Utils.createLocation("Kaga", [2919, 3053]),
+        Utils.createLocation("Agasi", [1054, 1281]),
+        Utils.createLocation("Storage Bunker", [1492, 3086]),
+        Utils.createLocation("Toba", [3116, 859]),
+        Utils.createLocation("Aringshah", [3124, 1575]),
+        Utils.createLocation("Alingal", [3029, 2489]),
+        Utils.createLocation("Badeen", [2290, 3447]),
+        Utils.createLocation("Hemp Farm", [1888, 3238]),
+        Utils.createLocation("Nilaw", [1565, 2631]),
+        Utils.createLocation("Training Camp", [816, 2359]),
       ],
     },
     "Kohat Toi River Valley": {
