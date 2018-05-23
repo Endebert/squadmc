@@ -32,13 +32,17 @@
   const kokan = L.tileLayer("./maps/kokan/{z}_{x}_{y}.jpg", getTileOps([2496, 2496]));
   const logarvalley = L.tileLayer("./maps/logarvalley/{z}_{x}_{y}.jpg", getTileOps([1761, 1761]));
   const mestia = L.tileLayer("./maps/mestia/{z}_{x}_{y}.jpg", getTileOps([2400, 2400]));
-  const narva = L.tileLayer("./maps/narva/{z}_{x}_{y}.jpg", getTileOps([2805, 2805]));
+  const narva = L.tileLayer("./maps/narva/{z}_{x}_{y}.jpg", getTileOps([2800, 2800]));
   const sumari = L.tileLayer("./maps/sumari/{z}_{x}_{y}.jpg", getTileOps([1300, 1300]));
   const yehorivka = L.tileLayer("./maps/yehorivka/{z}_{x}_{y}.jpg", getTileOps([4034, 4034]));
 
   MAPDATA = {
     "Al Basrah": {
       map: albasrah,
+      heightmap: {
+        url: "./maps/albasrah/heightmap_optimized.jpg",
+        scale: ((11.73 * 2) * 0.1) / 255,
+      },
       locations: [
         Utils.createLocation("Village", [2000, 760]),
         Utils.createLocation("US Airfield", [770, 1070]),
@@ -279,6 +283,10 @@
     },
     "Narva": {
       map: narva,
+      heightmap: {
+        url: "./maps/narva/heightmap_optimized.jpg",
+        scale: ((8.02 * 2) * 1.00) / 255,
+      },
       locations: [
         Utils.createLocation("US Main", [570, 215]),
         Utils.createLocation("Abandoned Airfield", [778, 598]),
