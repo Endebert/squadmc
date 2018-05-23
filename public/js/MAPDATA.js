@@ -41,7 +41,7 @@
       map: albasrah,
       heightmap: {
         url: "./maps/albasrah/heightmap_optimized.jpg",
-        scale: ((11.73 * 2) * 0.1) / 255,
+        scale: ((24.04 * 5.12) * 0.1) / 255,
       },
       locations: [
         Utils.createLocation("Village", [2000, 760]),
@@ -285,7 +285,7 @@
       map: narva,
       heightmap: {
         url: "./maps/narva/heightmap_optimized.jpg",
-        scale: ((8.02 * 2) * 1.00) / 255,
+        scale: ((8.21 * 5.12) * 1.00) / 255,
       },
       locations: [
         Utils.createLocation("US Main", [570, 215]),
