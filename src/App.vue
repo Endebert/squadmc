@@ -299,6 +299,9 @@ export default {
       // since selectedMap is already defined and doesn't trigger changeMap, we do it here manually
       this.changeMap(this.selectedMap);
     }
+    setTimeout(() => {
+      this.map.invalidateSize();
+    }, 10);
   },
   methods: {
     /**
