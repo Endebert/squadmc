@@ -1,25 +1,20 @@
 module.exports = {
-  extends: "airbnb-base",
-  plugins: ["html"],
-  rules: {
-    "max-len": ["error", { code: 120 }],
-    "quotes": ["error", "double"],
-    "quote-props": ["error", "consistent"],
-    "class-methods-use-this": 0,
-    "prefer-destructuring": 0,
-    "no-plusplus": 0,
-    "no-mixed-operators": 0,
-    "prefer-arrow-callback": ["error"],
-    "prefer-rest-params": 0,
-    "no-console": 0,
-  },
+  root: true,
   env: {
-    "browser": true,
+    node: true,
   },
-  globals: {
-    "log": true,
-    "L": true,
-    "Utils": true,
-    "MAPDATA": true,
+  extends: ["plugin:vue/essential", "@vue/airbnb"],
+  rules: {
+    "no-console": process.env.NODE_ENV === "production" ? "error" : "off",
+    "no-debugger": process.env.NODE_ENV === "production" ? "error" : "off",
+    quotes: ["error", "double"],
+    "no-mixed-operators": "off",
+    "linebreak-style": "off",
+    "max-len": ["error", 120],
+    "prefer-destructuring": "off",
+    "no-plusplus": "off",
+  },
+  parserOptions: {
+    parser: "babel-eslint",
   },
 };
