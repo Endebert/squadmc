@@ -628,7 +628,7 @@ export default {
     this.setupMap();
 
     // set selected map, defined already if loaded from localStorage
-    if (!this.selectedMap) {
+    if (!this.selectedMap || this.maps.indexOf(this.selectedMap) === -1) {
       this.selectedMap = this.maps[0];
     } else {
       // since selectedMap is already defined and doesn't trigger changeMap, we do it here manually
