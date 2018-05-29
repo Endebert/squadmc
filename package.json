@@ -1,31 +1,34 @@
 {
   "name": "squadmc",
-  "version": "1.0.0",
-  "description": "A map based mortar calculator for Squad",
-  "engines": {
-    "node": "8.9.1"
-  },
+  "description": "The map-based mortar calculator for Squad",
+  "version": "0.1.0",
+  "private": true,
   "scripts": {
-    "build": "babel public --out-dir legacy --source-maps --copy-files"
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Endebert/squadmc"
+  "dependencies": {
+    "@babel/polyfill": "^7.0.0-beta.47",
+    "eslint-config-mourner": "^2.0.3",
+    "register-service-worker": "^1.0.0",
+    "vue": "^2.5.16",
+    "vuetify": "^1.0.16"
   },
-  "keywords": [
-    "squad",
-    "mortar",
-    "calculator"
-  ],
-  "license": "MIT",
   "devDependencies": {
-    "@babel/cli": "7.0.0-beta.42",
-    "@babel/core": "7.0.0-beta.42",
-    "@babel/preset-env": "7.0.0-beta.42",
-    "babel-preset-minify": "0.4.0-alpha.caaefb4c",
-    "eslint": "^4.15.0",
-    "eslint-config-airbnb-base": "^12.1.0",
-    "eslint-plugin-html": "^4.0.1",
-    "eslint-plugin-import": "^2.8.0"
-  }
+    "@vue/cli-plugin-babel": "^3.0.0-beta.11",
+    "@vue/cli-plugin-eslint": "^3.0.0-beta.11",
+    "@vue/cli-plugin-pwa": "^3.0.0-beta.11",
+    "@vue/cli-service": "^3.0.0-beta.11",
+    "@vue/eslint-config-airbnb": "^3.0.0-beta.11",
+    "vue-cli-plugin-vuetify": "^0.1.3",
+    "vue-template-compiler": "^2.5.16"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 8",
+    "safari >= 8",
+    "iOS >= 8"
+  ]
 }

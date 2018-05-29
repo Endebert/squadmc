@@ -1,83 +1,24 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="Squad MC">
-  <link rel="apple-touch-icon" sizes="57x57" href="./favicon/apple-icon-57x57.png">
-  <link rel="apple-touch-icon" sizes="60x60" href="./favicon/apple-icon-60x60.png">
-  <link rel="apple-touch-icon" sizes="72x72" href="./favicon/apple-icon-72x72.png">
-  <link rel="apple-touch-icon" sizes="76x76" href="./favicon/apple-icon-76x76.png">
-  <link rel="apple-touch-icon" sizes="114x114" href="./favicon/apple-icon-114x114.png">
-  <link rel="apple-touch-icon" sizes="120x120" href="./favicon/apple-icon-120x120.png">
-  <link rel="apple-touch-icon" sizes="144x144" href="./favicon/apple-icon-144x144.png">
-  <link rel="apple-touch-icon" sizes="152x152" href="./favicon/apple-icon-152x152.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="./favicon/apple-icon-180x180.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="./favicon/android-icon-192x192.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="./favicon/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="96x96" href="./favicon/favicon-96x96.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="./favicon/favicon-16x16.png">
-  <link rel="manifest" href="./favicon/manifest.json">
-
-  <meta name="msapplication-TileColor" content="#212121">
-  <meta name="msapplication-TileImage" content="./favicon/ms-icon-144x144.png">
-  <meta name="theme-color" content="#212121">
-
-  <title>SquadMC - A map-based mortar elevation and bearing calculator for Squad</title>
-
-  <!--css files-->
-  <link rel="stylesheet" href="lib/leaflet/leaflet.css"/>
-  <link rel="stylesheet" href="lib/leaflet-easybutton/easy-button.css"/>
-  <link rel="stylesheet" href="css/L.Control.MousePosition.css"/>
-  <link rel="stylesheet" href="css/custom.css"/>
-</head>
-<body>
-
-<!--Top ribbon containing map name, etc.-->
-<div id="mapTitle" align="center">
-  <div id="mapName"></div>
-  <table>
-    <tr>
-      <td align="right">
-        <label for="mortarPos"><img class="inline" src="images/mortar.png" width="16px" height="16px"/></label><input type="text" class="inline keypad" id="mortarPos" style="pointer-events: all;" value=""/>
-      </td>
-      <td align="left">
-        <label for="targetPos"><img class="inline" src="images/target.png" width="16px" height="16px"/></label><input type="text" class="inline keypad" id="targetPos" style="pointer-events: all;" value="" />
-      </td>
-    </tr>
-    <tr>
-      <td align="right"><div class="keypad" id="mapBearing"></div></td>
-      <td align="left"><div class="keypad" id="mapElevation"></div></td>
-    </tr>
-    <tr>
-      <td align="right"><div class="keypad" id="mapDistance"></div></td>
-      <td align="left"><div class="keypad" id="mapHeightDiff"></div></td>
-    </tr>
-  </table>
-</div>
-
-<!--Leaflet map holder-->
-<div id="map"></div>
-
-<!--div used for displaying mouse coordinates-->
-<div id="mousecoord" class="leaflet-control-mouseposition-target"></div>
-
-<!--Now all js files and libraries-->
-<script type="text/javascript" defer src="lib/babel-polyfill/polyfill.js"></script>
-<script type="text/javascript" defer src="lib/custom-polyfill/CustomEvent.js"></script>
-<script type="text/javascript" defer src="lib/leaflet/leaflet-src.js"></script>
-<script type="text/javascript" defer src="lib/leaflet-easybutton/easy-button.js"></script>
-<script type="text/javascript" defer src="lib/loglevel/loglevel.js"></script>
-<script type="text/javascript" defer src="js/Utils.js"></script>
-<script type="text/javascript" defer src="js/MAPDATA.js"></script>
-<script type="text/javascript" defer src="js/L.Mortar.js"></script>
-<script type="text/javascript" defer src="js/L.Locations.js"></script>
-<script type="text/javascript" defer src="js/L.SquadGrid.js"></script>
-<script type="text/javascript" defer src="js/L.Control.MousePosition.js"></script>
-<script type="text/javascript" defer src="js/main.js"></script>
-
-</body>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#212121">
+    <meta name="msapplication-TileColor" content="#212121">
+    <meta name="theme-color" content="#212121">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100:300,400,500,700,900|Material+Icons" rel="stylesheet">
+    <title>SquadMC - The Mortar Calculator for Squad</title>
+  </head>
+  <body>
+    <noscript>
+      <strong>We're sorry but squadmc_vue doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+    </noscript>
+    <div id="app"></div>
+    <!-- built files will be auto injected -->
+  </body>
 </html>
