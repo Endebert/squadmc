@@ -193,7 +193,7 @@
                 <v-list-tile-title>
                   <v-layout row>
                     <v-flex text-xs-center class="px-1">
-                      {{`✵${pad(Math.round(bearing * 10) / 10, 5)}°`}}
+                      {{`✵${pad((Math.round(bearing * 10) / 10).toFixed(1), 5)}°`}}
                     </v-flex>
                     <v-flex text-xs-center class="px-1">
                       {{Number.isNaN(elevation) ? "∠XXXXmil" : `∠${pad(Math.round(elevation), 4)}mil`}}
