@@ -512,8 +512,8 @@ export default {
       bearing = (Math.round((180 - bearing) * 10) / 10) % 360;
 
       // now we get the height and calculate the difference
-      const mortarHeight = this.squadMap.getHeightmapHolder().getHeight(s.lng, s.lat);
-      const targetHeight = this.squadMap.getHeightmapHolder().getHeight(e.lng, e.lat);
+      const mortarHeight = this.squadMap.hasHeightmap ? this.squadMap.getHeightmapHolder().getHeight(s.lng, s.lat) : 0;
+      const targetHeight = this.squadMap.hasHeightmap ? this.squadMap.getHeightmapHolder().getHeight(e.lng, e.lat) : 0;
       // console.log(`calcMortar: m:${mortarHeight} t:${targetHeight}`);
 
       const heightDiff = targetHeight - mortarHeight;
