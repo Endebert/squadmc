@@ -1,6 +1,6 @@
 <template>
-  <v-app dark onselectstart="return false">
-    <div id="map" class="absolute full">
+  <v-app dark onselectstart="return false" class="fixed">
+    <div id="map" class="fixed">
     </div>
     <v-menu
         v-model="showMenu"
@@ -17,7 +17,7 @@
                 <img :src="mUrl" width="48px" height="48px">
               </v-btn>
             </v-layout>
-            <v-layout column >
+            <v-layout column>
               <v-btn icon large v-for="(mUrl) in targetColors" :key="mUrl" @click="onSelect(mUrl, PIN_TYPE.TARGET)">
                 <img :src="mUrl" width="48px" height="48px">
               </v-btn>
@@ -161,65 +161,65 @@
           item-value="text"
       ></v-select>
     </v-toolbar>
-    <v-content class="d-inline-flex align-end">
+    <canvas id="heightmap"></canvas>
+    <div style="position: fixed; bottom: 0; width: 100%">
       <v-card class="ma-2 elevation-0 d-inline-flex" v-if="showKeypadTimeout">
         <v-card-text class="keypadLabel d-inline">
           {{mouseKeypad}}
         </v-card-text>
       </v-card>
-    </v-content>
-    <v-footer v-if="mortar && target" class="front secondary" height="auto">
-      <v-speed-dial>
-        <v-btn fab small slot="activator">
-          <img :src="mortar.mUrl" width="48px" height="48px">
-        </v-btn>
-        <v-btn icon v-for="(aMortar, index) in placedMortars" :key="index" @click="mortar = placedMortars[index]">
-          <img :src="aMortar.mUrl" width="48px" height="48px">
-        </v-btn>
-      </v-speed-dial>
-      <v-icon small :color="distLine && distLine.options.color">arrow_forward_ios</v-icon>
-      <v-speed-dial v-if="target">
-        <v-btn fab small slot="activator">
-          <img :src="target.mUrl" width="48px" height="48px">
-        </v-btn>
-        <v-btn icon v-for="(aTarget, index) in placedTargets" :key="index" @click="target = placedTargets[index]">
-          <img :src="aTarget.mUrl" width="48px" height="48px">
-        </v-btn>
-      </v-speed-dial>
-      <v-flex>
-        <v-list class="pa-0 d-inline-flex">
-          <v-list-tile style="font-family: monospace">
-            <v-list-tile-content>
-              <v-list-tile-title>
-                <v-layout row>
-                  <v-flex text-xs-center class="px-1">
-                    {{`✵${pad(Math.round(bearing * 10) / 10, 5)}°`}}
-                  </v-flex>
-                  <v-flex text-xs-center class="px-1">
-                    {{Number.isNaN(elevation) ? "∠XXXXmil" : `∠${pad(Math.round(elevation), 4)}mil`}}
-                  </v-flex>
-                </v-layout>
-              </v-list-tile-title>
-              <v-list-tile-sub-title>
-                <v-layout row>
-                  <v-flex text-xs-center class="px-1">
-                    {{`↔${pad(Math.round(dist), 4)}m`}}
-                  </v-flex>
-                  <v-flex text-xs-center class="px-1">
-                    {{
-                    heightDiff > 0 ?
-                    `↕+${pad(Math.round(heightDiff), 3)}m` :
-                    `↕-${pad(Math.round(-heightDiff), 3)}m`
-                    }}
-                  </v-flex>
-                </v-layout>
-              </v-list-tile-sub-title>
-            </v-list-tile-content>
-          </v-list-tile>
-        </v-list>
-      </v-flex>
-    </v-footer>
-    <canvas id="heightmap"></canvas>
+      <v-footer v-if="mortar && target" class="front secondary" height="auto">
+        <v-speed-dial>
+          <v-btn fab small slot="activator">
+            <img :src="mortar.mUrl" width="48px" height="48px">
+          </v-btn>
+          <v-btn icon v-for="(aMortar, index) in placedMortars" :key="index" @click="mortar = placedMortars[index]">
+            <img :src="aMortar.mUrl" width="48px" height="48px">
+          </v-btn>
+        </v-speed-dial>
+        <v-icon small :color="distLine && distLine.options.color">arrow_forward_ios</v-icon>
+        <v-speed-dial v-if="target">
+          <v-btn fab small slot="activator">
+            <img :src="target.mUrl" width="48px" height="48px">
+          </v-btn>
+          <v-btn icon v-for="(aTarget, index) in placedTargets" :key="index" @click="target = placedTargets[index]">
+            <img :src="aTarget.mUrl" width="48px" height="48px">
+          </v-btn>
+        </v-speed-dial>
+        <v-flex>
+          <v-list class="pa-0 d-inline-flex">
+            <v-list-tile style="font-family: monospace">
+              <v-list-tile-content>
+                <v-list-tile-title>
+                  <v-layout row>
+                    <v-flex text-xs-center class="px-1">
+                      {{`✵${pad(Math.round(bearing * 10) / 10, 5)}°`}}
+                    </v-flex>
+                    <v-flex text-xs-center class="px-1">
+                      {{Number.isNaN(elevation) ? "∠XXXXmil" : `∠${pad(Math.round(elevation), 4)}mil`}}
+                    </v-flex>
+                  </v-layout>
+                </v-list-tile-title>
+                <v-list-tile-sub-title>
+                  <v-layout row>
+                    <v-flex text-xs-center class="px-1">
+                      {{`↔${pad(Math.round(dist), 4)}m`}}
+                    </v-flex>
+                    <v-flex text-xs-center class="px-1">
+                      {{
+                      heightDiff > 0 ?
+                      `↕+${pad(Math.round(heightDiff), 3)}m` :
+                      `↕-${pad(Math.round(-heightDiff), 3)}m`
+                      }}
+                    </v-flex>
+                  </v-layout>
+                </v-list-tile-sub-title>
+              </v-list-tile-content>
+            </v-list-tile>
+          </v-list>
+        </v-flex>
+      </v-footer>
+    </div>
   </v-app>
 </template>
 
@@ -731,17 +731,17 @@ export default {
   body {
     overflow-y: hidden;
   }
+
   body::-webkit-scrollbar {
     display: none;
   }
 
-  .absolute {
-    position: absolute;
-  }
-
-  .full {
-    height: 100%;
-    width: 100%;
+  .fixed {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
   }
 
   .front {
