@@ -284,6 +284,22 @@ export default {
       pad, // reference to padding function used for formatting distance, heightDiff, etc.
     };
   },
+  mounted() {
+    // console.log("MOUNTED");
+
+    // remove right click to fix context menu opening when long pressing pin for dragging
+    document.oncontextmenu = function retFalse() { return false; };
+
+    this.setupMap();
+
+    // set selected map, defined already if loaded from localStorage
+    if (!this.selectedMap || this.maps.indexOf(this.selectedMap) === -1) {
+      this.selectedMap = this.maps[0];
+    } else {
+      // since selectedMap is already defined and doesn't trigger changeMap, we do it here manually
+      this.changeMap(this.selectedMap);
+    }
+  },
   methods: {
     /**
      * Does the inital leaflet map setup, adding listeners for mouse click and move
@@ -623,22 +639,6 @@ export default {
     openGitHub() {
       window.open("https://github.com/Endebert/squadmc", "_blank");
     },
-  },
-  mounted() {
-    // console.log("MOUNTED");
-
-    // remove right click to fix context menu opening when long pressing pin for dragging
-    document.oncontextmenu = function retFalse() { return false; };
-
-    this.setupMap();
-
-    // set selected map, defined already if loaded from localStorage
-    if (!this.selectedMap || this.maps.indexOf(this.selectedMap) === -1) {
-      this.selectedMap = this.maps[0];
-    } else {
-      // since selectedMap is already defined and doesn't trigger changeMap, we do it here manually
-      this.changeMap(this.selectedMap);
-    }
   },
   watch: {
     /**
