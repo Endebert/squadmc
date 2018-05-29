@@ -1,7 +1,5 @@
 <template>
   <v-app dark onselectstart="return false" class="fixed">
-    <div id="map" class="fixed">
-    </div>
     <v-menu
         v-model="showMenu"
         absolute
@@ -148,10 +146,14 @@
     <v-toolbar
         app
         dense
+        fixed
         clipped-left
     >
-      <v-toolbar-side-icon @click.stop="drawer = !drawer"><img src="/img/svg/icon.svg" width="40px" height="40px">
+      <v-toolbar-side-icon @click.stop="drawer = !drawer">
+        <v-icon>menu</v-icon>
       </v-toolbar-side-icon>
+      <img src="/img/svg/icon.svg" width="40px" height="40px">
+
       <v-select
           :items="maps"
           auto
@@ -161,65 +163,68 @@
           item-value="text"
       ></v-select>
     </v-toolbar>
+    <v-content class="fixed">
+      <div id="map" style="width: 100%; height: 100%;"></div>
+      <div style="position: fixed; bottom: 0; width: 100%">
+        <v-card class="ma-2 elevation-0 d-inline-flex" v-if="showKeypadTimeout">
+          <v-card-text class="keypadLabel d-inline">
+            {{mouseKeypad}}
+          </v-card-text>
+        </v-card>
+        <v-footer v-if="mortar && target" class="front secondary" height="auto">
+          <v-speed-dial>
+            <v-btn fab small slot="activator">
+              <img :src="mortar.mUrl" width="48px" height="48px">
+            </v-btn>
+            <v-btn icon v-for="(aMortar, index) in placedMortars" :key="index" @click="mortar = placedMortars[index]">
+              <img :src="aMortar.mUrl" width="48px" height="48px">
+            </v-btn>
+          </v-speed-dial>
+          <v-icon small :color="distLine && distLine.options.color">arrow_forward_ios</v-icon>
+          <v-speed-dial v-if="target">
+            <v-btn fab small slot="activator">
+              <img :src="target.mUrl" width="48px" height="48px">
+            </v-btn>
+            <v-btn icon v-for="(aTarget, index) in placedTargets" :key="index" @click="target = placedTargets[index]">
+              <img :src="aTarget.mUrl" width="48px" height="48px">
+            </v-btn>
+          </v-speed-dial>
+          <v-flex>
+            <v-list class="pa-0 d-inline-flex">
+              <v-list-tile style="font-family: monospace">
+                <v-list-tile-content>
+                  <v-list-tile-title>
+                    <v-layout row>
+                      <v-flex text-xs-center class="px-1">
+                        {{`✵${pad((Math.round(bearing * 10) / 10).toFixed(1), 5)}°`}}
+                      </v-flex>
+                      <v-flex text-xs-center class="px-1">
+                        {{Number.isNaN(elevation) ? "∠XXXXmil" : `∠${pad(Math.round(elevation), 4)}mil`}}
+                      </v-flex>
+                    </v-layout>
+                  </v-list-tile-title>
+                  <v-list-tile-sub-title>
+                    <v-layout row>
+                      <v-flex text-xs-center class="px-1">
+                        {{`↔${pad(Math.round(dist), 4)}m`}}
+                      </v-flex>
+                      <v-flex text-xs-center class="px-1">
+                        {{
+                        heightDiff > 0 ?
+                        `↕+${pad(Math.round(heightDiff), 3)}m` :
+                        `↕-${pad(Math.round(-heightDiff), 3)}m`
+                        }}
+                      </v-flex>
+                    </v-layout>
+                  </v-list-tile-sub-title>
+                </v-list-tile-content>
+              </v-list-tile>
+            </v-list>
+          </v-flex>
+        </v-footer>
+      </div>
+    </v-content>
     <canvas id="heightmap"></canvas>
-    <div style="position: fixed; bottom: 0; width: 100%">
-      <v-card class="ma-2 elevation-0 d-inline-flex" v-if="showKeypadTimeout">
-        <v-card-text class="keypadLabel d-inline">
-          {{mouseKeypad}}
-        </v-card-text>
-      </v-card>
-      <v-footer v-if="mortar && target" class="front secondary" height="auto">
-        <v-speed-dial>
-          <v-btn fab small slot="activator">
-            <img :src="mortar.mUrl" width="48px" height="48px">
-          </v-btn>
-          <v-btn icon v-for="(aMortar, index) in placedMortars" :key="index" @click="mortar = placedMortars[index]">
-            <img :src="aMortar.mUrl" width="48px" height="48px">
-          </v-btn>
-        </v-speed-dial>
-        <v-icon small :color="distLine && distLine.options.color">arrow_forward_ios</v-icon>
-        <v-speed-dial v-if="target">
-          <v-btn fab small slot="activator">
-            <img :src="target.mUrl" width="48px" height="48px">
-          </v-btn>
-          <v-btn icon v-for="(aTarget, index) in placedTargets" :key="index" @click="target = placedTargets[index]">
-            <img :src="aTarget.mUrl" width="48px" height="48px">
-          </v-btn>
-        </v-speed-dial>
-        <v-flex>
-          <v-list class="pa-0 d-inline-flex">
-            <v-list-tile style="font-family: monospace">
-              <v-list-tile-content>
-                <v-list-tile-title>
-                  <v-layout row>
-                    <v-flex text-xs-center class="px-1">
-                      {{`✵${pad((Math.round(bearing * 10) / 10).toFixed(1), 5)}°`}}
-                    </v-flex>
-                    <v-flex text-xs-center class="px-1">
-                      {{Number.isNaN(elevation) ? "∠XXXXmil" : `∠${pad(Math.round(elevation), 4)}mil`}}
-                    </v-flex>
-                  </v-layout>
-                </v-list-tile-title>
-                <v-list-tile-sub-title>
-                  <v-layout row>
-                    <v-flex text-xs-center class="px-1">
-                      {{`↔${pad(Math.round(dist), 4)}m`}}
-                    </v-flex>
-                    <v-flex text-xs-center class="px-1">
-                      {{
-                      heightDiff > 0 ?
-                      `↕+${pad(Math.round(heightDiff), 3)}m` :
-                      `↕-${pad(Math.round(-heightDiff), 3)}m`
-                      }}
-                    </v-flex>
-                  </v-layout>
-                </v-list-tile-sub-title>
-              </v-list-tile-content>
-            </v-list-tile>
-          </v-list>
-        </v-flex>
-      </v-footer>
-    </div>
   </v-app>
 </template>
 
@@ -238,7 +243,7 @@ export default {
   data() {
     return {
       showMenu: false, // menu when clicking on map
-      drawer: false, // left navigation drawer
+      drawer: undefined, // left navigation drawer
       map: undefined, // leaflet map object
       maps: getMapNames(), // map names for top selector
       grid: new SquadGrid(), // keypad grid
@@ -383,7 +388,7 @@ export default {
      * @param e "click" event
      */
     onMapClick(e) {
-      // console.log("onMapClick:", e);
+      console.log("onMapClick:", e);
       if (this.showKeypadTimeout) {
         clearTimeout(this.showKeypadTimeout);
         this.showKeypadTimeout = undefined;
@@ -427,7 +432,7 @@ export default {
 
       if (!dragging) {
         this.menuLatlng = e.latlng;
-        this.menuPos = e.containerPoint;
+        this.menuPos = new Point(e.originalEvent.x, e.originalEvent.y);
         this.showMenu = true;
       }
     },
