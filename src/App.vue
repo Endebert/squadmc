@@ -164,8 +164,8 @@
       ></v-select>
     </v-toolbar>
     <v-content class="fixed">
-      <div id="map" style="width: 100%; height: 100%;"></div>
-      <div style="position: fixed; bottom: 0; width: 100%">
+      <div id="map" class="fixed"></div>
+      <div style="position: fixed; bottom: 0; width: 100%" >
         <v-card class="ma-2 elevation-0 d-inline-flex" v-if="showKeypadTimeout">
           <v-card-text class="keypadLabel d-inline">
             {{mouseKeypad}}
