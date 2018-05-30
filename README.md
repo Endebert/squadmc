@@ -1,4 +1,4 @@
-# SquadMC - The Map-based Mortar Calculator For Squad
+# SquadMC - The map-based mortar calculator for Squad
 
 SquadMC is a map-based mortar elevation and bearing calculator for the game [*Squad*](http://joinsquad.com/).
 
@@ -28,8 +28,8 @@ SquadMC is a map-based mortar elevation and bearing calculator for the game [*Sq
 
 ### Installation Prerequisites
 
- * You need a recent NodeJS version installed on your machine. Get it [here.](https://nodejs.org/en/)
- * Install yarn for a faster installation:
+ * you need a recent NodeJS version installed on your machine. Get it [here.](https://nodejs.org/en/)
+ * install yarn for a faster installation:
    ```
    npm install -g yarn
    ```
@@ -55,6 +55,7 @@ For an optimized build ready for deployment, execute:
 ```
 yarn run build
 ```
+The build will be contained in the `/dist` folder.
 
 ## Contributors
  * [Trikolon](https://github.com/Trikolon)
