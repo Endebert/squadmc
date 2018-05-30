@@ -164,8 +164,8 @@
       ></v-select>
     </v-toolbar>
     <v-content class="fixed">
-      <div id="map" style="width: 100%; height: 100%;"></div>
-      <div style="position: fixed; bottom: 0; width: 100%">
+      <div id="map" :class="mapClass"></div>
+      <div style="position: fixed; bottom: 0; width: 100%" >
         <v-card class="ma-2 elevation-0 d-inline-flex" v-if="showKeypadTimeout">
           <v-card-text class="keypadLabel d-inline">
             {{mouseKeypad}}
@@ -257,7 +257,7 @@ export default {
       mortar: undefined, // active mortar (for line drawing)
       target: undefined, // active target (for line drawing)
       distLine: undefined, // the line
-
+      mapClass: undefined,
       // available colors
       mortarColors: ["/img/svg/mortar_pin_red.svg",
         "/img/svg/mortar_pin_green.svg", "/img/svg/mortar_pin_blue.svg", "/img/svg/mortar_pin.svg"],
@@ -300,6 +300,18 @@ export default {
       this.changeMap(this.selectedMap);
     }
     setTimeout(() => {
+      // dirty hack to set map position to fixed on mobile devices
+      // on mobile safari, map doesn't show if not fixed
+      // but if always fixed, persistent navbar is over map on desktop, which is clunky
+      // so this is the compromise.
+      if (!this.drawer) {
+        const style = document.getElementById("map").style;
+        style.position = "fixed";
+        style.left = "0";
+        style.right = "0";
+        style.top = "0";
+        style.bottom = "0";
+      }
       this.map.invalidateSize();
     }, 10);
   },
@@ -349,8 +361,8 @@ export default {
       const x = 256 / squadMap.bounds.getNorth(); // 256 is inital tile size
       const y = 256 / squadMap.bounds.getEast();
       this.map.options.crs.transformation = new Transformation(y, 0, x, 0);
-      this.map.fitBounds(squadMap.bounds.pad(0.1));
-      this.map.setMaxBounds(squadMap.bounds.pad(0.1));
+      this.map.fitBounds(squadMap.bounds);
+      this.map.setMaxBounds(squadMap.bounds.pad(0.5));
 
       console.log("setting up grid");
       this.grid.setBounds(squadMap.bounds);
@@ -784,6 +796,8 @@ export default {
   #map {
     cursor: crosshair;
     z-index: 0;
+    width: 100%;
+    height: 100%;
   }
 
   #heightmap {
