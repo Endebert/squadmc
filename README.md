@@ -61,7 +61,8 @@ The build will be contained in the `/dist` folder.
  * [Trikolon](https://github.com/Trikolon)
 
 ## Attributions
- * Visual framework: [Vue](https://vuejs.org/) & [Vuetify](https://vuetifyjs.com)
- * Map framework: [leaflet](http://leafletjs.com/)
  * Keypad grid originally based on [Leaflet.SimpleGraticule](https://github.com/ablakey/Leaflet.SimpleGraticule), but not much is left from the original code
  * Special thanks to the people over at [www.airpressuretendency.net](https://www.airpressuretendency.net/fcsquad/squadmaps/). Their interactive maps were the inspiration for this project.
+ * UI powered by [Vue.js![Vue.js](./public/img/logos/logo_vuejs.png)](https://vuejs.org/) and [Vuetify![Vue.js](./public/img/logos/logo_vuetify.png)](http://vuetifyjs.com/)
+ * Maps © [Offworld Industries](http://joinsquad.com/), powered by [![Leaflet](./public/img/logos/logo_leaflet.png)](https://leafletjs.com/)
+ * Tested with ![BrowserStack](./public/img/logos/logo_browserstack.png)
