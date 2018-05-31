@@ -65,4 +65,4 @@ The build will be contained in the `/dist` folder.
  * Special thanks to the people over at [www.airpressuretendency.net](https://www.airpressuretendency.net/fcsquad/squadmaps/). Their interactive maps were the inspiration for this project.
  * UI powered by [Vue.js![Vue.js](./public/img/logos/logo_vuejs.png)](https://vuejs.org/) and [Vuetify![Vue.js](./public/img/logos/logo_vuetify.png)](http://vuetifyjs.com/)
  * Maps © [Offworld Industries](http://joinsquad.com/), powered by [![Leaflet](./public/img/logos/logo_leaflet.png)](https://leafletjs.com/)
- * Tested with ![BrowserStack](./public/img/logos/logo_browserstack.png)
+ * Tested with [![BrowserStack](./public/img/logos/logo_browserstack.png)](https://www.browserstack.com/)
