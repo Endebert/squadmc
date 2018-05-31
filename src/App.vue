@@ -156,11 +156,11 @@
 
       <v-select
           :items="maps"
-          auto
-          solo flat class="transparent"
+          solo flat class="transparent ma-0"
           append-icon="map"
           v-model="selectedMap"
           item-value="text"
+          max-height="90%"
       ></v-select>
     </v-toolbar>
     <v-content class="fixed">
