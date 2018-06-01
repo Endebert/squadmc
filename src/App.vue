@@ -103,7 +103,7 @@
               <v-list-tile-title>Show Locations</v-list-tile-title>
             </v-list-tile-content>
             <v-list-tile-avatar>
-              <v-icon>not_listed_location</v-icon>
+              <v-icon>location_on</v-icon>
             </v-list-tile-avatar>
           </v-list-tile>
         </v-list-group>
@@ -741,6 +741,7 @@ export default {
 
 <style>
   @import "./assets/Leaflet/dist/leaflet.css";
+  @import "~material-icons/iconfont/material-icons.css";
 
   /*hide scrollbar*/
   body {
