@@ -370,29 +370,36 @@ export default {
         this.map.addLayer(this.grid);
       }
 
-      if (this.showHeightmap && squadMap.hasHeightmap) {
-        console.log("adding heightmap");
-        this.map.addLayer(squadMap.getHeightmap());
-      }
-
       if (squadMap.hasLocations) {
         console.log("setting up location");
-        const locations = squadMap.getLocations(newMap);
+        const locations = squadMap.getLocations();
         this.locationLayer.setLocations(locations);
         if (this.showLocations) {
           this.map.addLayer(this.locationLayer);
         }
       }
 
-      console.log("setting up map layer");
-      const layer = squadMap.getTileLayer();
+      let layer = squadMap.getMapTileLayer();
       layer.on("loading", () => {
         this.loading = true;
       });
       layer.on("load", () => {
         this.loading = false;
       });
+      if (this.showHeightmap && squadMap.hasHeightmap) {
+        layer = squadMap.getHeightmapTileLayer();
+        layer.on("loading", () => {
+          this.loading = true;
+        });
+        layer.on("load", () => {
+          this.loading = false;
+        });
+      }
+
+      console.log("setting up map layer");
+
       this.map.addLayer(layer); // finally add the map
+
       this.map.setView(squadMap.bounds.getCenter());
 
       // hack to properly align map and squadgrid
@@ -691,10 +698,22 @@ export default {
       // console.log("showHeightmap:", b);
       if (b && this.squadMap.hasHeightmap) {
         // console.log("adding heightmap");
-        this.map.addLayer(this.squadMap.getHeightmap());
+        this.map.addLayer(this.squadMap.getHeightmapTileLayer());
+        if (this.map.hasLayer(this.squadMap.getMapTileLayer())) {
+          // removing after timeout to have the nice transition effect from leaflet
+          setTimeout(() => {
+            this.map.removeLayer(this.squadMap.getMapTileLayer());
+          }, 500);
+        }
       } else {
         // console.log("removing heightmap");
-        this.map.removeLayer(this.squadMap.getHeightmap());
+        if (!this.map.hasLayer(this.squadMap.getMapTileLayer())) {
+          this.map.addLayer(this.squadMap.getMapTileLayer());
+        }
+        // removing after timeout to have the nice transition effect from leaflet
+        setTimeout(() => {
+          this.map.removeLayer(this.squadMap.getHeightmapTileLayer());
+        }, 500);
       }
       this.toStorage("showHeightmap", b);
     },

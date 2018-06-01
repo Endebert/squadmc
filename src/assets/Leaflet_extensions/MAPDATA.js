@@ -11,13 +11,14 @@ export const MAPDATA = [
     url: "/img/maps/albasrah/{z}_{x}_{y}.jpg",
     bounds: [3200, 3200], // map dimensions in meters
     heightmap: {
-      url: "/img/maps/albasrah/Heightmap_cropped_br.jpg",
+      url: "/img/heightmaps/albasrah.jpg",
+      tile: "/img/heightmaps/albasrah/{z}_{x}_{y}.jpg",
       // scale is 512 color values (we use red and blue channels, i.e. 256*2),
       // multiplied by the optimized level range,
       //    (e.g. level is 0 to 1, and we optimize it so it is now 0.2 to 0.5, then factor is 0.3)
       // multiplied by z scaling from the heightmap itself (taken from SquadSDK),
       // divided by 512 (in UE4 heightmaps are scaled to represent 512 from black to white by default)
-      scale: (512 * 0.2979 * 0.1) / 512,
+      scale: (512 * 0.2294 * 0.1) / 512,
     },
     locations: [
       ["Village", [2000, 760]],
@@ -48,8 +49,9 @@ export const MAPDATA = [
     url: "/img/maps/belaya/{z}_{x}_{y}.jpg",
     bounds: [3905, 3905],
     heightmap: {
-      url: "/img/maps/belaya/Heightmap_cropped_br.jpg",
-      scale: (512 * 0.0873 * 1.00) / 512,
+      url: "/img/heightmaps/belaya.jpg",
+      tile: "/img/heightmaps/belaya/{z}_{x}_{y}.jpg",
+      scale: (512 * 0.0726 * 1.00) / 512,
     },
     locations: [
       ["Militia Main", [3221, 554]],
@@ -74,8 +76,9 @@ export const MAPDATA = [
     url: "/img/maps/chora/{z}_{x}_{y}.jpg",
     bounds: [4064, 4064],
     heightmap: {
-      url: "/img/maps/chora/Heightmap_cropped_br.jpg",
-      scale: (512 * 0.0216 * 4.00) / 512,
+      url: "/img/heightmaps/chora.jpg",
+      tile: "/img/heightmaps/chora/{z}_{x}_{y}.jpg",
+      scale: (512 * 0.0160 * 4.00) / 512,
     },
     locations: [
       ["Russia Main", [2730, 600]],
@@ -112,8 +115,9 @@ export const MAPDATA = [
     url: "/img/maps/foolsroad/{z}_{x}_{y}.jpg",
     bounds: [1736, 1774],
     heightmap: {
-      url: "/img/maps/foolsroad/Heightmap_cropped_br.jpg",
-      scale: (512 * 0.0662 * 3.20) / 512,
+      url: "/img/heightmaps/foolsroad.jpg",
+      tile: "/img/heightmaps/foolsroad/{z}_{x}_{y}.jpg",
+      scale: (512 * 0.0492 * 3.20) / 512,
     },
     locations: [
       ["Russian Main", [1718, 1584]],
@@ -142,7 +146,8 @@ export const MAPDATA = [
     url: "/img/maps/forest/{z}_{x}_{y}.jpg",
     bounds: [1200, 1200],
     heightmap: {
-      url: "/img/maps/forest/Heightmap_cropped_br.jpg",
+      url: "/img/heightmaps/forest.jpg",
+      tile: "/img/heightmaps/forest/{z}_{x}_{y}.jpg",
       scale: (512 * 0.6931 * 0.08) / 512,
     },
     locations: [
@@ -171,8 +176,9 @@ export const MAPDATA = [
     url: "/img/maps/gorodok/{z}_{x}_{y}.jpg",
     bounds: [4340, 4340],
     heightmap: {
-      url: "/img/maps/gorodok/Heightmap_cropped_br.jpg",
-      scale: (512 * 0.0151 * 10.00) / 512,
+      url: "/img/heightmaps/gorodok.jpg",
+      tile: "/img/heightmaps/gorodok/{z}_{x}_{y}.jpg",
+      scale: (512 * 0.0119 * 10.00) / 512,
     },
     locations: [
       ["Militia Camp", [3608, 775]],
@@ -200,8 +206,9 @@ export const MAPDATA = [
     url: "/img/maps/jensens/{z}_{x}_{y}.jpg",
     bounds: [1510, 1510],
     heightmap: {
-      url: "/img/maps/jensens/Heightmap_cropped_br.jpg",
-      scale: (512 * 0.9569 * 0.15) / 512,
+      url: "/img/heightmaps/jensens.jpg",
+      tile: "/img/heightmaps/jensens/{z}_{x}_{y}.jpg",
+      scale: (512 * 0.569 * 0.15) / 512,
     },
     locations: [
       ["US Main", [336, 800]],
@@ -251,7 +258,8 @@ export const MAPDATA = [
     url: "/img/maps/kohat/{z}_{x}_{y}.jpg",
     bounds: [4017, 4017],
     heightmap: {
-      url: "/img/maps/kohat/Heightmap_redux_cropped_br.jpg",
+      url: "/img/heightmaps/kohat.jpg",
+      tile: "/img/heightmaps/kohat/{z}_{x}_{y}.jpg",
       scale: (512 * 1 * 0.75) / 512,
     },
     locations: [
@@ -284,8 +292,9 @@ export const MAPDATA = [
     url: "/img/maps/kokan/{z}_{x}_{y}.jpg",
     bounds: [2496, 2496],
     heightmap: {
-      url: "/img/maps/kokan/Heightmap_cropped_br.jpg",
-      scale: (512 * 0.0813 * 1.00) / 512,
+      url: "/img/heightmaps/kokan.jpg",
+      tile: "/img/heightmaps/kokan/{z}_{x}_{y}.jpg",
+      scale: (512 * 0.0164 * 1.00) / 512,
     },
     locations: [
       ["INS Main", [185, 1543]],
@@ -313,8 +322,9 @@ export const MAPDATA = [
     url: "/img/maps/logarvalley/{z}_{x}_{y}.jpg",
     bounds: [1761, 1761],
     heightmap: {
-      url: "/img/maps/logarvalley/Heightmap_cropped_br.jpg",
-      scale: (512 * 0.2889 * 0.50) / 512,
+      url: "/img/heightmaps/logarvalley.jpg",
+      tile: "/img/heightmaps/logarvalley/{z}_{x}_{y}.jpg",
+      scale: (512 * 0.2715 * 0.50) / 512,
     },
     locations: [
       ["Old Militia Main", [692, 144]],
@@ -346,8 +356,9 @@ export const MAPDATA = [
     url: "/img/maps/mestia/{z}_{x}_{y}.jpg",
     bounds: [2400, 2400],
     heightmap: {
-      url: "/img/maps/mestia/Heightmap_cropped_br.jpg",
-      scale: (512 * 0.3431 * 1.20) / 512,
+      url: "/img/heightmaps/mestia.jpg",
+      tile: "/img/heightmaps/mestia/{z}_{x}_{y}.jpg",
+      scale: (512 * 0.3419 * 1.20) / 512,
     },
     locations: [
       ["Militia Main", [1062, 233]],
@@ -377,8 +388,9 @@ export const MAPDATA = [
     url: "/img/maps/narva/{z}_{x}_{y}.jpg",
     bounds: [2800, 2800],
     heightmap: {
-      url: "/img/maps/narva/Heightmap_cropped_br.jpg",
-      scale: (512 * 0.0723 * 1.00) / 512,
+      url: "/img/heightmaps/narva.jpg",
+      tile: "/img/heightmaps/narva/{z}_{x}_{y}.jpg",
+      scale: (512 * 0.0583 * 1.00) / 512,
     },
     locations: [
       ["US Main", [570, 215]],
@@ -425,8 +437,9 @@ export const MAPDATA = [
     url: "/img/maps/sumari/{z}_{x}_{y}.jpg",
     bounds: [1300, 1300],
     heightmap: {
-      url: "/img/maps/sumari/Heightmap_cropped_br.jpg",
-      scale: (512 * 0.0532 * 0.75) / 512,
+      url: "/img/heightmaps/sumari.jpg",
+      tile: "/img/heightmaps/sumari/{z}_{x}_{y}.jpg",
+      scale: (512 * 0.0479 * 0.75) / 512,
     },
     locations: [
       ["US Main", [743, 137]],
@@ -459,8 +472,9 @@ export const MAPDATA = [
     url: "/img/maps/yehorivka/{z}_{x}_{y}.jpg",
     bounds: [4034, 4034],
     heightmap: {
-      url: "/img/maps/yehorivka/Heightmap_cropped_br.jpg",
-      scale: (512 * 0.0702 * 4.00) / 512,
+      url: "/img/heightmaps/yehorivka.jpg",
+      tile: "/img/heightmaps/yehorivka/{z}_{x}_{y}.jpg",
+      scale: (512 * 0.0683 * 4.00) / 512,
     },
     locations: [
       ["Russian Main", [864, 986]],

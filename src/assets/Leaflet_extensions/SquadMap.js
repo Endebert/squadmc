@@ -11,14 +11,15 @@ export default class SquadMap {
    */
   constructor(mapDataObj) {
     // console.log("initializing SquadMap with:", mapDataObj);
-    this.mapData = mapDataObj;
+    this._mapData = mapDataObj;
     this.hasHeightmap = !!mapDataObj.heightmap;
     this.hasLocations = !!mapDataObj.locations;
-    this.bounds = new LatLngBounds([0, 0], this.mapData.bounds);
-    this.heightmapHolder = undefined;
-    this.heightmap = undefined;
-    this.locations = undefined;
-    this.tileLayer = undefined;
+    this.bounds = new LatLngBounds([0, 0], this._mapData.bounds);
+    this._heightmapHolder = undefined;
+    this._heightmapOverlay = undefined;
+    this._heightmapTileLayer = undefined;
+    this._locations = undefined;
+    this._mapTileLayer = undefined;
 
     if (this.hasHeightmap) { this.getHeightmapHolder(); }
   }
@@ -27,9 +28,9 @@ export default class SquadMap {
    * Return the map as a TileLayer.
    * @returns {TileLayer} - map as leaflet TileLayer
    */
-  getTileLayer() {
-    if (!this.tileLayer) {
-      this.tileLayer = new TileLayer(this.mapData.url, {
+  getMapTileLayer() {
+    if (!this._mapTileLayer) {
+      this._mapTileLayer = new TileLayer(this._mapData.url, {
         minNativeZoom: 0,
         maxNativeZoom: 4,
         // zoomOffset: -3,
@@ -38,21 +39,41 @@ export default class SquadMap {
       });
     }
 
-    return this.tileLayer;
+    return this._mapTileLayer;
   }
 
   /**
-   * Returns heightmap of the map matching given name.
+   * Returns heightmap of the map matching given name as ImageOverlay.
    * @returns {ImageOverlay} the generated heightmap as ImageOverlay
    */
-  getHeightmap() {
-    if (!this.hasHeightmap) { throw new Error(`${this.mapData.name} has no heightmap!`); }
+  getHeightmapOverlay() {
+    if (!this.hasHeightmap) { throw new Error(`${this._mapData.name} has no heightmap!`); }
 
-    if (!this.heightmap) {
-      this.heightmap = new ImageOverlay(this.mapData.heightmap.url, this.bounds, { opacity: 0.5 });
+    if (!this._heightmapOverlay) {
+      this._heightmapOverlay = new ImageOverlay(this._mapData.heightmap.url, this.bounds, { opacity: 0.5 });
     }
 
-    return this.heightmap;
+    return this._heightmapOverlay;
+  }
+
+  /**
+   * Returns heightmap of the map matching given name as TileLayer.
+   * @returns {TileLayer} the generated heightmap as TileLayer
+   */
+  getHeightmapTileLayer() {
+    if (!this.hasHeightmap) { throw new Error(`${this._mapData.name} has no heightmap!`); }
+
+    if (!this._heightmapTileLayer) {
+      this._heightmapTileLayer = new TileLayer(this._mapData.heightmap.tile, {
+        minNativeZoom: 0,
+        maxNativeZoom: 4,
+        // zoomOffset: -3,
+        attribution: "Map &copy; <a href='http://joinsquad.com/'>Offworld Inc.</a>",
+        bounds: this.bounds,
+      });
+    }
+
+    return this._heightmapTileLayer;
   }
 
   /**
@@ -60,11 +81,11 @@ export default class SquadMap {
    * @returns {CircleMarker[]} array of location markers
    */
   getLocations() {
-    if (!this.hasLocations) { throw new Error(`${this.mapData.name} has no locations!`); }
+    if (!this.hasLocations) { throw new Error(`${this._mapData.name} has no locations!`); }
 
-    if (!this.locations) {
-      this.locations = [];
-      this.mapData.locations.forEach(([name, latlng]) => {
+    if (!this._locations) {
+      this._locations = [];
+      this._mapData.locations.forEach(([name, latlng]) => {
         const marker = new CircleMarker(latlng, {
           draggable: false,
           radius: 8,
@@ -79,11 +100,11 @@ export default class SquadMap {
         // bind name label to marker
         marker.bindTooltip(name, { permanent: true, direction: "top", offset: [0, -8] });
 
-        this.locations.push(marker);
+        this._locations.push(marker);
       });
     }
 
-    return this.locations;
+    return this._locations;
   }
 
   /**
@@ -92,13 +113,13 @@ export default class SquadMap {
    */
   getHeightmapHolder() {
     // console.log("getHeightmapHolder");
-    if (!this.hasHeightmap) { throw new Error(`${this.mapData.name} has no heightmap!`); }
+    if (!this.hasHeightmap) { throw new Error(`${this._mapData.name} has no heightmap!`); }
 
-    if (!this.heightmapHolder) {
-      this.heightmapHolder = new HeightmapHolder();
-      this.heightmapHolder.setMap(this.mapData.heightmap.url, this.mapData.heightmap.scale);
+    if (!this._heightmapHolder) {
+      this._heightmapHolder = new HeightmapHolder();
+      this._heightmapHolder.setMap(this._mapData.heightmap.url, this._mapData.heightmap.scale);
     }
 
-    return this.heightmapHolder;
+    return this._heightmapHolder;
   }
 }
