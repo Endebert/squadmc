@@ -153,36 +153,39 @@
         <v-icon>menu</v-icon>
       </v-toolbar-side-icon>
       <img src="/img/svg/icon.svg" width="40px" height="40px">
-
-      <v-select
-          :items="maps"
-          solo flat class="transparent ma-0"
-          append-icon="map"
-          v-model="selectedMap"
-          item-value="text"
-          max-height="90%"
-      ></v-select>
+      <v-toolbar-title style="margin-right: 17px">
+        <v-select
+            :items="maps"
+            :loading="loading"
+            append-icon="map"
+            single-line
+            v-model="selectedMap"
+            item-value="text"
+            max-height="90%"
+            hide-details
+        ></v-select>
+      </v-toolbar-title>
     </v-toolbar>
     <v-content class="fixed">
       <div id="map" class="fixed"></div>
-      <div style="position: fixed; bottom: 0; width: 100%" >
-        <v-card class="ma-2 elevation-0 d-inline-flex" v-if="showKeypadTimeout">
+      <div class="bottom-bar">
+        <v-card class="ma-2 d-inline-flex" v-if="showKeypadTimeout" style="width: fit-content">
           <v-card-text class="keypadLabel d-inline">
             {{mouseKeypad}}
           </v-card-text>
         </v-card>
-        <v-footer v-if="mortar && target" class="front secondary" height="auto">
+        <v-footer v-if="mortar && target" class="front" height="auto">
           <v-speed-dial>
-            <v-btn fab small slot="activator">
+            <v-btn fab small slot="activator" class="secondary">
               <img :src="mortar.mUrl" width="48px" height="48px">
             </v-btn>
             <v-btn icon v-for="(aMortar, index) in placedMortars" :key="index" @click="mortar = placedMortars[index]">
               <img :src="aMortar.mUrl" width="48px" height="48px">
             </v-btn>
           </v-speed-dial>
-          <v-icon small :color="distLine && distLine.options.color">arrow_forward_ios</v-icon>
+          <v-icon :color="distLine && distLine.options.color">arrow_forward</v-icon>
           <v-speed-dial v-if="target">
-            <v-btn fab small slot="activator">
+            <v-btn fab small slot="activator" class="secondary">
               <img :src="target.mUrl" width="48px" height="48px">
             </v-btn>
             <v-btn icon v-for="(aTarget, index) in placedTargets" :key="index" @click="target = placedTargets[index]">
@@ -190,8 +193,8 @@
             </v-btn>
           </v-speed-dial>
           <v-flex>
-            <v-list class="pa-0 d-inline-flex">
-              <v-list-tile style="font-family: monospace">
+            <v-list class="d-inline-flex transparent pa-0">
+              <v-list-tile style="font-family: monospace;">
                 <v-list-tile-content>
                   <v-list-tile-title>
                     <v-layout row>
@@ -272,6 +275,7 @@ export default {
       menuPos: new Point(500, 500), // x:y position set just before click menu is shown
       menuLatlng: undefined, // same position but in latlng
       squadMap: undefined, // class that holds current map, see SquadMap class
+      loading: true,
 
       // values for mortar settings, distance, etc.
       bearing: undefined,
@@ -287,7 +291,9 @@ export default {
     // console.log("MOUNTED");
 
     // remove right click to fix context menu opening when long pressing pin for dragging
-    document.oncontextmenu = function retFalse() { return false; };
+    document.oncontextmenu = function retFalse() {
+      return false;
+    };
 
     this.setupMap();
 
@@ -304,8 +310,7 @@ export default {
       // but if always fixed, persistent navbar is over map on desktop, which is clunky
       // so this is the compromise.
       if (this.drawer) {
-        const style = document.getElementById("map").style;
-        style.position = "relative";
+        document.getElementById("map").style.position = "relative";
       }
       this.map.invalidateSize();
     }, 10);
@@ -381,6 +386,12 @@ export default {
 
       console.log("setting up map layer");
       const layer = squadMap.getTileLayer();
+      layer.on("loading", () => {
+        this.loading = true;
+      });
+      layer.on("load", () => {
+        this.loading = false;
+      });
       this.map.addLayer(layer); // finally add the map
       this.map.setView(squadMap.bounds.getCenter());
 
@@ -804,5 +815,11 @@ export default {
   .keypadLabel {
     padding: 0 0.5em;
     font-family: monospace;
+  }
+
+  .bottom-bar {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
   }
 </style>
