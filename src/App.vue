@@ -667,6 +667,28 @@ export default {
     openGitHub() {
       window.open("https://github.com/Endebert/squadmc", "_blank");
     },
+
+    /**
+     * This function works in tandem with showHeightmap watcher.
+     * To bet set to layer.on("load"). Checks what layer to remove after one layer has finished loading.
+     */
+    showHeightmapOnLoad() {
+      console.log("showHeightmapOnLoad");
+      const heightmap = this.squadMap.getHeightmapTileLayer();
+      const mapLayer = this.squadMap.getMapTileLayer();
+      // make sure this function is not being called multiple times
+      heightmap.off("load", this.showHeightmapOnLoad);
+      mapLayer.off("load", this.showHeightmapOnLoad);
+      setTimeout(() => {
+        console.log("showHeightmapOnLoad timeout");
+        // safety check if it should still be removed
+        if (this.showHeightmap && this.map.hasLayer(mapLayer)) {
+          this.map.removeLayer(mapLayer);
+        } else if (!this.showHeightmap && this.map.hasLayer(heightmap)) {
+          this.map.removeLayer(heightmap);
+        }
+      }, 250);
+    },
   },
   watch: {
     /**
@@ -698,22 +720,18 @@ export default {
       // console.log("showHeightmap:", b);
       if (b && this.squadMap.hasHeightmap) {
         // console.log("adding heightmap");
-        this.map.addLayer(this.squadMap.getHeightmapTileLayer());
-        if (this.map.hasLayer(this.squadMap.getMapTileLayer())) {
-          // removing after timeout to have the nice transition effect from leaflet
-          setTimeout(() => {
-            this.map.removeLayer(this.squadMap.getMapTileLayer());
-          }, 500);
+        const heightmap = this.squadMap.getHeightmapTileLayer();
+        if (!this.map.hasLayer(heightmap)) {
+          this.map.addLayer(heightmap);
+          heightmap.on("load", this.showHeightmapOnLoad);
         }
       } else {
         // console.log("removing heightmap");
-        if (!this.map.hasLayer(this.squadMap.getMapTileLayer())) {
-          this.map.addLayer(this.squadMap.getMapTileLayer());
+        const mapLayer = this.squadMap.getMapTileLayer();
+        if (!this.map.hasLayer(mapLayer)) {
+          this.map.addLayer(mapLayer);
+          mapLayer.on("load", this.showHeightmapOnLoad);
         }
-        // removing after timeout to have the nice transition effect from leaflet
-        setTimeout(() => {
-          this.map.removeLayer(this.squadMap.getHeightmapTileLayer());
-        }, 500);
       }
       this.toStorage("showHeightmap", b);
     },
