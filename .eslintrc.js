@@ -12,6 +12,10 @@ module.exports = {
     "max-len": ["error", 120],
     "prefer-destructuring": "off",
     "no-plusplus": "off",
+    "no-underscore-dangle": ["error", {
+      "allowAfterThis": true,
+      "allowAfterSuper": true,
+    }],
   },
   parserOptions: {
     parser: "babel-eslint",

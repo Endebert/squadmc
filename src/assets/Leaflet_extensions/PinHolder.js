@@ -26,9 +26,9 @@ export default class PinHolder {
     this.marker = new Marker(this.defLatlng, { draggable: "true", icon });
 
     if (type === PIN_TYPE.MORTAR) {
-      this.createMortarAttachments();
+      this._createMortarAttachments();
     } else if (type === PIN_TYPE.FOB) {
-      this.createFobAttachments();
+      this._createFobAttachments();
     }
 
     this.mUrl = mUrl;
@@ -46,7 +46,7 @@ export default class PinHolder {
     });
     this.marker.on("drag", (e) => {
       if (this.type === PIN_TYPE.MORTAR || this.type === PIN_TYPE.FOB) {
-        this.moveAttachments(e.latlng);
+        this._moveAttachments(e.latlng);
       }
       this.pos = e.latlng;
       this.marker.setTooltipContent(getKP(e.latlng.lat, e.latlng.lng));
@@ -60,9 +60,71 @@ export default class PinHolder {
   }
 
   /**
+   * Get position of pin
+   */
+  get pos() {
+    return this.marker.getLatLng();
+  }
+
+  /**
+   * Set position of pin (and attachments)
+   * @param {LatLng} latlng
+   */
+  set pos(latlng) {
+    this.marker.setLatLng(latlng);
+
+    if (this.type === PIN_TYPE.MORTAR || this.type === PIN_TYPE.FOB) {
+      this._moveAttachments(latlng);
+    }
+  }
+
+  /**
+   * Add pin (and attachments) to map
+   * @param map - leaflet map object
+   */
+  addTo(map) {
+    if (!map.hasLayer(this.marker)) {
+      map.addLayer(this.marker);
+    }
+
+    if (this.type === PIN_TYPE.MORTAR || this.type === PIN_TYPE.FOB) {
+      this._addAttachments(map);
+    }
+  }
+
+  /**
+   * Remove pin (and attachments) from map
+   * @param map - leaflet map object
+   */
+  removeFrom(map) {
+    if (map.hasLayer(this.marker)) {
+      map.removeLayer(this.marker);
+    }
+
+    if (this.type === PIN_TYPE.MORTAR || this.type === PIN_TYPE.FOB) {
+      this._removeAttachments(map);
+    }
+  }
+
+  /**
+   * Set active state of this pinholder. Only an active Mortar marker may have min and max range circles shown.
+   * @param {Boolean} state - whether or not this pinHolder is "active"
+   * @param map - leaflet map object
+   */
+  setActive(state, map) {
+    if (this.type === PIN_TYPE.MORTAR) {
+      if (state) {
+        this._addAttachments(map);
+      } else {
+        this._removeAttachments(map);
+      }
+    }
+  }
+
+  /**
    * Creates min and max range circles for mortar marker
    */
-  createMortarAttachments() {
+  _createMortarAttachments() {
     this.minRangeCircle = new Circle(this.defLatlng, {
       draggable: "false",
       radius: MIN_DISTANCE,
@@ -87,7 +149,7 @@ export default class PinHolder {
   /**
    * Creates max build range and min fob distance circles for fob marker
    */
-  createFobAttachments() {
+  _createFobAttachments() {
     this.minRangeCircle = new Circle(this.defLatlng, {
       draggable: "false",
       radius: FOB_RANGE, // build range
@@ -97,7 +159,6 @@ export default class PinHolder {
       interactive: false,
       clickable: false, // legacy support
     });
-
 
     this.maxRangeCircle = new Circle(this.defLatlng, {
       draggable: "false",
@@ -114,44 +175,16 @@ export default class PinHolder {
    * Move attachments to specified position
    * @param {LatLng} latlng
    */
-  moveAttachments(latlng) {
+  _moveAttachments(latlng) {
     this.minRangeCircle.setLatLng(latlng);
     this.maxRangeCircle.setLatLng(latlng);
-  }
-
-  /**
-   * Add pin (and attachments) to map
-   * @param map - leaflet map object
-   */
-  addTo(map) {
-    if (!map.hasLayer(this.marker)) {
-      map.addLayer(this.marker);
-    }
-
-    if (this.type === PIN_TYPE.MORTAR || this.type === PIN_TYPE.FOB) {
-      this.addAttachments(map);
-    }
-  }
-
-  /**
-   * Remove pin (and attachments) from map
-   * @param map - leaflet map object
-   */
-  removeFrom(map) {
-    if (map.hasLayer(this.marker)) {
-      map.removeLayer(this.marker);
-    }
-
-    if (this.type === PIN_TYPE.MORTAR || this.type === PIN_TYPE.FOB) {
-      this.removeAttachments(map);
-    }
   }
 
   /**
    * Add pin attachments to map
    * @param map - leaflet map object
    */
-  addAttachments(map) {
+  _addAttachments(map) {
     if (!map.hasLayer(this.minRangeCircle)) {
       map.addLayer(this.minRangeCircle);
     }
@@ -164,48 +197,12 @@ export default class PinHolder {
    * Remove pin attachments from map
    * @param map - leaflet map object
    */
-  removeAttachments(map) {
+  _removeAttachments(map) {
     if (map.hasLayer(this.minRangeCircle)) {
       map.removeLayer(this.minRangeCircle);
     }
     if (map.hasLayer(this.maxRangeCircle)) {
       map.removeLayer(this.maxRangeCircle);
     }
-  }
-
-  /**
-   * Set active state of this pinholder. Only an active Mortar marker may have min and max range circles shown.
-   * @param {Boolean} state - whether or not this pinHolder is "active"
-   * @param map - leaflet map object
-   */
-  setActive(state, map) {
-    if (this.type === PIN_TYPE.MORTAR) {
-      if (state) {
-        this.addAttachments(map);
-      } else {
-        this.removeAttachments(map);
-      }
-    }
-  }
-
-  /**
-   * Set position of pin (and attachments)
-   * @param {LatLng} latlng
-   */
-  setLatLng(latlng) {
-    this.marker.setLatLng(latlng);
-
-    if (this.type === PIN_TYPE.MORTAR || this.type === PIN_TYPE.FOB) {
-      this.moveAttachments(latlng);
-    }
-
-    this.pos = latlng;
-  }
-
-  /**
-   * Set position of pin
-   */
-  getLatLng() {
-    return this.marker.getLatLng();
   }
 }

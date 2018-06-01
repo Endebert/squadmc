@@ -164,7 +164,7 @@
       ></v-select>
     </v-toolbar>
     <v-content class="fixed">
-      <div id="map" :class="mapClass"></div>
+      <div id="map" class="fixed"></div>
       <div style="position: fixed; bottom: 0; width: 100%" >
         <v-card class="ma-2 elevation-0 d-inline-flex" v-if="showKeypadTimeout">
           <v-card-text class="keypadLabel d-inline">
@@ -257,7 +257,6 @@ export default {
       mortar: undefined, // active mortar (for line drawing)
       target: undefined, // active target (for line drawing)
       distLine: undefined, // the line
-      mapClass: undefined,
       // available colors
       mortarColors: ["/img/svg/mortar_pin_red.svg",
         "/img/svg/mortar_pin_green.svg", "/img/svg/mortar_pin_blue.svg", "/img/svg/mortar_pin.svg"],
@@ -304,13 +303,9 @@ export default {
       // on mobile safari, map doesn't show if not fixed
       // but if always fixed, persistent navbar is over map on desktop, which is clunky
       // so this is the compromise.
-      if (!this.drawer) {
+      if (this.drawer) {
         const style = document.getElementById("map").style;
-        style.position = "fixed";
-        style.left = "0";
-        style.right = "0";
-        style.top = "0";
-        style.bottom = "0";
+        style.position = "relative";
       }
       this.map.invalidateSize();
     }, 10);
@@ -478,7 +473,7 @@ export default {
       // check placed pins. if pin exists already, just move it
       for (let i = 0; i < this.placedMortars.length; i += 1) {
         if (mUrl === this.placedMortars[i].mUrl) {
-          this.placedMortars[i].setLatLng(this.menuLatlng);
+          this.placedMortars[i].pos = this.menuLatlng;
           this.mortar = this.placedMortars[i];
           return;
         }
@@ -487,7 +482,7 @@ export default {
       // check placed pins. if pin exists already, just move it
       for (let i = 0; i < this.placedTargets.length; i += 1) {
         if (mUrl === this.placedTargets[i].mUrl) {
-          this.placedTargets[i].setLatLng(this.menuLatlng);
+          this.placedTargets[i].pos = this.menuLatlng;
           this.target = this.placedTargets[i];
           return;
         }
@@ -496,7 +491,7 @@ export default {
       // check placed pins. if pin exists already, just move it
       for (let i = 0; i < this.placedFobs.length; i += 1) {
         if (mUrl === this.placedFobs[i].mUrl) {
-          this.placedFobs[i].setLatLng(this.menuLatlng);
+          this.placedFobs[i].pos = this.menuLatlng;
           return;
         }
       }
@@ -504,7 +499,7 @@ export default {
       // console.log("pin doesn't exist, yet, creating it...");
 
       const pin = new PinHolder(mUrl, type);
-      pin.setLatLng(this.menuLatlng);
+      pin.pos = this.menuLatlng;
       pin.addTo(this.map);
 
       switch (type) {
@@ -533,8 +528,8 @@ export default {
       // console.log("calcMortar", [mortar, target]);
       // let time = Date.now();
 
-      const s = mortar.getLatLng();
-      const e = target.getLatLng();
+      const s = mortar.pos;
+      const e = target.pos;
 
       // oh no, vector maths!
       let bearing = Math.atan2(e.lng - s.lng, e.lat - s.lat) * 180 / Math.PI;
