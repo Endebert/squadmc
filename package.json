@@ -19,6 +19,7 @@
     "eslint-config-mourner": "^2.0.3",
     "graceful-fs": "^4.1.11",
     "material-icons": "^0.2.3",
+    "performance-polyfill": "^0.0.2",
     "raf": "^3.4.0",
     "raven-js": "^3.25.2",
     "replace": "^1.0.0",

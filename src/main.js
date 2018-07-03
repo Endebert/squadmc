@@ -2,6 +2,7 @@
 import "@babel/polyfill"; // babel
 import "whatwg-fetch"; // fetch
 import "raf"; // requestAnimationFrame
+import "performance-polyfill"; // performance
 
 import Vue from "vue";
 import Raven from "raven-js";
