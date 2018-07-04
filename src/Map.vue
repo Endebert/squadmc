@@ -1242,4 +1242,9 @@ body::-webkit-scrollbar {
 .column {
   flex-direction: column;
 }
+
+/* for bottom bar to work in safari 8*/
+.content--wrap {
+  height: 100%!important;
+}
 </style>
