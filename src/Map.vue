@@ -194,12 +194,76 @@
       </v-list-group>
     </v-list>
   </v-navigation-drawer>
-  <v-content class="fixed">
-    <div id="map" class="fixed"></div>
-    <div class="bottom-bar" style="pointer-events: none;">
-      <div class="ma-2 px-1 secondary font-mono" style="width: fit-content;"
-           v-if="showKeypadTimeout">{{mouseKeypad}}</div>
-      <div id="my-footer" v-if="mortar && target" class="front" style="background-color: #212121">
+  <v-content class="fixedPos">
+    <div id="map" class="fixedPos"></div>
+  </v-content>
+  <v-content class="fixedPos" style="pointer-events: none" >
+    <div class="bottom-bar front" style="pointer-events: none;">
+      <div style="display: flex; align-items: flex-end">
+        <div class="ma-2 px-1 secondary font-mono" style="width: fit-content; flex: 0 1 auto"
+             v-if="showKeypadTimeout">{{mouseKeypad}}</div>
+        <div style="display: flex; flex: 1 1 auto; justify-content: flex-end">
+          <v-dialog v-model="createPin.dialog" max-width="250">
+            <v-btn fab slot="activator" color="secondary darken-2" style="pointer-events: all">
+              <v-icon style="width: 50%; height: 50%">add</v-icon>
+            </v-btn>
+            <v-card>
+              <v-card-title style="background-color: #212121">Add Mortar/Target</v-card-title>
+              <v-divider></v-divider>
+              <v-card-text class="px-0">
+                <v-form>
+                  <v-container>
+                    <v-layout column wrap>
+                      <v-flex>
+                        <v-btn icon color="secondary darken-2" @click="createPin.mIndex = (createPin.mIndex + 1) % 4">
+                          <img :src="colors.symbol.mortar[createPin.mIndex]" style="width: 48px;">
+                        </v-btn>
+                        <v-text-field
+                            v-model="createPin.mText" :error="createPin.mError"
+                            label="Mortar pos" placeholder="A01-3-3-7"
+                            @input="createPin.mText = formatKP(createPin.mText, PIN_TYPE.MORTAR)"
+                            style="width: min-content; font-family: monospace">
+                        </v-text-field>
+                        <v-btn
+                            icon color="secondary darken-2" :disabled="createPin.mError || !createPin.mText"
+                            @click="placePin(createPin.mText, createPin.mIndex, PIN_TYPE.MORTAR)"
+                            @click.stop="createPin.mText = undefined">
+                          <v-icon>add</v-icon>
+                        </v-btn>
+                      </v-flex>
+                      <v-flex>
+                        <v-btn
+                            icon color="secondary darken-2"
+                            @click="createPin.tIndex = (createPin.tIndex + 1) % 4">
+                          <img :src="colors.symbol.target[createPin.tIndex]" style="width: 48px;">
+                        </v-btn>
+                        <v-text-field
+                            v-model="createPin.tText" :error="createPin.tError"
+                            label="Target pos" placeholder="B13-3-7"
+                            @input="createPin.tText = formatKP(createPin.tText, PIN_TYPE.TARGET)"
+                            style="width: min-content; font-family: monospace">
+                        </v-text-field>
+                        <v-btn
+                            icon color="secondary darken-2"
+                            :disabled="createPin.tError || !createPin.tText"
+                            @click="placePin(createPin.tText, createPin.tIndex, PIN_TYPE.TARGET)"
+                            @click.stop="createPin.tText = undefined">
+                          <v-icon>add</v-icon>
+                        </v-btn>
+                      </v-flex>
+                    </v-layout>
+                  </v-container>
+                </v-form>
+              </v-card-text>
+              <v-divider></v-divider>
+              <v-card-actions>
+                <v-btn @click.native="createPin.dialog = false">Close</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+        </div>
+      </div>
+      <div id="my-footer" v-if="mortar && target" style="background-color: #212121">
         <v-speed-dial>
           <v-btn fab small slot="activator" class="secondary" style="width: 32px; height: 32px;">
             <img :src="mortar.sUrl" style="width: 48px;">
@@ -243,7 +307,7 @@
       </div>
     </div>
   </v-content>
-  <v-content class="fixed" style="pointer-events: none" v-if="quickMode">
+  <v-content class="fixedPos" style="pointer-events: none" v-if="quickMode">
     <div class="flex column" style="justify-content: flex-start; align-items: flex-start">
       <div class="flex column pt-2">
         <v-btn icon style="pointer-events: all" v-if="mortar" class="secondary" @click="removeMortar(0)">
@@ -262,31 +326,31 @@
       </div>
     </div>
   </v-content>
-  <v-menu
-      v-model="showMenu"
-      absolute
-      :open-on-click="false"
-      :position-x="menuPos.x"
-      :position-y="menuPos.y"
-  >
+  <v-menu v-model="showMenu" absolute :open-on-click="false" :position-x="menuPos.x" :position-y="menuPos.y">
     <v-card style="border: none">
       <v-content class="pa-0">
         <v-layout row>
           <v-layout column style="border-right: 2px #212121 solid">
-            <v-btn icon style="margin: 2px 2px 2px 2px" large
-                   v-for="(mUrl, i) in colors.symbol.mortar" :key="i" @click="onSelect(i, PIN_TYPE.MORTAR)">
+            <v-btn
+                icon large v-for="(mUrl, i) in colors.symbol.mortar" :key="i"
+                @click="placePin(menuLatlng, i, PIN_TYPE.MORTAR)"
+                style="margin: 2px 2px 2px 2px">
               <img :src="mUrl" width="48px">
             </v-btn>
           </v-layout>
           <v-layout column>
-            <v-btn icon style="margin: 2px 2px 2px 2px" large
-                   v-for="(mUrl, i) in colors.symbol.target" :key="i" @click="onSelect(i, PIN_TYPE.TARGET)">
+            <v-btn
+                icon large v-for="(mUrl, i) in colors.symbol.target" :key="i"
+                @click="placePin(menuLatlng, i, PIN_TYPE.TARGET)"
+                style="margin: 2px 2px 2px 2px">
               <img :src="mUrl" width="48px">
             </v-btn>
           </v-layout>
           <v-layout column style="border-left: 2px #212121 solid">
-            <v-btn icon style="margin: 2px 2px 2px 2px" large
-                   v-for="(mUrl, i) in colors.symbol.fob" :key="i" @click="onSelect(i, PIN_TYPE.FOB)">
+            <v-btn
+                icon large v-for="(mUrl, i) in colors.symbol.fob" :key="i"
+                @click="placePin(menuLatlng, i, PIN_TYPE.FOB)"
+                style="margin: 2px 2px 2px 2px">
               <img :src="mUrl" width="48px">
             </v-btn>
           </v-layout>
@@ -294,9 +358,7 @@
       </v-content>
     </v-card>
   </v-menu>
-  <v-dialog
-      v-model="changelogDialog"
-  >
+  <v-dialog v-model="changelogDialog">
     <v-card>
       <v-card-text>
         <Changelog/>
@@ -312,11 +374,19 @@ import Vue from "vue";
 import Vuetify from "vuetify";
 import "vuetify/dist/vuetify.min.css";
 
-import { CRS, Map, Point, Polyline, Transformation } from "./assets/Leaflet/dist/leaflet-src.esm";
+import { CRS, LatLng, Map, Point, Polyline, Transformation } from "./assets/Leaflet/dist/leaflet-src.esm";
 
 import SquadGrid from "./assets/Leaflet_extensions/SquadGrid";
 import LocationLayer from "./assets/Leaflet_extensions/LocationLayer";
-import { calcMortarAngle, getKP, pad, pinUrls, symbolUrls } from "./assets/Leaflet_extensions/Utils";
+import {
+  calcMortarAngle,
+  formatKeyPad,
+  getKP,
+  getPos,
+  pad,
+  pinUrls,
+  symbolUrls,
+} from "./assets/Leaflet_extensions/Utils";
 import { ICON_SIZE, PIN_TYPE } from "./assets/Leaflet_extensions/Vars";
 import PinHolder from "./assets/Leaflet_extensions/PinHolder";
 import MapData from "./assets/Leaflet_extensions/MapData";
@@ -396,6 +466,15 @@ export default {
       dragging: false,
       changelogDialog: false,
       appVersion: `v${pkgVersion}`,
+      createPin: {
+        dialog: false,
+        mIndex: 2,
+        tIndex: 2,
+        mText: undefined,
+        tText: undefined,
+        mError: false,
+        tError: false,
+      },
     };
   },
   mounted() {
@@ -547,7 +626,7 @@ export default {
       }
       this.showKeypadTimeout = setTimeout(() => {
         console.log("clearing showKeypadTimeout MOVE", this.showKeypadTimeout);
-        this.showKeypadTimeout = undefined;
+        // this.showKeypadTimeout = undefined;
       }, 1000);
     },
     /**
@@ -574,9 +653,9 @@ export default {
         // in simple mode, place mortar or target directly
         if (this.quickMode) {
           if (this.placedMortars.length === 0) {
-            this.onSelect(2, PIN_TYPE.MORTAR);
+            this.placePin(this.menuLatlng, 2, PIN_TYPE.MORTAR);
           } else {
-            this.onSelect(2, PIN_TYPE.TARGET);
+            this.placePin(this.menuLatlng, 2, PIN_TYPE.TARGET);
           }
         } else {
           this.showMenu = true;
@@ -584,12 +663,23 @@ export default {
       }
     },
     /**
-     * Handles selected mortar/target/fob from map click menu, creating the pin or moving it to its new position
+     * Places pin at desired position of given type with the icon based on urlIndex
+     *
+     * @param {String|Array|LatLng} pos - target pin position
      * @param {Number} urlIndex - image url index of pin & symbol graphic
      * @param {Number} type - type of pin, check PIN_TYPE in Vars
      */
-    onSelect(urlIndex, type) {
-      console.log("onSelect", [urlIndex, type]);
+    placePin(pos, urlIndex, type) {
+      console.log("placePin", [pos, urlIndex, type]);
+
+      // check type of pos var
+      // string -> keypad string e.g. A03-1-1 -> convert to LatLng
+      // Array -> "raw" LatLng -> convert to LatLng
+      if (typeof pos === "string") {
+        pos = getPos(pos);
+      } else if (Array.isArray(pos)) {
+        pos = new LatLng(pos);
+      }
 
       let pin;
       switch (type) {
@@ -597,7 +687,7 @@ export default {
           // check placed pins. if pin exists already, just move it
           for (let i = 0; i < this.placedMortars.length; i += 1) {
             if (this.colors.pin.mortar[urlIndex] === this.placedMortars[i].pUrl) {
-              this.placedMortars[i].pos = this.menuLatlng;
+              this.placedMortars[i].pos = pos;
               this.mortar = this.placedMortars[i];
               return;
             }
@@ -609,7 +699,7 @@ export default {
         case PIN_TYPE.TARGET:
           for (let i = 0; i < this.placedTargets.length; i += 1) {
             if (this.colors.pin.target[urlIndex] === this.placedTargets[i].pUrl) {
-              this.placedTargets[i].pos = this.menuLatlng;
+              this.placedTargets[i].pos = pos;
               this.target = this.placedTargets[i];
               return;
             }
@@ -621,7 +711,7 @@ export default {
         case PIN_TYPE.FOB:
           for (let i = 0; i < this.placedFobs.length; i += 1) {
             if (this.colors.pin.fob[urlIndex] === this.placedFobs[i].pUrl) {
-              this.placedFobs[i].pos = this.menuLatlng;
+              this.placedFobs[i].pos = pos;
               return;
             }
           }
@@ -636,7 +726,8 @@ export default {
       if (pin) {
         pin.addOnDragStartListener(this.onDragStartListener);
         pin.addOnDragEndListener(this.onDragEndListener);
-        pin.pos = this.menuLatlng;
+        console.log("setting new pin at position:", pos);
+        pin.pos = pos;
         pin.addTo(this.map);
       }
     },
@@ -830,6 +921,38 @@ export default {
     onDragEndListener() {
       this.dragging = false;
       if (this.mortar && this.target) { this.calcMortar(this.mortar, this.target, false); }
+    },
+
+    /**
+     * Formats a keypad string. If type is given, sets error state for placePin textField for that type.
+     * @param {String} kp - keypad string
+     * @param {Number} type - type of PIN_TYPE
+     * @returns {String} returns formatted string, or initial string if formatting fails
+     */
+    formatKP(kp, type) {
+      // check if keypad is valid by calculating position
+      let gotError = false;
+      try {
+        // fails when keypad is invalid
+        getPos(kp);
+      } catch (e) {
+        // keypad is invalid, set error state of textField based on type
+        gotError = true;
+      }
+
+      if (type === PIN_TYPE.MORTAR) {
+        this.createPin.mError = gotError;
+      } else if (type === PIN_TYPE.TARGET) {
+        this.createPin.tError = gotError;
+      }
+
+      // formatKeyPad() should never fail, so we return it
+      try {
+        return formatKeyPad(kp);
+      } catch (e) {
+        // but just in case, we return initial value on error
+        return kp;
+      }
     },
   },
   watch: {
@@ -1039,7 +1162,7 @@ body::-webkit-scrollbar {
   display: none;
 }
 
-.fixed {
+.fixedPos {
   position: fixed;
   top: 0;
   bottom: 0;
@@ -1095,9 +1218,12 @@ body::-webkit-scrollbar {
 }
 
 .bottom-bar {
-  position: fixed;
-  bottom: 0;
+  /*position: fixed;*/
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
   width: 100%;
+  height: 100%;
 }
 
 #my-footer {
