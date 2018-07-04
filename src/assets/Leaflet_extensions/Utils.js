@@ -225,10 +225,9 @@ export function getPos(kp) {
     }
     i += 1;
   }
-  i += 1;
 
   // at the end, add half of last interval, so it points to the center of the deepest sub-keypad
-  const interval = 300 / 3 ** i;
+  const interval = 300 / 3 ** (i - 1);
   x += interval / 2;
   y += interval / 2;
 
