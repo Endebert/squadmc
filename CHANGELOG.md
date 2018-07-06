@@ -1,5 +1,20 @@
 # Change Log
 
+<a name="2.7.0"></a>
+# [2.7.0](https://github.com/Endebert/squadmc/compare/v2.6.0...v2.7.0) (2018-07-06)
+
+
+### Bug Fixes
+
+* fixed version button being clipped in PostScriptum mode ([f980e8e](https://github.com/Endebert/squadmc/commit/f980e8e))
+
+
+### Features
+
+* merged PostScriptum extensions into main branch for easier maintenance ([30988bc](https://github.com/Endebert/squadmc/commit/30988bc))
+
+
+
 <a name="2.6.0"></a>
 # [2.6.0](https://github.com/Endebert/squadmc/compare/v2.5.0...v2.6.0) (2018-07-04)
 
