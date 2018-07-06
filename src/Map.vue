@@ -403,7 +403,7 @@ export default {
     },
   },
   components: {
-    Changelog: () => import("../CHANGELOG.md"),
+    Changelog: () => import(/* webpackChunkName: "changelog" */ "../CHANGELOG.md"),
   },
   data() {
     return {
