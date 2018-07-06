@@ -662,7 +662,7 @@ export default {
       }
       this.showKeypadTimeout = setTimeout(() => {
         console.log("clearing showKeypadTimeout MOVE", this.showKeypadTimeout);
-        // this.showKeypadTimeout = undefined;
+        this.showKeypadTimeout = undefined;
       }, 1000);
     },
     /**
