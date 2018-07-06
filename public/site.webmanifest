@@ -1,6 +1,6 @@
 {
-    "name": "SquadMC",
-    "short_name": "SquadMC",
+    "name": "PostScriptumMC",
+    "short_name": "PostScriptumMC",
     "icons": [
         {
             "src": "/android-chrome-192x192.png",
@@ -15,6 +15,6 @@
     ],
     "theme_color": "#212121",
     "background_color": "#212121",
-    "start_url": "https://squadmc.ende.pro",
+    "start_url": "https://psmc.ende.pro",
     "display": "standalone"
 }
