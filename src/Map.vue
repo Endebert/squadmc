@@ -34,7 +34,8 @@
   >
     <v-toolbar dense>
       <v-toolbar-title>
-        SquadMC <v-btn small color="primary" @click.stop="changelogDialog = true">{{appVersion}}</v-btn>
+        {{postScriptum ? "PostScriptumMC" : "SquadMC"}}
+        <v-btn small color="primary" @click.stop="changelogDialog = true">{{appVersion}}</v-btn>
       </v-toolbar-title>
     </v-toolbar>
     <v-list class="pa-0" two-line>
@@ -50,7 +51,19 @@
           </v-badge>
         </v-list-tile-action>
       </v-list-tile>
+      <v-divider v-if="postScriptum"></v-divider>
+      <v-list-tile v-if="postScriptum">
+        <v-list-tile-content>
+          <v-list-tile-title>Set mortar type</v-list-tile-title>
+          <v-list-tile-sub-title>
+            <v-btn-toggle v-model="mTypeIndex" mandatory style="display: flex">
+              <v-btn flat v-for="(mType, i) in mortarTypes" :key="i"
+                     style="flex: 1 0 0; border: none">{{mType[0]}}</v-btn>
+            </v-btn-toggle></v-list-tile-sub-title>
+        </v-list-tile-content>
+      </v-list-tile>
     </v-list>
+    <v-divider v-if="postScriptum"></v-divider>
     <v-list class="pa-0">
       <v-list-group :value="true">
         <v-list-tile slot="activator">
@@ -203,7 +216,7 @@
         <div class="ma-2 px-1 secondary font-mono" style="width: fit-content; flex: 0 1 auto"
              v-if="showKeypadTimeout">{{mouseKeypad}}</div>
         <div style="display: flex; flex: 1 1 auto; justify-content: flex-end">
-          <v-dialog v-model="createPin.dialog" max-width="250">
+          <v-dialog v-model="placePinVars.dialog" max-width="250">
             <v-btn fab slot="activator" color="secondary darken-2" style="pointer-events: all">
               <v-icon style="width: 50%; height: 50%">add</v-icon>
             </v-btn>
@@ -215,39 +228,41 @@
                   <v-container>
                     <v-layout column wrap>
                       <v-flex>
-                        <v-btn icon color="secondary darken-2" @click="createPin.mIndex = (createPin.mIndex + 1) % 4">
-                          <img :src="colors.symbol.mortar[createPin.mIndex]" style="width: 48px;">
+                        <v-btn icon color="secondary darken-2"
+                               @click="placePinVars.mIndex = (placePinVars.mIndex + 1) % 4"
+                        >
+                          <img :src="colors.symbol.mortar[placePinVars.mIndex]" style="width: 48px;">
                         </v-btn>
                         <v-text-field
-                            v-model="createPin.mText" :error="createPin.mError"
+                            v-model="placePinVars.mText" :error="placePinVars.mError"
                             label="Mortar pos" placeholder="A01-3-3-7"
-                            @input="createPin.mText = formatKP(createPin.mText, PIN_TYPE.MORTAR)"
+                            @input="placePinVars.mText = formatKP(placePinVars.mText, PIN_TYPE.MORTAR)"
                             style="width: min-content; font-family: monospace">
                         </v-text-field>
                         <v-btn
-                            icon color="secondary darken-2" :disabled="createPin.mError || !createPin.mText"
-                            @click="placePin(createPin.mText, createPin.mIndex, PIN_TYPE.MORTAR)"
-                            @click.stop="createPin.mText = undefined">
+                            icon color="secondary darken-2" :disabled="placePinVars.mError || !placePinVars.mText"
+                            @click="placePin(placePinVars.mText, placePinVars.mIndex, PIN_TYPE.MORTAR)"
+                            @click.stop="placePinVars.mText = undefined">
                           <v-icon>add</v-icon>
                         </v-btn>
                       </v-flex>
                       <v-flex>
                         <v-btn
                             icon color="secondary darken-2"
-                            @click="createPin.tIndex = (createPin.tIndex + 1) % 4">
-                          <img :src="colors.symbol.target[createPin.tIndex]" style="width: 48px;">
+                            @click="placePinVars.tIndex = (placePinVars.tIndex + 1) % 4">
+                          <img :src="colors.symbol.target[placePinVars.tIndex]" style="width: 48px;">
                         </v-btn>
                         <v-text-field
-                            v-model="createPin.tText" :error="createPin.tError"
+                            v-model="placePinVars.tText" :error="placePinVars.tError"
                             label="Target pos" placeholder="B13-3-7"
-                            @input="createPin.tText = formatKP(createPin.tText, PIN_TYPE.TARGET)"
+                            @input="placePinVars.tText = formatKP(placePinVars.tText, PIN_TYPE.TARGET)"
                             style="width: min-content; font-family: monospace">
                         </v-text-field>
                         <v-btn
                             icon color="secondary darken-2"
-                            :disabled="createPin.tError || !createPin.tText"
-                            @click="placePin(createPin.tText, createPin.tIndex, PIN_TYPE.TARGET)"
-                            @click.stop="createPin.tText = undefined">
+                            :disabled="placePinVars.tError || !placePinVars.tText"
+                            @click="placePin(placePinVars.tText, placePinVars.tIndex, PIN_TYPE.TARGET)"
+                            @click.stop="placePinVars.tText = undefined">
                           <v-icon>add</v-icon>
                         </v-btn>
                       </v-flex>
@@ -257,7 +272,7 @@
               </v-card-text>
               <v-divider></v-divider>
               <v-card-actions>
-                <v-btn @click.native="createPin.dialog = false">Close</v-btn>
+                <v-btn @click.native="placePinVars.dialog = false">Close</v-btn>
               </v-card-actions>
             </v-card>
           </v-dialog>
@@ -387,7 +402,14 @@ import {
   pinUrls,
   symbolUrls,
 } from "./assets/Utils";
-import { ICON_SIZE, PIN_TYPE } from "./assets/Vars";
+import {
+  ICON_SIZE,
+  PIN_TYPE, PS_3INCH_MAX_DISTANCE, PS_3INCH_VELOCITY,
+  PS_4INCH_MAX_DISTANCE,
+  PS_4INCH_VELOCITY,
+  PS_8CM_MAX_DISTANCE,
+  PS_8CM_VELOCITY, SQUAD_MAX_DISTANCE, SQUAD_VELOCITY,
+} from "./assets/Vars";
 import PinHolder from "./assets/PinHolder";
 import MapData from "./assets/MapData";
 
@@ -400,6 +422,12 @@ export default {
   props: {
     mapData: {
       type: MapData,
+    },
+
+    // whether to add PostScriptum features or not
+    postScriptum: {
+      type: Boolean,
+      default: false,
     },
   },
   components: {
@@ -475,6 +503,14 @@ export default {
         mError: false,
         tError: false,
       },
+
+      /* PostScriptum exclusive */
+      mortarTypes: [
+        ["GER 8cm", PS_8CM_VELOCITY, PS_8CM_MAX_DISTANCE],
+        ["BRIT 4″", PS_4INCH_VELOCITY, PS_4INCH_MAX_DISTANCE],
+        ["BRIT 3″", PS_3INCH_VELOCITY, PS_3INCH_MAX_DISTANCE],
+      ],
+      mTypeIndex: Number.parseInt(this.fromStorage("mTypeIndex", "0"), 10),
     };
   },
   mounted() {
@@ -692,7 +728,10 @@ export default {
               return;
             }
           }
-          pin = new PinHolder(type, this.colors.pin.mortar[urlIndex], this.pinSize);
+          pin = new PinHolder(
+            type, this.colors.pin.mortar[urlIndex], this.pinSize,
+            this.postScriptum ? this.currentMType[2] : SQUAD_MAX_DISTANCE, // use max distance of current mortar for PS
+          );
           this.placedMortars.push(pin);
           this.mortar = pin;
           break;
@@ -760,7 +799,8 @@ export default {
       const targetHeight = this.squadMap.hasHeightmap ? this.squadMap.getHeightmapHolder().getHeight(e.lng, e.lat) : 0;
 
       const hDelta = targetHeight - mortarHeight;
-      const elevation = calcMortarAngle(dist, hDelta);
+      const mVelocity = this.postScriptum ? this.currentMType[1] : SQUAD_VELOCITY;
+      const elevation = calcMortarAngle(dist, hDelta, mVelocity);
 
       // create or move the line
       if (!this.distLine) {
@@ -941,9 +981,9 @@ export default {
       }
 
       if (type === PIN_TYPE.MORTAR) {
-        this.createPin.mError = gotError;
+        this.placePinVars.mError = gotError;
       } else if (type === PIN_TYPE.TARGET) {
-        this.createPin.tError = gotError;
+        this.placePinVars.tError = gotError;
       }
 
       // formatKeyPad() should never fail, so we return it
@@ -1107,6 +1147,25 @@ export default {
     delayCalcUpdate(b) {
       this.toStorage("delayCalcUpdate", b);
     },
+
+    /* PostScriptum exclusive */
+
+    /**
+     * Saves the mortar type index in localStorage
+     * and updates placed mortar markers to display correct the max distance.
+     */
+    mTypeIndex(newIndex) {
+      const newMaxDist = this.currentMType[2];
+      this.placedMortars.forEach((m) => {
+        m.setMaxDistance(newMaxDist);
+      });
+
+      if (this.mortar && this.target) {
+        this.calcMortar(this.mortar, this.target);
+      }
+
+      this.toStorage("mTypeIndex", newIndex);
+    },
   },
   computed: {
     /**
@@ -1142,6 +1201,16 @@ export default {
         return `↕+${pad(Math.round(this.c.hDelta), 3)}m`;
       }
       return `↕-${pad(Math.round(-this.c.hDelta), 3)}m`;
+    },
+
+    /* PostScriptum exclusive */
+
+    /**
+     * Returns the current mortar Type array based on mTypeIndex.
+     * @returns {Array} 3-element array containing mortar name, velocity, and max distance
+     */
+    currentMType() {
+      return this.mortarTypes[this.mTypeIndex];
     },
   },
 };

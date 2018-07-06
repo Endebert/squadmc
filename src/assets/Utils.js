@@ -1,4 +1,4 @@
-import { MIL_TO_DEG_FACTOR, VELOCITY, GRAVITY, PIN_MAP } from "./Vars";
+import { MIL_TO_DEG_FACTOR, GRAVITY, PIN_MAP, SQUAD_VELOCITY } from "./Vars";
 import { LatLng } from "./Leaflet/dist/leaflet-src.esm";
 
 /**
@@ -142,7 +142,7 @@ export function isMultiple(a, b) {
  * @param {number} [g] - gravity force
  * @returns {number || NaN} mil if target in range, NaN otherwise
  */
-export function calcMortarAngle(x, y = 0, v = VELOCITY, g = GRAVITY) {
+export function calcMortarAngle(x, y = 0, v = SQUAD_VELOCITY, g = GRAVITY) {
   const p1 = Math.sqrt(v ** 4 - g * (g * x ** 2 + 2 * y * v ** 2));
   const a1 = Math.atan((v ** 2 + p1) / (g * x));
   // const a2 = Math.atan((v ** 2 - p1) / (g * x));

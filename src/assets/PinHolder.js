@@ -1,5 +1,5 @@
 import { Circle, Icon, LatLng, Marker } from "./Leaflet/dist/leaflet-src.esm";
-import { FOB_DISTANCE, FOB_RANGE, ICON_SIZE, MAX_DISTANCE, MIN_DISTANCE, PIN_TYPE } from "./Vars";
+import { FOB_DISTANCE, FOB_RANGE, ICON_SIZE, MIN_DISTANCE, PIN_TYPE, SQUAD_MAX_DISTANCE } from "./Vars";
 import { getKP, pinToColor, pinToSymbol } from "./Utils";
 
 /**
@@ -12,20 +12,21 @@ export default class PinHolder {
    * @param {String} pinUrl - url of pin icon graphic
    * @param {Number} type - type of pin
    * @param {Number} [size] - pin icon size
+   * @param {Number} [maxDistance] - custom max distance (by default max distance of squad mortar is used)
    */
-  constructor(type, pinUrl, size = ICON_SIZE) {
-    const icon = PinHolder.createIcon(pinUrl, size);
-
+  constructor(type, pinUrl, size = ICON_SIZE, maxDistance = SQUAD_MAX_DISTANCE) {
+    this.type = type;
     this.pUrl = pinUrl;
     this.sUrl = pinToSymbol(pinUrl);
     this.color = pinToColor(pinUrl);
-    this.icon = icon;
-    this.type = type;
+    this.maxDistance = maxDistance;
     this.dragging = false;
     this.onDragStartListeners = [];
     this.onDragEndListeners = [];
-
     this.defLatlng = new LatLng(-5000, -5000);
+
+    const icon = PinHolder.createIcon(pinUrl, size);
+    this.icon = icon;
 
     this.marker = new Marker(this.defLatlng, { draggable: "true", icon });
     console.log("marker:", this.marker);
@@ -159,6 +160,19 @@ export default class PinHolder {
   }
 
   /**
+   * Set the max distance for this pin. Used to draw max range circle on mortar markers
+   * @param {Number} maxDistance - max distance value for this pin
+   */
+  setMaxDistance(maxDistance) {
+    console.log("setMaxDistance", maxDistance);
+    this.maxDistance = maxDistance;
+    if (this.maxRangeCircle) {
+      console.log("maxRangeCircle", this.maxRangeCircle);
+      this.maxRangeCircle.setRadius(maxDistance);
+    }
+  }
+
+  /**
    * Adds function to be called when dragstart event is fired by marker.
    * @param {function} l - listener function
    * @returns {number} index of listener function in listeners array
@@ -230,7 +244,7 @@ export default class PinHolder {
 
     this.maxRangeCircle = new Circle(this.defLatlng, {
       draggable: "false",
-      radius: MAX_DISTANCE,
+      radius: this.maxDistance,
       color: this.color,
       fillOpacity: 0.1,
       fillColor: this.color,

@@ -1,5 +1,5 @@
 <template>
-  <Map :mapData="mapData"/>
+  <Map :mapData="mapData" :postScriptum="postScriptum"/>
   <!--<Loading />-->
 
 </template>
@@ -8,16 +8,21 @@
 import Loading from "./Loading.vue";
 import MapData from "./assets/MapData";
 
+// variable that determines PostScriptum mode
+// based on this, mapData baseURL will be modified and condition for Map component set
+const postScriptum = false;
 const mapData = new MapData();
 
 // adapt for local testing or when forking the project
-const baseUrl = "https://maps.squadmc.ende.pro";
+let baseUrl = "https://maps.squadmc.ende.pro";
+if (postScriptum) { baseUrl += "/ps"; }
 
 export default {
   name: "App",
   data() {
     return {
       mapData,
+      postScriptum,
     };
   },
   components: {
