@@ -386,10 +386,10 @@ import {
   pad,
   pinUrls,
   symbolUrls,
-} from "./assets/Leaflet_extensions/Utils";
-import { ICON_SIZE, PIN_TYPE } from "./assets/Leaflet_extensions/Vars";
-import PinHolder from "./assets/Leaflet_extensions/PinHolder";
-import MapData from "./assets/Leaflet_extensions/MapData";
+} from "./assets/Utils";
+import { ICON_SIZE, PIN_TYPE } from "./assets/Vars";
+import PinHolder from "./assets/PinHolder";
+import MapData from "./assets/MapData";
 
 import { version as pkgVersion } from "../package.json";
 

@@ -6,7 +6,7 @@
 
 <script>
 import Loading from "./Loading.vue";
-import MapData from "./assets/Leaflet_extensions/MapData";
+import MapData from "./assets/MapData";
 
 const mapData = new MapData();
 

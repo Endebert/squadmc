@@ -6,7 +6,7 @@
 
 import { LayerGroup, Util, LatLng, Polyline } from "../Leaflet/dist/leaflet-src.esm";
 
-import { isMultiple } from "./Utils";
+import { isMultiple } from "../Utils";
 
 /**
  * This Layergroup displays the grid in the same way it is displayed in-game.
