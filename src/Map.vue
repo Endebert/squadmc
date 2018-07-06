@@ -466,7 +466,7 @@ export default {
       dragging: false,
       changelogDialog: false,
       appVersion: `v${pkgVersion}`,
-      createPin: {
+      placePinVars: {
         dialog: false,
         mIndex: 2,
         tIndex: 2,
