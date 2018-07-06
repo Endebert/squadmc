@@ -35,7 +35,7 @@
     <v-toolbar dense>
       <v-toolbar-title>
         {{postScriptum ? "PostScriptumMC" : "SquadMC"}}
-        <v-btn small color="primary" @click.stop="changelogDialog = true">{{appVersion}}</v-btn>
+        <v-btn small color="primary" @click.stop="changelogDialog = true" style="min-width: 70px">{{appVersion}}</v-btn>
       </v-toolbar-title>
     </v-toolbar>
     <v-list class="pa-0" two-line>
