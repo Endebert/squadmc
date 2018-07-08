@@ -373,7 +373,7 @@
       </v-content>
     </v-card>
   </v-menu>
-  <v-dialog v-model="changelogDialog">
+  <v-dialog v-model="changelogDialog" max-width="600px">
     <v-card>
       <v-card-text>
         <Changelog/>
