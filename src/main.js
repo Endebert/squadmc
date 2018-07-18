@@ -1,5 +1,6 @@
 // polyfills
 import "@babel/polyfill"; // babel
+import "custom-event-polyfill"; // CustomEvent
 import "whatwg-fetch"; // fetch
 import "raf"; // requestAnimationFrame
 import "performance-polyfill"; // performance

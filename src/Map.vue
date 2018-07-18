@@ -373,11 +373,14 @@
       </v-content>
     </v-card>
   </v-menu>
-  <v-dialog v-model="changelogDialog">
+  <v-dialog v-model="changelogDialog" max-width="600px">
     <v-card>
       <v-card-text>
         <Changelog/>
       </v-card-text>
+      <v-card-actions>
+        <v-btn @click.native="changelogDialog = false">Close</v-btn>
+      </v-card-actions>
     </v-card>
   </v-dialog>
   <canvas id="heightmap"></canvas>
