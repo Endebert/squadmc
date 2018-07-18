@@ -1,5 +1,18 @@
 # Change Log
 
+<a name="2.7.2"></a>
+## [2.7.2](https://github.com/Endebert/squadmc/compare/v2.7.1...v2.7.2) (2018-07-18)
+
+
+### Bug Fixes
+
+* added "Close" button to changelog dialog ([ae09ef6](https://github.com/Endebert/squadmc/commit/ae09ef6))
+* added polyfill for CustomEvent ([b83266c](https://github.com/Endebert/squadmc/commit/b83266c))
+* adjusted PostScriptum GER 8CM mortar velocity and resulting max distance ([20dcf76](https://github.com/Endebert/squadmc/commit/20dcf76))
+* set max-width for changelog dialog ([ef728cd](https://github.com/Endebert/squadmc/commit/ef728cd))
+
+
+
 <a name="2.7.1"></a>
 ## [2.7.1](https://github.com/Endebert/squadmc/compare/v2.7.0...v2.7.1) (2018-07-06)
 
