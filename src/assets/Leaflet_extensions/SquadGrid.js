@@ -4,7 +4,7 @@
  *  Auth: Andrew Blakey (ablakey@gmail.com)
  */
 
-import { LayerGroup, Util, LatLng, Polyline } from "../Leaflet/dist/leaflet-src.esm";
+import { LayerGroup, Util, LatLng, Polyline } from "leaflet";
 
 import { isMultiple } from "../Utils";
 

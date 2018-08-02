@@ -1,4 +1,4 @@
-import { CircleMarker, ImageOverlay, LatLngBounds, TileLayer } from "./Leaflet/dist/leaflet-src.esm";
+import { CircleMarker, ImageOverlay, LatLngBounds, TileLayer } from "leaflet";
 import HeightmapHolder from "./HeightmapHolder";
 
 /**

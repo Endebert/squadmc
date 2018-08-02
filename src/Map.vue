@@ -392,7 +392,7 @@ import Vue from "vue";
 import Vuetify from "vuetify";
 import "vuetify/dist/vuetify.min.css";
 
-import { CRS, LatLng, Map, Point, Polyline, Transformation } from "./assets/Leaflet/dist/leaflet-src.esm";
+import { CRS, LatLng, Map, Point, Polyline, Transformation } from "leaflet";
 
 import SquadGrid from "./assets/Leaflet_extensions/SquadGrid";
 import LocationLayer from "./assets/Leaflet_extensions/LocationLayer";
@@ -1221,7 +1221,7 @@ export default {
 
 <style>
 @import "~material-icons/iconfont/material-icons.css";
-@import "./assets/Leaflet/dist/leaflet.css";
+@import "~leaflet/dist/leaflet.css";
 @import "~typeface-roboto/index.css";
 @import "~typeface-roboto-mono/index.css";
 

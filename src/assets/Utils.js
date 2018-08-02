@@ -1,5 +1,5 @@
+import { LatLng } from "leaflet";
 import { MIL_TO_DEG_FACTOR, GRAVITY, PIN_MAP, SQUAD_VELOCITY } from "./Vars";
-import { LatLng } from "./Leaflet/dist/leaflet-src.esm";
 
 /**
  * Utility file exporting helper functions and objects.

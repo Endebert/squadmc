@@ -1,4 +1,4 @@
-import { Circle, Icon, LatLng, Marker } from "./Leaflet/dist/leaflet-src.esm";
+import { Circle, Icon, LatLng, Marker } from "leaflet";
 import { FOB_DISTANCE, FOB_RANGE, ICON_SIZE, MIN_DISTANCE, PIN_TYPE, SQUAD_MAX_DISTANCE } from "./Vars";
 import { getKP, pinToColor, pinToSymbol } from "./Utils";
 
