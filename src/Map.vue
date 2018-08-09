@@ -357,15 +357,15 @@
     <div class="flex column" style="justify-content: flex-start; align-items: flex-start">
       <div class="flex column pt-2">
         <v-btn icon style="pointer-events: all" v-if="mortar" class="secondary" @click="removeMortar(0)">
-          <v-badge color="red" right overlap style="margin-top: 6px">
-            <span slot="badge"><v-icon>clear</v-icon></span>
+          <v-badge color="red" right overlap>
+            <v-icon slot="badge">clear</v-icon>
             <!--<v-icon large>mail</v-icon>-->
             <img :src="mortar.sUrl" style="width: 36px;">
           </v-badge>
         </v-btn>
         <v-btn icon style="pointer-events: all" v-if="target" class="secondary" @click="removeTarget(0)">
-          <v-badge color="red" right overlap  style="margin-top: 6px">
-            <span slot="badge"><v-icon>clear</v-icon></span>
+          <v-badge color="red" right overlap>
+            <v-icon slot="badge">clear</v-icon>
             <img :src="target.sUrl" style="width: 36px;">
           </v-badge>
         </v-btn>
