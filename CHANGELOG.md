@@ -1,5 +1,34 @@
 # Change Log
 
+<a name="2.8.0"></a>
+# [2.8.0](https://github.com/Endebert/squadmc/compare/v2.7.1...v2.8.0) (2018-08-09)
+
+
+### Bug Fixes
+
+* added "Close" button to changelog dialog ([ae09ef6](https://github.com/Endebert/squadmc/commit/ae09ef6))
+* added hint to icon buttons in add mortar/target dialog ([c85de1d](https://github.com/Endebert/squadmc/commit/c85de1d))
+* added polyfill for CustomEvent ([b83266c](https://github.com/Endebert/squadmc/commit/b83266c))
+* adjusted PostScriptum GER 8CM mortar velocity and resulting max distance ([20dcf76](https://github.com/Endebert/squadmc/commit/20dcf76))
+* allow navigation drawer to be swiped out, but not in ([99cf255](https://github.com/Endebert/squadmc/commit/99cf255))
+* changed floating action button color ([e8cdd39](https://github.com/Endebert/squadmc/commit/e8cdd39))
+* fixed "+" icon not being centered in floating action button ([8b539f2](https://github.com/Endebert/squadmc/commit/8b539f2))
+* fixed map not being centered properly on initial page load ([87b36a4](https://github.com/Endebert/squadmc/commit/87b36a4))
+* fixed menu button not being perfectly circular ([5482b1d](https://github.com/Endebert/squadmc/commit/5482b1d))
+* fixed needing to reset map when switching off Advanced Mode ([445bc62](https://github.com/Endebert/squadmc/commit/445bc62))
+* fixed top-left mortar/target buttons in Quick Mode ([432930e](https://github.com/Endebert/squadmc/commit/432930e))
+* set max-width for changelog dialog ([ef728cd](https://github.com/Endebert/squadmc/commit/ef728cd))
+* updated mortar velocities ([df76862](https://github.com/Endebert/squadmc/commit/df76862))
+
+
+### Features
+
+* added "Advanced Mode" by inverting "Quick Mode" ([bff3d38](https://github.com/Endebert/squadmc/commit/bff3d38))
+* allow hiding loading indicator in toolbar (now hidden by default) ([f1e0a6f](https://github.com/Endebert/squadmc/commit/f1e0a6f))
+* rearranged options in navigation drawer ([d42365a](https://github.com/Endebert/squadmc/commit/d42365a))
+
+
+
 <a name="2.7.2"></a>
 ## [2.7.2](https://github.com/Endebert/squadmc/compare/v2.7.1...v2.7.2) (2018-07-18)
 

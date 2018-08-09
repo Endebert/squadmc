@@ -1,4 +1,4 @@
-import { LayerGroup, Util } from "../Leaflet/dist/leaflet-src.esm";
+import { LayerGroup, Util } from "leaflet";
 
 /**
  * This Layergroup holds all location markers for the current map.

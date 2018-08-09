@@ -1,5 +1,5 @@
+import { LatLng } from "leaflet";
 import { MIL_TO_DEG_FACTOR, GRAVITY, PIN_MAP, SQUAD_VELOCITY } from "./Vars";
-import { LatLng } from "./Leaflet/dist/leaflet-src.esm";
 
 /**
  * Utility file exporting helper functions and objects.
@@ -20,7 +20,7 @@ export function milToDeg(mil) {
  * @returns {number} radians
  */
 export function degToRad(deg) {
-  return deg * Math.PI / 180;
+  return (deg * Math.PI) / 180;
 }
 
 /**
@@ -29,7 +29,7 @@ export function degToRad(deg) {
  * @returns {number} degrees
  */
 export function radToDeg(rad) {
-  return rad * 180 / Math.PI;
+  return (rad * 180) / Math.PI;
 }
 
 /**
@@ -83,9 +83,9 @@ export function getKP(lat, lng) {
   if (x < 0 || y < 0) {
     return "XXX-X-X"; // when outside of min bounds
   }
-  const kp = 300 / (3 ** 0); // interval of main keypad, e.g "A5"
-  const s1 = 300 / (3 ** 1); // interval of first sub keypad
-  const s2 = 300 / (3 ** 2); // interval of second sub keypad
+  const kp = 300 / 3 ** 0; // interval of main keypad, e.g "A5"
+  const s1 = 300 / 3 ** 1; // interval of first sub keypad
+  const s2 = 300 / 3 ** 2; // interval of second sub keypad
 
   // basic grid, e.g. B5
   const kpCharCode = 65 + Math.floor(x / kp);
@@ -101,7 +101,7 @@ export function getKP(lat, lng) {
   // 1st = 10 - 1*3 = 7
   // 1st = 10 - 2*3 = 4
   // 1st = 10 - 3*3 = 1
-  let subNumber = 10 - ((subY + 1) * 3);
+  let subNumber = 10 - (subY + 1) * 3;
 
   // now all we need to do is add the index for of x, but starting from 0
   subNumber += Math.floor(x / s1) % 3;
@@ -109,7 +109,7 @@ export function getKP(lat, lng) {
   // sub keypad 2, e.g. B5 - 5 - 3;
   // same as above for sub keypad 1
   const sub2Y = Math.floor(y / s2) % 3;
-  let sub2Number = 10 - ((sub2Y + 1) * 3);
+  let sub2Number = 10 - (sub2Y + 1) * 3;
   sub2Number += Math.floor(x / s2) % 3;
 
   return `${kpLetter}${pad(kpNumber, 2)}-${subNumber}-${sub2Number}`;
@@ -246,7 +246,9 @@ export function pinToPSC(pinUrl) {
       // psc = [Pin, Symbol, Color]
       const psc = pscs[j];
       // return on match
-      if (psc[0] === pinUrl) { return psc; }
+      if (psc[0] === pinUrl) {
+        return psc;
+      }
     }
   }
   // no match was found, throw error

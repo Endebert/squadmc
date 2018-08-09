@@ -10,10 +10,10 @@
       <v-icon>menu</v-icon>
     </v-toolbar-side-icon>
     <img src="/img/svg/icon.svg" width="40px">
-    <v-toolbar-title style="margin-right: 17px">
+    <v-toolbar-title>
       <v-select
           :items="maps"
-          :loading="loading"
+          :loading="!hideLoadingBar && loading"
           append-icon="map"
           single-line
           v-model="selectedMap"
@@ -28,7 +28,7 @@
       fixed
       app
       clipped
-      touchless
+      :touchless="!drawer"
       disable-resize-watcher
       disable-route-watcher
   >
@@ -51,8 +51,27 @@
           </v-badge>
         </v-list-tile-action>
       </v-list-tile>
-      <v-divider v-if="postScriptum"></v-divider>
-      <v-list-tile v-if="postScriptum">
+    </v-list>
+    <v-divider></v-divider>
+    <v-list class="px-0">
+      <v-list-tile>
+        <v-list-tile-action>
+          <v-switch
+              v-model="advancedMode"
+          ></v-switch>
+        </v-list-tile-action>
+        <v-list-tile-content>
+          <v-list-tile-title>Advanced Mode</v-list-tile-title>
+          <v-list-tile-sub-title>place multiple markers</v-list-tile-sub-title>
+        </v-list-tile-content>
+        <v-list-tile-avatar>
+          <v-icon>fast_forward</v-icon>
+        </v-list-tile-avatar>
+      </v-list-tile>
+    </v-list>
+    <v-divider></v-divider>
+    <v-list class="pa-0" two-line v-if="postScriptum">
+      <v-list-tile>
         <v-list-tile-content>
           <v-list-tile-title>Set mortar type</v-list-tile-title>
           <v-list-tile-sub-title>
@@ -65,7 +84,7 @@
     </v-list>
     <v-divider v-if="postScriptum"></v-divider>
     <v-list class="pa-0">
-      <v-list-group :value="true">
+      <v-list-group>
         <v-list-tile slot="activator">
           <v-list-tile-content>
             <v-list-tile-title>Map Settings</v-list-tile-title>
@@ -78,20 +97,6 @@
           </v-list-tile-content>
           <v-list-tile-avatar>
             <v-icon>warning</v-icon>
-          </v-list-tile-avatar>
-        </v-list-tile>
-        <v-list-tile>
-          <v-list-tile-action>
-            <v-switch
-                v-model="quickMode"
-            ></v-switch>
-          </v-list-tile-action>
-          <v-list-tile-content>
-            <v-list-tile-title>Quick Mode</v-list-tile-title>
-            <v-list-tile-sub-title>1-click placement</v-list-tile-sub-title>
-          </v-list-tile-content>
-          <v-list-tile-avatar>
-            <v-icon>fast_forward</v-icon>
           </v-list-tile-avatar>
         </v-list-tile>
         <v-list-tile>
@@ -141,12 +146,26 @@
             ></v-switch>
           </v-list-tile-action>
           <v-list-tile-content>
-            <v-list-tile-title>Show All Mortar Circles</v-list-tile-title>
+            <v-list-tile-title>Show all Mortar Circles</v-list-tile-title>
             <v-list-tile-sub-title>instead of active only</v-list-tile-sub-title>
           </v-list-tile-content>
           <v-list-tile-avatar>
             <v-icon>adjust</v-icon>
           </v-list-tile-avatar>
+        </v-list-tile>
+        <v-list-tile>
+          <div class="pr-3">Pin Size</div>
+          <v-slider v-model="pinSize" hide-details thumb-label class="pa-0 pr-3"
+                    step="12" min="24" max="96" ticks></v-slider>
+        </v-list-tile>
+      </v-list-group>
+    </v-list>
+    <v-list class="pa-0">
+      <v-list-group>
+        <v-list-tile slot="activator">
+          <v-list-tile-content>
+            <v-list-tile-title>Performance Settings</v-list-tile-title>
+          </v-list-tile-content>
         </v-list-tile>
         <v-list-tile>
           <v-list-tile-action>
@@ -163,11 +182,22 @@
           </v-list-tile-avatar>
         </v-list-tile>
         <v-list-tile>
-          <div class="pr-3">Pin Size</div>
-          <v-slider v-model="pinSize" hide-details thumb-label class="pa-0 pr-3"
-                    step="12" min="24" max="96" ticks></v-slider>
+          <v-list-tile-action>
+            <v-switch
+                v-model="hideLoadingBar"
+            ></v-switch>
+          </v-list-tile-action>
+          <v-list-tile-content>
+            <v-list-tile-title>Hide loading bar</v-list-tile-title>
+            <v-list-tile-sub-title>reduces zoom delay</v-list-tile-sub-title>
+          </v-list-tile-content>
+          <v-list-tile-avatar>
+            <v-icon>timelapse</v-icon>
+          </v-list-tile-avatar>
         </v-list-tile>
       </v-list-group>
+    </v-list>
+    <v-list>
       <v-list-group :disabled="placedMortars.length + placedFobs.length + placedTargets.length === 0">
         <v-list-tile slot="activator">
           <v-list-tile-content>
@@ -217,13 +247,14 @@
              v-if="showKeypadTimeout">{{mouseKeypad}}</div>
         <div style="display: flex; flex: 1 1 auto; justify-content: flex-end">
           <v-dialog v-model="placePinVars.dialog" max-width="250">
-            <v-btn fab slot="activator" color="secondary darken-2" style="pointer-events: all">
-              <v-icon style="width: 50%; height: 50%">add</v-icon>
+            <v-btn fab slot="activator" color="primary" style="pointer-events: all" class="ma-3">
+              <v-icon style="width: 24px; height: 24px">add</v-icon>
             </v-btn>
             <v-card>
               <v-card-title style="background-color: #212121">Add Mortar/Target</v-card-title>
               <v-divider></v-divider>
               <v-card-text class="px-0">
+                <div><p align="center">Press icon buttons to cycle through marker colors</p></div>
                 <v-form>
                   <v-container>
                     <v-layout column wrap>
@@ -322,19 +353,19 @@
       </div>
     </div>
   </v-content>
-  <v-content class="fixedPos" style="pointer-events: none" v-if="quickMode">
+  <v-content class="fixedPos" style="pointer-events: none" v-if="!advancedMode">
     <div class="flex column" style="justify-content: flex-start; align-items: flex-start">
       <div class="flex column pt-2">
         <v-btn icon style="pointer-events: all" v-if="mortar" class="secondary" @click="removeMortar(0)">
-          <v-badge color="red" right overlap style="margin-top: 6px">
-            <span slot="badge"><v-icon>clear</v-icon></span>
+          <v-badge color="red" right overlap>
+            <v-icon slot="badge">clear</v-icon>
             <!--<v-icon large>mail</v-icon>-->
             <img :src="mortar.sUrl" style="width: 36px;">
           </v-badge>
         </v-btn>
         <v-btn icon style="pointer-events: all" v-if="target" class="secondary" @click="removeTarget(0)">
-          <v-badge color="red" right overlap  style="margin-top: 6px">
-            <span slot="badge"><v-icon>clear</v-icon></span>
+          <v-badge color="red" right overlap>
+            <v-icon slot="badge">clear</v-icon>
             <img :src="target.sUrl" style="width: 36px;">
           </v-badge>
         </v-btn>
@@ -392,7 +423,7 @@ import Vue from "vue";
 import Vuetify from "vuetify";
 import "vuetify/dist/vuetify.min.css";
 
-import { CRS, LatLng, Map, Point, Polyline, Transformation } from "./assets/Leaflet/dist/leaflet-src.esm";
+import { CRS, LatLng, Map, Point, Polyline, Transformation } from "leaflet";
 
 import SquadGrid from "./assets/Leaflet_extensions/SquadGrid";
 import LocationLayer from "./assets/Leaflet_extensions/LocationLayer";
@@ -449,6 +480,7 @@ export default {
       showLocations: this.fromStorage("showLocations", "false") === "true",
       selectedMap: this.fromStorage("selectedMap", undefined), // selected map in top selector
       delayCalcUpdate: this.fromStorage("delayCalcUpdate", "true") === "true",
+      hideLoadingBar: this.fromStorage("hideLoadingBar", "true") === "true",
       mouseKeypad: undefined, // keypad shown in bottom left corner
       showKeypadTimeout: undefined, // value of timeout, set when mouse is moved, set undefined after 1 sec
       calcTimeout: undefined, // value of timeout for delayed calculations set, see calcMortar()
@@ -489,7 +521,7 @@ export default {
       PIN_TYPE, // reference to pin types
       pad, // reference to padding function used for formatting distance, heightDiff, etc.
 
-      quickMode: this.fromStorage("quickMode", "true") === "true",
+      advancedMode: this.fromStorage("advancedMode", "false") === "true",
       pinSize: Number.parseInt(this.fromStorage("pinSize", `${ICON_SIZE}`), 10),
       showAllRanges: this.fromStorage("showAllRanges", "false") === "true",
       errorString: localStorage === undefined ? "No localStorage!" : undefined,
@@ -533,16 +565,19 @@ export default {
       // since selectedMap is already defined and doesn't trigger changeMap, we do it here manually
       this.changeMap(this.selectedMap);
     }
-    setTimeout(() => {
+
+    let executions = 0;
+    const interval = setInterval(() => {
+      executions++;
+      executions %= 4;
       // dirty hack to set map position to fixed on mobile devices
       // on mobile safari, map doesn't show if not fixed
       // but if always fixed, persistent navbar is over map on desktop, which is clunky
       // so this is the compromise.
-      if (this.drawer) {
-        document.getElementById("map").style.position = "relative";
-      }
+      if (this.drawer) { document.getElementById("map").style.position = "relative"; }
       this.map.invalidateSize();
-    }, 10);
+      if (executions === 0) { clearInterval(interval); }
+    }, 250);
   },
   methods: {
     /**
@@ -690,7 +725,7 @@ export default {
         this.menuPos = new Point(e.originalEvent.x, e.originalEvent.y);
 
         // in simple mode, place mortar or target directly
-        if (this.quickMode) {
+        if (!this.advancedMode) {
           if (this.placedMortars.length === 0) {
             this.placePin(this.menuLatlng, 2, PIN_TYPE.MORTAR);
           } else {
@@ -1096,16 +1131,21 @@ export default {
       }
     },
     /**
-     * Resets map when quickMode is enabled (fixes orphaned markers)
-     * @param {Boolean} b - quickMode state boolean
+     * Resets map when advancedMode is disabled (fixes orphaned markers)
+     * @param {Boolean} b - advancedMode state boolean
      */
-    quickMode(b) {
-      console.log("quickMode watcher:", b);
-      if (b) {
-        // reset map
-        this.changeMap(this.selectedMap);
+    advancedMode(b) {
+      console.log("advancedMode watcher:", b);
+      if (!b) {
+        // remove mortars and targets
+        while (this.placedMortars.length > 0) {
+          this.removeMortar(0);
+        }
+        while (this.placedTargets.length > 0) {
+          this.removeTarget(0);
+        }
       }
-      this.toStorage("quickMode", b);
+      this.toStorage("advancedMode", b);
     },
 
     /**
@@ -1149,6 +1189,14 @@ export default {
      */
     delayCalcUpdate(b) {
       this.toStorage("delayCalcUpdate", b);
+    },
+
+    /**
+     * Stores hideLoadingBar state in localStorage.
+     * @param {Boolean} b - hideLoadingBar state boolean
+     */
+    hideLoadingBar(b) {
+      this.toStorage("hideLoadingBar", b);
     },
 
     /* PostScriptum exclusive */
@@ -1221,7 +1269,7 @@ export default {
 
 <style>
 @import "~material-icons/iconfont/material-icons.css";
-@import "./assets/Leaflet/dist/leaflet.css";
+@import "~leaflet/dist/leaflet.css";
 @import "~typeface-roboto/index.css";
 @import "~typeface-roboto-mono/index.css";
 
