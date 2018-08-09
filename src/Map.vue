@@ -10,7 +10,7 @@
       <v-icon>menu</v-icon>
     </v-toolbar-side-icon>
     <img src="/img/svg/icon.svg" width="40px">
-    <v-toolbar-title style="margin-right: 17px">
+    <v-toolbar-title>
       <v-select
           :items="maps"
           :loading="loading"
