@@ -1107,8 +1107,13 @@ export default {
     advancedMode(b) {
       console.log("advancedMode watcher:", b);
       if (!b) {
-        // reset map
-        this.changeMap(this.selectedMap);
+        // remove mortars and targets
+        while (this.placedMortars.length > 0) {
+          this.removeMortar(0);
+        }
+        while (this.placedTargets.length > 0) {
+          this.removeTarget(0);
+        }
       }
       this.toStorage("advancedMode", b);
     },
