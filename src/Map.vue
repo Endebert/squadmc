@@ -13,7 +13,7 @@
     <v-toolbar-title>
       <v-select
           :items="maps"
-          :loading="loading"
+          :loading="!hideLoadingBar && loading"
           append-icon="map"
           single-line
           v-model="selectedMap"
@@ -162,6 +162,20 @@
           <v-list-tile-content>
             <v-list-tile-title>Delay mil update on drag</v-list-tile-title>
             <v-list-tile-sub-title>performance hack</v-list-tile-sub-title>
+          </v-list-tile-content>
+          <v-list-tile-avatar>
+            <v-icon>timelapse</v-icon>
+          </v-list-tile-avatar>
+        </v-list-tile>
+        <v-list-tile>
+          <v-list-tile-action>
+            <v-switch
+                v-model="hideLoadingBar"
+            ></v-switch>
+          </v-list-tile-action>
+          <v-list-tile-content>
+            <v-list-tile-title>Hide loading bar</v-list-tile-title>
+            <v-list-tile-sub-title>reduces zoom delay</v-list-tile-sub-title>
           </v-list-tile-content>
           <v-list-tile-avatar>
             <v-icon>timelapse</v-icon>
@@ -454,6 +468,7 @@ export default {
       showLocations: this.fromStorage("showLocations", "false") === "true",
       selectedMap: this.fromStorage("selectedMap", undefined), // selected map in top selector
       delayCalcUpdate: this.fromStorage("delayCalcUpdate", "true") === "true",
+      hideLoadingBar: this.fromStorage("hideLoadingBar", "true") === "true",
       mouseKeypad: undefined, // keypad shown in bottom left corner
       showKeypadTimeout: undefined, // value of timeout, set when mouse is moved, set undefined after 1 sec
       calcTimeout: undefined, // value of timeout for delayed calculations set, see calcMortar()
@@ -1159,6 +1174,14 @@ export default {
      */
     delayCalcUpdate(b) {
       this.toStorage("delayCalcUpdate", b);
+    },
+
+    /**
+     * Stores hideLoadingBar state in localStorage.
+     * @param {Boolean} b - hideLoadingBar state boolean
+     */
+    hideLoadingBar(b) {
+      this.toStorage("hideLoadingBar", b);
     },
 
     /* PostScriptum exclusive */
