@@ -248,7 +248,7 @@
         <div style="display: flex; flex: 1 1 auto; justify-content: flex-end">
           <v-dialog v-model="placePinVars.dialog" max-width="250">
             <v-btn fab slot="activator" color="primary" style="pointer-events: all" class="ma-3">
-              <v-icon style="width: 50%; height: 50%">add</v-icon>
+              <v-icon style="width: 24px; height: 24px">add</v-icon>
             </v-btn>
             <v-card>
               <v-card-title style="background-color: #212121">Add Mortar/Target</v-card-title>
