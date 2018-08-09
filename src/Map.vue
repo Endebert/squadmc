@@ -51,8 +51,27 @@
           </v-badge>
         </v-list-tile-action>
       </v-list-tile>
-      <v-divider v-if="postScriptum"></v-divider>
-      <v-list-tile v-if="postScriptum">
+    </v-list>
+    <v-divider></v-divider>
+    <v-list class="px-0">
+      <v-list-tile>
+        <v-list-tile-action>
+          <v-switch
+              v-model="advancedMode"
+          ></v-switch>
+        </v-list-tile-action>
+        <v-list-tile-content>
+          <v-list-tile-title>Advanced Mode</v-list-tile-title>
+          <v-list-tile-sub-title>place multiple markers</v-list-tile-sub-title>
+        </v-list-tile-content>
+        <v-list-tile-avatar>
+          <v-icon>fast_forward</v-icon>
+        </v-list-tile-avatar>
+      </v-list-tile>
+    </v-list>
+    <v-divider></v-divider>
+    <v-list class="pa-0" two-line v-if="postScriptum">
+      <v-list-tile>
         <v-list-tile-content>
           <v-list-tile-title>Set mortar type</v-list-tile-title>
           <v-list-tile-sub-title>
@@ -78,20 +97,6 @@
           </v-list-tile-content>
           <v-list-tile-avatar>
             <v-icon>warning</v-icon>
-          </v-list-tile-avatar>
-        </v-list-tile>
-        <v-list-tile>
-          <v-list-tile-action>
-            <v-switch
-                v-model="quickMode"
-            ></v-switch>
-          </v-list-tile-action>
-          <v-list-tile-content>
-            <v-list-tile-title>Quick Mode</v-list-tile-title>
-            <v-list-tile-sub-title>1-click placement</v-list-tile-sub-title>
-          </v-list-tile-content>
-          <v-list-tile-avatar>
-            <v-icon>fast_forward</v-icon>
           </v-list-tile-avatar>
         </v-list-tile>
         <v-list-tile>
@@ -322,7 +327,7 @@
       </div>
     </div>
   </v-content>
-  <v-content class="fixedPos" style="pointer-events: none" v-if="quickMode">
+  <v-content class="fixedPos" style="pointer-events: none" v-if="!advancedMode">
     <div class="flex column" style="justify-content: flex-start; align-items: flex-start">
       <div class="flex column pt-2">
         <v-btn icon style="pointer-events: all" v-if="mortar" class="secondary" @click="removeMortar(0)">
@@ -489,7 +494,7 @@ export default {
       PIN_TYPE, // reference to pin types
       pad, // reference to padding function used for formatting distance, heightDiff, etc.
 
-      quickMode: this.fromStorage("quickMode", "true") === "true",
+      advancedMode: this.fromStorage("advancedMode", "false") === "true",
       pinSize: Number.parseInt(this.fromStorage("pinSize", `${ICON_SIZE}`), 10),
       showAllRanges: this.fromStorage("showAllRanges", "false") === "true",
       errorString: localStorage === undefined ? "No localStorage!" : undefined,
@@ -690,7 +695,7 @@ export default {
         this.menuPos = new Point(e.originalEvent.x, e.originalEvent.y);
 
         // in simple mode, place mortar or target directly
-        if (this.quickMode) {
+        if (!this.advancedMode) {
           if (this.placedMortars.length === 0) {
             this.placePin(this.menuLatlng, 2, PIN_TYPE.MORTAR);
           } else {
@@ -1096,16 +1101,16 @@ export default {
       }
     },
     /**
-     * Resets map when quickMode is enabled (fixes orphaned markers)
-     * @param {Boolean} b - quickMode state boolean
+     * Resets map when advancedMode is disabled (fixes orphaned markers)
+     * @param {Boolean} b - advancedMode state boolean
      */
-    quickMode(b) {
-      console.log("quickMode watcher:", b);
-      if (b) {
+    advancedMode(b) {
+      console.log("advancedMode watcher:", b);
+      if (!b) {
         // reset map
         this.changeMap(this.selectedMap);
       }
-      this.toStorage("quickMode", b);
+      this.toStorage("advancedMode", b);
     },
 
     /**
