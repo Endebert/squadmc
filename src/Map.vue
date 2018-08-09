@@ -28,7 +28,7 @@
       fixed
       app
       clipped
-      touchless
+      :touchless="!drawer"
       disable-resize-watcher
       disable-route-watcher
   >
