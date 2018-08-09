@@ -84,7 +84,7 @@
     </v-list>
     <v-divider v-if="postScriptum"></v-divider>
     <v-list class="pa-0">
-      <v-list-group :value="true">
+      <v-list-group>
         <v-list-tile slot="activator">
           <v-list-tile-content>
             <v-list-tile-title>Map Settings</v-list-tile-title>
@@ -146,12 +146,26 @@
             ></v-switch>
           </v-list-tile-action>
           <v-list-tile-content>
-            <v-list-tile-title>Show All Mortar Circles</v-list-tile-title>
+            <v-list-tile-title>Show all Mortar Circles</v-list-tile-title>
             <v-list-tile-sub-title>instead of active only</v-list-tile-sub-title>
           </v-list-tile-content>
           <v-list-tile-avatar>
             <v-icon>adjust</v-icon>
           </v-list-tile-avatar>
+        </v-list-tile>
+        <v-list-tile>
+          <div class="pr-3">Pin Size</div>
+          <v-slider v-model="pinSize" hide-details thumb-label class="pa-0 pr-3"
+                    step="12" min="24" max="96" ticks></v-slider>
+        </v-list-tile>
+      </v-list-group>
+    </v-list>
+    <v-list class="pa-0">
+      <v-list-group>
+        <v-list-tile slot="activator">
+          <v-list-tile-content>
+            <v-list-tile-title>Performance Settings</v-list-tile-title>
+          </v-list-tile-content>
         </v-list-tile>
         <v-list-tile>
           <v-list-tile-action>
@@ -181,12 +195,9 @@
             <v-icon>timelapse</v-icon>
           </v-list-tile-avatar>
         </v-list-tile>
-        <v-list-tile>
-          <div class="pr-3">Pin Size</div>
-          <v-slider v-model="pinSize" hide-details thumb-label class="pa-0 pr-3"
-                    step="12" min="24" max="96" ticks></v-slider>
-        </v-list-tile>
       </v-list-group>
+    </v-list>
+    <v-list>
       <v-list-group :disabled="placedMortars.length + placedFobs.length + placedTargets.length === 0">
         <v-list-tile slot="activator">
           <v-list-tile-content>
