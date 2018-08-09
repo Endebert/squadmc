@@ -553,16 +553,19 @@ export default {
       // since selectedMap is already defined and doesn't trigger changeMap, we do it here manually
       this.changeMap(this.selectedMap);
     }
-    setTimeout(() => {
+
+    let executions = 0;
+    const interval = setInterval(() => {
+      executions++;
+      executions %= 4;
       // dirty hack to set map position to fixed on mobile devices
       // on mobile safari, map doesn't show if not fixed
       // but if always fixed, persistent navbar is over map on desktop, which is clunky
       // so this is the compromise.
-      if (this.drawer) {
-        document.getElementById("map").style.position = "relative";
-      }
+      if (this.drawer) { document.getElementById("map").style.position = "relative"; }
       this.map.invalidateSize();
-    }, 10);
+      if (executions === 0) { clearInterval(interval); }
+    }, 250);
   },
   methods: {
     /**
