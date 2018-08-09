@@ -254,6 +254,7 @@
               <v-card-title style="background-color: #212121">Add Mortar/Target</v-card-title>
               <v-divider></v-divider>
               <v-card-text class="px-0">
+                <div><p align="center">Press icon buttons to cycle through marker colors</p></div>
                 <v-form>
                   <v-container>
                     <v-layout column wrap>
