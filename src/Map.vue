@@ -97,7 +97,7 @@
 	   <v-list-tile v-if="tTypeIndex > TARGET_TYPE.POINT">
           <div class="pr-3">Rounds</div>
           <v-slider v-model="secondaryShots" hide-details thumb-label class="pa-0 pr-3"
-                    step="1" min="3" max="9" ticks></v-slider>
+                    step="1" min="3" max="9" thumb-label="always" :thumb-size="24" ticks></v-slider>
         </v-list-tile>
     </v-list>
     <v-divider v-if="postScriptum"></v-divider>
