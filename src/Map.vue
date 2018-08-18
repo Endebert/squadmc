@@ -374,7 +374,8 @@
         v-if="mortar && target && tTypeIndex > TARGET_TYPE.POINT && secondaryTarget"
         style="background-color: #212121">
         <v-speed-dial>
-          <v-btn fab small slot="activator" class="secondary" style="width: 32px; height: 32px;">
+          <v-btn fab small slot="activator" class="secondary"
+            style="width: 32px; height: 32px; margin-left: 4px; margin-right: 4px;">
             <img :src="mortar.sUrl" style="width: 48px;">
           </v-btn>
           <v-btn icon
@@ -385,9 +386,10 @@
             <img :src="aMortar.sUrl" style="width: 48px;">
           </v-btn>
         </v-speed-dial>
-        <v-icon>arrow_forward</v-icon>
+        <v-icon style="font-size: 16px;">arrow_forward</v-icon>
         <v-speed-dial v-if="target">
-          <v-btn fab small slot="activator" class="secondary" style="width: 32px; height: 32px;">
+          <v-btn fab small slot="activator" class="secondary"
+            style="width: 32px; height: 32px; margin-left: 4px; margin-right: 4px;">
             <img :src="target.sUrl" style="width: 48px;">
           </v-btn>
           <v-btn icon
@@ -398,9 +400,9 @@
             <img :src="aTarget.sUrl" style="width: 48px;">
           </v-btn>
         </v-speed-dial>
-        <v-icon v-if="tTypeIndex > TARGET_TYPE.POINT && secondaryTarget">arrow_forward</v-icon>
         <v-speed-dial v-if="tTypeIndex > TARGET_TYPE.POINT && secondaryTarget">
-          <v-btn fab small slot="activator" class="secondary" style="width: 32px; height: 32px;">
+          <v-btn fab small slot="activator" class="secondary"
+            style="width: 32px; height: 32px; margin-left: 4px; margin-right: 4px;">
             <img :src="secondaryTarget.sUrl" style="width: 48px;">
           </v-btn>
           <v-btn icon
@@ -411,43 +413,28 @@
             <img :src="aTarget.sUrl" style="width: 48px;">
           </v-btn>
         </v-speed-dial>
-        <div class="font-mono flex column"
-          v-if="tTypeIndex <= 0 || (tTypeIndex > TARGET_TYPE.POINT && secondaryTarget === undefined)">
+        <div class="font-mono flex column">
           <div class="flex" style="width: 100%;">
-            <div class="px-1" style="flex: 1 0 auto; text-align: center; font-size: large">
-            {{DOMbearing}}
-            </div>
-            <div class="px-1" style="flex: 1 0 auto; text-align: center; font-size: large">
-            {{DOMelevation}}
-            </div>
-          </div>
-          <div class="flex" style="width: 100%;">
-            <div class="px-1 body-1" style="flex: 1 0 auto; text-align: center; font-size: small; color: #9e9e9e"
-            >{{DOMdist}}</div>
-            <div class="px-1 body-1" style="flex: 1 0 auto; text-align: center; font-size: small; color: #9e9e9e"
-            >{{DOMhDelta}}</div>
-          </div>
-        </div>
-        <div class="font-mono flex column" v-if="tTypeIndex > TARGET_TYPE.POINT && secondaryTarget">
-          <div class="flex" style="width: 100%;">
-            <div class="px-1" style="flex: 1 0 auto; text-align: center; font-size: large">
+            <div class="px-1" style="flex: 1 0 auto; font-size: small; padding-left: 0!important;">
             {{DOMminbearing}}
             </div>
-            <v-icon>arrow_forward</v-icon>
-            <div class="px-1" style="flex: 1 0 auto; text-align: center; font-size: large">
+            <v-icon style="font-size: small">arrow_forward</v-icon>
+            <div class="px-1" style="flex: 1 0 auto; font-size: small; padding-left: 0!important;">
             {{DOMmaxbearing}}
             </div>
           </div>
           <div class="flex" style="width: 100%;">
-            <div class="px-1" style="flex: 1 0 auto; text-align: center; font-size: large">
+            <div class="px-1" style="flex: 1 0 auto; font-size: small; padding-left: 0!important;">
             {{DOMminelevation}}
             </div>
-            <v-icon>arrow_forward</v-icon>
-            <div class="px-1" style="flex: 1 0 auto; text-align: center; font-size: large">
+            <v-icon style="font-size: small">arrow_forward</v-icon>
+            <div class="px-1" style="flex: 1 0 auto; font-size: small; padding-left: 0!important;">
             {{DOMmaxelevation}}
             </div>
           </div>
         </div>
+      </div>
+      <div class="flex" style="flex;background-color: #212121">
         <div class="font-mono flex column"
           v-if="tTypeIndex > TARGET_TYPE.POINT && secondaryTarget" v-for="(aShot, index) in aShots" :key="index">
           <div class="flex" style="width: 100%;">
