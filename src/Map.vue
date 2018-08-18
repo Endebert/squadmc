@@ -96,7 +96,7 @@
       </v-list-tile>
        <v-list-tile v-if="tTypeIndex > TARGET_TYPE.POINT">
           <div class="pr-3">Rounds</div>
-          <v-slider v-model="secondaryShots" hide-details thumb-label class="pa-0 pr-3"
+          <v-slider v-model="secondaryShots" hide-details class="pa-0 pr-3"
                     step="1" min="3" max="9" thumb-label="always" :thumb-size="24" ticks></v-slider>
         </v-list-tile>
     </v-list>
@@ -366,7 +366,8 @@
             <img :src="aTarget.sUrl" style="width: 48px;">
           </v-btn>
         </v-speed-dial>
-        <div class="font-mono flex column" v-if="tTypeIndex <= 0 || (tTypeIndex > TARGET_TYPE.POINT && secondaryTarget === undefined)">
+        <div class="font-mono flex column"
+          v-if="tTypeIndex <= 0 || (tTypeIndex > TARGET_TYPE.POINT && secondaryTarget === undefined)">
           <div class="flex" style="width: 100%;">
             <div class="px-1" style="flex: 1 0 auto; text-align: center; font-size: large">
             {{DOMbearing}}
@@ -402,7 +403,8 @@
             </div>
           </div>
         </div>
-        <div class="font-mono flex column" v-if="tTypeIndex > TARGET_TYPE.POINT && secondaryTarget" v-for="(aShot, index) in aShots">
+        <div class="font-mono flex column"
+          v-if="tTypeIndex > TARGET_TYPE.POINT && secondaryTarget" v-for="(aShot, index) in aShots" :key="index">
           <div class="flex" style="width: 100%;">
             <div class="px-1" style="flex: 1 0 auto; text-align: center; font-size: small">
                 Round {{index + 1}}
@@ -558,7 +560,7 @@ export default {
       secondaryTarget: undefined, // secondary target (for line and area target type)
       secondaryShots: Number.parseInt(this.fromStorage("secondaryShots", "5"), 10),
       distLine: undefined, // the line
-      secondaryLine: undefined,// The secondary line
+      secondaryLine: undefined, // The secondary line
       aShots: [], // values of intermediary shots (for line and area target)
       // available colors
       colors: {
@@ -622,7 +624,7 @@ export default {
       targetTypes: [
         "POINT",
         "LINE",
-        "AREA"
+        "AREA",
       ],
       tTypeIndex: Number.parseInt(this.fromStorage("tTypeIndex", "0"), 10),
 
@@ -865,10 +867,11 @@ export default {
           for (let i = 0; i < this.placedTargets.length; i += 1) {
             if (this.colors.pin.target[urlIndex] === this.placedTargets[i].pUrl) {
               this.placedTargets[i].pos = pos;
-              if (this.placedTargets[i].pUrl == this.secondaryTarget.pUrl)
+              if (this.placedTargets[i].pUrl === this.secondaryTarget.pUrl) {
                 this.secondaryTarget = this.placedTargets[i];
-              else
+              } else {
                 this.target = this.placedTargets[i];
+              }
               return;
             }
           }
@@ -876,9 +879,9 @@ export default {
           this.placedTargets.push(pin);
           if (this.tTypeIndex > TARGET_TYPE.POINT && this.target !== undefined) {
             this.secondaryTarget = pin;
-          }
-          else
+          } else {
             this.target = pin;
+          }
           break;
         case PIN_TYPE.FOB:
           for (let i = 0; i < this.placedFobs.length; i += 1) {
@@ -904,41 +907,38 @@ export default {
       }
     },
     drawSecondaryLine() {
-        console.log("drawSecondaryLines()");
-        this.clearSecondaryLines();
-        if (this.advancedMode && this.target && this.secondaryTarget)
-        {
-            if (this.tTypeIndex === TARGET_TYPE.LINE)//Line target type
-            {
-                const line = new Polyline([this.target.pos, this.secondaryTarget.pos], {
-                  color: "#3333ff",
-                  interactive: false,
-                  clickable: false, // legacy support
-                });
-                if (!this.map.hasLayer(line)) {
-                    this.secondaryLine = line;
-                    this.map.addLayer(line);
-                }
-            }
-            if (this.tTypeIndex == TARGET_TYPE.AREA)//Area target type
-            {
-                const rectangle = new Rectangle([
-                                                    [this.target.pos.lat, this.target.pos.lng],
-                                                    [this.secondaryTarget.pos.lat, this.secondaryTarget.pos.lng]
-                                                ],
-                                                {color:"#3333ff", weight: 1});
-                if (!this.map.hasLayer(rectangle)) {
-                    this.secondaryLine = rectangle;
-                    this.map.addLayer(rectangle);
-                }
-            }
+      console.log("drawSecondaryLines()");
+      this.clearSecondaryLines();
+      if (this.advancedMode && this.target && this.secondaryTarget) {
+        if (this.tTypeIndex === TARGET_TYPE.LINE) { // Line target type
+          const line = new Polyline([this.target.pos, this.secondaryTarget.pos], {
+            color: "#3333ff",
+            interactive: false,
+            clickable: false, // legacy support
+          });
+          if (!this.map.hasLayer(line)) {
+            this.secondaryLine = line;
+            this.map.addLayer(line);
+          }
         }
+        if (this.tTypeIndex === TARGET_TYPE.AREA) { // Area target type
+          const rectangle = new Rectangle(
+            [
+              [this.target.pos.lat, this.target.pos.lng],
+              [this.secondaryTarget.pos.lat, this.secondaryTarget.pos.lng],
+            ],
+            { color: "#3333ff", weight: 1 },
+          );
+          if (!this.map.hasLayer(rectangle)) {
+            this.secondaryLine = rectangle;
+            this.map.addLayer(rectangle);
+          }
+        }
+      }
     },
     coordMortar(mortar, target) {
       const s = mortar.pos;
       const e = target.pos;
-
-      const coords = {};
 
       // oh no, vector maths!
       let bearing = Math.atan2(e.lng - s.lng, e.lat - s.lat) * 180 / Math.PI;
@@ -1005,8 +1005,6 @@ export default {
         this.map.addLayer(this.distLine);
       }
 
-
-
       if (this.calcTimeout) { clearTimeout(this.calcTimeout); }
 
       // if we want to delay the calc update, we set a timer that will set this.c
@@ -1036,199 +1034,186 @@ export default {
         this.c2 = newC;
         this.calcShots();
       }
-
     },
     getCoordsBoundaries() {
-        return {
-            minLat: this.target.pos.lat <= this.secondaryTarget.pos.lat ? this.target.pos.lat : this.secondaryTarget.pos.lat,
-            maxLat: this.target.pos.lat > this.secondaryTarget.pos.lat ? this.target.pos.lat : this.secondaryTarget.pos.lat,
-            minLng: this.target.pos.lng <= this.secondaryTarget.pos.lng ? this.target.pos.lng : this.secondaryTarget.pos.lng,
-            maxLng: this.target.pos.lng > this.secondaryTarget.pos.lng ? this.target.pos.lng : this.secondaryTarget.pos.lng,
-        };
+      const s = this.target.pos;
+      const e = this.secondaryTarget.pos;
+      return {
+        minLat: s.lat <= e.lat ? s.lat : e.lat,
+        maxLat: s.lat > e.lat ? s.lat : e.lat,
+        minLng: s.lng <= e.lng ? s.lng : e.lng,
+        maxLng: s.lng > e.lng ? s.lng : e.lng,
+      };
     },
     calcShots() {
-        if (this.tTypeIndex == TARGET_TYPE.LINE)
-        {
-            const interval = this.secondaryShots - 2;
-            const boundaries = this.getCoordsBoundaries();
-            const latVariation = (boundaries.maxLat - boundaries.minLat) / (interval + 1);
-            const lngVariation = (boundaries.maxLng - boundaries.minLng) / (interval + 1);
+      if (this.tTypeIndex === TARGET_TYPE.LINE) {
+        const interval = this.secondaryShots - 2;
+        const boundaries = this.getCoordsBoundaries();
+        const latVariation = (boundaries.maxLat - boundaries.minLat) / (interval + 1);
+        const lngVariation = (boundaries.maxLng - boundaries.minLng) / (interval + 1);
 
-            this.aShots = [];
-            this.aShots.push({
-                bearing: this.formatDOMBearing(this.c.bearing),
-                elevation: this.formatDOMElevation(this.c.elevation)
-            });//First shot is fixed
+        this.aShots = [];
+        this.aShots.push({
+          bearing: this.formatDOMBearing(this.c.bearing),
+          elevation: this.formatDOMElevation(this.c.elevation),
+        });// First shot is fixed
 
-            const point = {};
-            let coord;
-            for (let i = 1; i <= interval; i++)//Interval shots are computed
-            {
-                point.pos = new LatLng(boundaries.minLat + (latVariation * i), boundaries.minLng + (lngVariation * i), );
-                coord = this.coordMortar(this.mortar, point);
-                this.aShots.push({
-                    bearing: this.formatDOMBearing(coord.bearing),
-                    elevation: this.formatDOMElevation(coord.elevation)
-                });
-            }
-
-            this.aShots.push({
-                bearing: this.formatDOMBearing(this.c2.bearing),
-                elevation: this.formatDOMElevation(this.c2.elevation)
-            });//Last shot is fixed
-            console.log("calcShots", this.shots);
+        const point = {};
+        let coord;
+        for (let i = 1; i <= interval; i++) { // Interval shots are computed
+          point.pos = new LatLng(boundaries.minLat + (latVariation * i), boundaries.minLng + (lngVariation * i));
+          coord = this.coordMortar(this.mortar, point);
+          this.aShots.push({
+            bearing: this.formatDOMBearing(coord.bearing),
+            elevation: this.formatDOMElevation(coord.elevation),
+          });
         }
-        if (this.tTypeIndex == TARGET_TYPE.AREA)
-        {
-            this.aShots = [];
-            const interval = 3;
-            const boundaries = this.getCoordsBoundaries();
-            const latVariation = (boundaries.maxLat - boundaries.minLat) / (interval + 1);
-            const lngVariation = (boundaries.maxLng - boundaries.minLng) / (interval + 1);
 
-            const latitudes = [];
-            const longitudes = [];
-            for (let i = 1; i <= interval; i++)
-            {
-                latitudes.push(boundaries.minLat + (latVariation * i));
-                longitudes.push(boundaries.minLng + (lngVariation * i));
-            }
-            const coords = [];
-            const point = {};
-            let coord;
-            for (let i = 0; i < interval; i++)
-            {
-                for (let j = 0; j < interval; j++)
-                {
-                    point.pos = new LatLng(latitudes[i], longitudes[j]);
-                    coord = this.coordMortar(this.mortar, point);
-                    if (coords[i] === undefined)
-                        coords[i] = [];
-                    coords[i][j] = {
-                        bearing: this.formatDOMBearing(coord.bearing),
-                        elevation: this.formatDOMElevation(coord.elevation)
-                    };
-                }
-            }
-            const random = Math.floor(Math.random() * Math.floor(100));// get random value between 0-100
-            switch (this.secondaryShots){//will choose a random pattern on the 9 points available depends of the numbers of points wanted
-                case 3:
-                    if (random <= 25)
-                    {
-                        this.aShots.push(coords[0][0]);
-                        this.aShots.push(coords[1][1]);
-                        this.aShots.push(coords[2][2]);
-                    }
-                    else if (random <= 50)
-                    {
-                        this.aShots.push(coords[0][2]);
-                        this.aShots.push(coords[1][1]);
-                        this.aShots.push(coords[2][0]);
-                    }
-                    else if (random <= 75)
-                    {
-                        this.aShots.push(coords[1][0]);
-                        this.aShots.push(coords[1][1]);
-                        this.aShots.push(coords[1][2]);
-                    }
-                    else if (random <= 100)
-                    {
-                        this.aShots.push(coords[0][1]);
-                        this.aShots.push(coords[1][1]);
-                        this.aShots.push(coords[2][1]);
-                    }
-                    break;
-                case 4:
-                    if (random <= 50) {
-                        this.aShots.push(coords[0][0]);
-                        this.aShots.push(coords[2][0]);
-                        this.aShots.push(coords[0][2]);
-                        this.aShots.push(coords[2][2]);
-                    }
-                    else if (random <= 100){
-                        this.aShots.push(coords[1][0]);
-                        this.aShots.push(coords[0][1]);
-                        this.aShots.push(coords[2][1]);
-                        this.aShots.push(coords[1][2]);
-                    }
-                    break;
-                case 5:
-                    if (random <= 50) {
-                        this.aShots.push(coords[0][0]);
-                        this.aShots.push(coords[2][0]);
-                        this.aShots.push(coords[0][2]);
-                        this.aShots.push(coords[2][2]);
-                        this.aShots.push(coords[1][1]);
-                    }
-                    else if (random <= 100){
-                        this.aShots.push(coords[1][0]);
-                        this.aShots.push(coords[0][1]);
-                        this.aShots.push(coords[2][1]);
-                        this.aShots.push(coords[1][2]);
-                        this.aShots.push(coords[1][1]);
-                    }
-                    break;
-                case 6:
-                    if (random <= 50) {
-                        this.aShots.push(coords[0][0]);
-                        this.aShots.push(coords[1][0]);
-                        this.aShots.push(coords[2][0]);
-                        this.aShots.push(coords[0][2]);
-                        this.aShots.push(coords[1][2]);
-                        this.aShots.push(coords[2][2]);
-                    }
-                    else if (random <= 100){
-                        this.aShots.push(coords[0][0]);
-                        this.aShots.push(coords[0][1]);
-                        this.aShots.push(coords[0][2]);
-                        this.aShots.push(coords[2][2]);
-                        this.aShots.push(coords[2][2]);
-                        this.aShots.push(coords[2][2]);
-                    }
-                    break;
-                case 7:
-                    if (random <= 50) {
-                        this.aShots.push(coords[0][0]);
-                        this.aShots.push(coords[1][0]);
-                        this.aShots.push(coords[2][0]);
-                        this.aShots.push(coords[0][2]);
-                        this.aShots.push(coords[1][2]);
-                        this.aShots.push(coords[2][2]);
-                        this.aShots.push(coords[1][1]);
-                    }
-                    else if (random <= 100){
-                        this.aShots.push(coords[0][0]);
-                        this.aShots.push(coords[0][1]);
-                        this.aShots.push(coords[0][2]);
-                        this.aShots.push(coords[2][0]);
-                        this.aShots.push(coords[2][1]);
-                        this.aShots.push(coords[2][2]);
-                        this.aShots.push(coords[1][1]);
-                    }
-                    break;
-                case 8:
-                    this.aShots.push(coords[0][0]);
-                    this.aShots.push(coords[0][1]);
-                    this.aShots.push(coords[0][2]);
-                    this.aShots.push(coords[1][0]);
-                    this.aShots.push(coords[1][2]);
-                    this.aShots.push(coords[2][0]);
-                    this.aShots.push(coords[2][1]);
-                    this.aShots.push(coords[2][2]);
-                    break;
-                case 9:
-                    this.aShots.push(coords[0][0]);
-                    this.aShots.push(coords[0][1]);
-                    this.aShots.push(coords[0][2]);
-                    this.aShots.push(coords[1][0]);
-                    this.aShots.push(coords[1][1]);
-                    this.aShots.push(coords[1][2]);
-                    this.aShots.push(coords[2][0]);
-                    this.aShots.push(coords[2][1]);
-                    this.aShots.push(coords[2][2]);
-                    break;
-            }
+        this.aShots.push({
+          bearing: this.formatDOMBearing(this.c2.bearing),
+          elevation: this.formatDOMElevation(this.c2.elevation),
+        });// Last shot is fixed
+        console.log("calcShots", this.shots);
+      }
+      if (this.tTypeIndex === TARGET_TYPE.AREA) {
+        this.aShots = [];
+        const interval = 3;
+        const boundaries = this.getCoordsBoundaries();
+        const latVariation = (boundaries.maxLat - boundaries.minLat) / (interval + 1);
+        const lngVariation = (boundaries.maxLng - boundaries.minLng) / (interval + 1);
+
+        const latitudes = [];
+        const longitudes = [];
+        for (let i = 1; i <= interval; i++) {
+          latitudes.push(boundaries.minLat + (latVariation * i));
+          longitudes.push(boundaries.minLng + (lngVariation * i));
         }
+        const coords = [];
+        const point = {};
+        let coord;
+        for (let i = 0; i < interval; i++) {
+          for (let j = 0; j < interval; j++) {
+            point.pos = new LatLng(latitudes[i], longitudes[j]);
+            coord = this.coordMortar(this.mortar, point);
+            if (coords[i] === undefined) {
+              coords[i] = [];
+            }
+            coords[i][j] = {
+              bearing: this.formatDOMBearing(coord.bearing),
+              elevation: this.formatDOMElevation(coord.elevation),
+            };
+          }
+        }
+        const random = Math.floor(Math.random() * Math.floor(100));// get random value between 0-100
+        // will choose a random pattern on the 9 points available depends of the numbers of points wanted
+        switch (this.secondaryShots) {
+          case 3:
+            if (random <= 25) {
+              this.aShots.push(coords[0][0]);
+              this.aShots.push(coords[1][1]);
+              this.aShots.push(coords[2][2]);
+            } else if (random <= 50) {
+              this.aShots.push(coords[0][2]);
+              this.aShots.push(coords[1][1]);
+              this.aShots.push(coords[2][0]);
+            } else if (random <= 75) {
+              this.aShots.push(coords[1][0]);
+              this.aShots.push(coords[1][1]);
+              this.aShots.push(coords[1][2]);
+            } else if (random <= 100) {
+              this.aShots.push(coords[0][1]);
+              this.aShots.push(coords[1][1]);
+              this.aShots.push(coords[2][1]);
+            }
+            break;
+          case 4:
+            if (random <= 50) {
+              this.aShots.push(coords[0][0]);
+              this.aShots.push(coords[2][0]);
+              this.aShots.push(coords[0][2]);
+              this.aShots.push(coords[2][2]);
+            } else if (random <= 100) {
+              this.aShots.push(coords[1][0]);
+              this.aShots.push(coords[0][1]);
+              this.aShots.push(coords[2][1]);
+              this.aShots.push(coords[1][2]);
+            }
+            break;
+          default:
+          case 5:
+            if (random <= 50) {
+              this.aShots.push(coords[0][0]);
+              this.aShots.push(coords[2][0]);
+              this.aShots.push(coords[0][2]);
+              this.aShots.push(coords[2][2]);
+              this.aShots.push(coords[1][1]);
+            } else if (random <= 100) {
+              this.aShots.push(coords[1][0]);
+              this.aShots.push(coords[0][1]);
+              this.aShots.push(coords[2][1]);
+              this.aShots.push(coords[1][2]);
+              this.aShots.push(coords[1][1]);
+            }
+            break;
+          case 6:
+            if (random <= 50) {
+              this.aShots.push(coords[0][0]);
+              this.aShots.push(coords[1][0]);
+              this.aShots.push(coords[2][0]);
+              this.aShots.push(coords[0][2]);
+              this.aShots.push(coords[1][2]);
+              this.aShots.push(coords[2][2]);
+            } else if (random <= 100) {
+              this.aShots.push(coords[0][0]);
+              this.aShots.push(coords[0][1]);
+              this.aShots.push(coords[0][2]);
+              this.aShots.push(coords[2][2]);
+              this.aShots.push(coords[2][2]);
+              this.aShots.push(coords[2][2]);
+            }
+            break;
+          case 7:
+            if (random <= 50) {
+              this.aShots.push(coords[0][0]);
+              this.aShots.push(coords[1][0]);
+              this.aShots.push(coords[2][0]);
+              this.aShots.push(coords[0][2]);
+              this.aShots.push(coords[1][2]);
+              this.aShots.push(coords[2][2]);
+              this.aShots.push(coords[1][1]);
+            } else if (random <= 100) {
+              this.aShots.push(coords[0][0]);
+              this.aShots.push(coords[0][1]);
+              this.aShots.push(coords[0][2]);
+              this.aShots.push(coords[2][0]);
+              this.aShots.push(coords[2][1]);
+              this.aShots.push(coords[2][2]);
+              this.aShots.push(coords[1][1]);
+            }
+            break;
+          case 8:
+            this.aShots.push(coords[0][0]);
+            this.aShots.push(coords[0][1]);
+            this.aShots.push(coords[0][2]);
+            this.aShots.push(coords[1][0]);
+            this.aShots.push(coords[1][2]);
+            this.aShots.push(coords[2][0]);
+            this.aShots.push(coords[2][1]);
+            this.aShots.push(coords[2][2]);
+            break;
+          case 9:
+            this.aShots.push(coords[0][0]);
+            this.aShots.push(coords[0][1]);
+            this.aShots.push(coords[0][2]);
+            this.aShots.push(coords[1][0]);
+            this.aShots.push(coords[1][1]);
+            this.aShots.push(coords[1][2]);
+            this.aShots.push(coords[2][0]);
+            this.aShots.push(coords[2][1]);
+            this.aShots.push(coords[2][2]);
+            break;
+        }
+      }
     },
     /**
      * Remove an already placed mortar, specified by its index in placedMortars
@@ -1259,8 +1244,9 @@ export default {
       if (tTarget === this.target) {
         if (this.placedTargets.length > 0) {
           this.target = this.placedTargets[i === 0 ? 0 : i - 1];
-          if (this.target.pUrl == this.secondaryTarget.pUrl)
+          if (this.target.pUrl === this.secondaryTarget.pUrl) {
             this.secondaryTarget = undefined;
+          }
         } else {
           this.target = undefined;
           this.secondaryTarget = undefined;
@@ -1334,8 +1320,7 @@ export default {
       window.open("https://github.com/Endebert/squadmc", "_blank");
     },
     clearSecondaryLines() {
-      if (this.secondaryLine !== undefined)
-      {
+      if (this.secondaryLine !== undefined) {
         this.map.removeLayer(this.secondaryLine);
         this.secondaryLine = undefined;
       }
@@ -1367,12 +1352,11 @@ export default {
     },
     onDragEndListener() {
       this.dragging = false;
-      if (this.mortar && this.target)
-      {
+      if (this.mortar && this.target) {
         this.calcMortar(this.mortar, this.target, false);
         if (this.secondaryTarget) {
-            this.calcMortarSecondary(this.mortar, this.secondaryTarget, false);
-		}
+          this.calcMortarSecondary(this.mortar, this.secondaryTarget, false);
+        }
       }
     },
 
@@ -1491,12 +1475,12 @@ export default {
         this.map.removeLayer(this.distLine);
       }
     },
-    "secondaryTarget.pos" : function secondaryTargetPosWatcher() {
-        console.log("secondaryTargetPosWatcher");
-        if (this.mortar && this.target && this.secondaryTarget) {
-            this.calcMortarSecondary(this.mortar, this.secondaryTarget, this.delayCalcUpdate);
-        } else {
-            this.clearSecondaryLines();
+    "secondaryTarget.pos": function secondaryTargetPosWatcher() {
+      console.log("secondaryTargetPosWatcher");
+      if (this.mortar && this.target && this.secondaryTarget) {
+        this.calcMortarSecondary(this.mortar, this.secondaryTarget, this.delayCalcUpdate);
+      } else {
+        this.clearSecondaryLines();
       }
     },
     /**
@@ -1516,11 +1500,10 @@ export default {
       }
     },
     secondaryShots(i) {
-        this.toStorage("secondaryShots", i);
-        if (this.advancedMode && this.target && this.secondaryTarget && this.tTypeIndex > TARGET_TYPE.POINT)
-        {
-            this.calcShots();
-        }
+      this.toStorage("secondaryShots", i);
+      if (this.advancedMode && this.target && this.secondaryTarget && this.tTypeIndex > TARGET_TYPE.POINT) {
+        this.calcShots();
+      }
     },
     /**
      * Resets map when advancedMode is disabled (fixes orphaned markers)
@@ -1536,7 +1519,7 @@ export default {
         while (this.placedTargets.length > 0) {
           this.removeTarget(0);
         }
-        //set targetType to point
+        // set targetType to point
         this.tTypeIndex = 0;
       }
       this.toStorage("advancedMode", b);
@@ -1593,14 +1576,13 @@ export default {
       this.toStorage("hideLoadingBar", b);
     },
     tTypeIndex(newIndex) {
-        this.toStorage("tTypeIndex", newIndex);
-        this.placedTargets.forEach((marker) => {
-            if (marker.sUrl != this.target.sUrl)
-            {
-                this.secondaryTarget = marker;
-            }
-        });
-        this.drawSecondaryLine();
+      this.toStorage("tTypeIndex", newIndex);
+      this.placedTargets.forEach((marker) => {
+        if (marker.sUrl !== this.target.sUrl) {
+          this.secondaryTarget = marker;
+        }
+      });
+      this.drawSecondaryLine();
     },
 
     /* PostScriptum exclusive */
@@ -1617,8 +1599,10 @@ export default {
 
       if (this.mortar && this.target) {
         this.calcMortar(this.mortar, this.target);
+        if (this.secondaryTarget) {
+          this.calcMortarSecondary(this.mortar, this.secondaryTarget);
+        }
       }
-
       this.toStorage("mTypeIndex", newIndex);
     },
   },
@@ -1635,7 +1619,7 @@ export default {
      * @return {String} formatted string
      */
     DOMelevation() {
-        return this.formatDOMElevation(this.c.elevation);
+      return this.formatDOMElevation(this.c.elevation);
     },
     /**
      * Returns formatted dist string for DOM element
@@ -1656,13 +1640,13 @@ export default {
     },
 
     DOMminbearing() {
-        const minBearing = this.c.bearing <= this.c2.bearing ? this.c.bearing : this.c2.bearing;
-        return this.formatDOMBearing(minBearing);
+      const minBearing = this.c.bearing <= this.c2.bearing ? this.c.bearing : this.c2.bearing;
+      return this.formatDOMBearing(minBearing);
     },
 
     DOMmaxbearing() {
-        const maxBearing = this.c.bearing >= this.c2.bearing ? this.c.bearing : this.c2.bearing;
-        return this.formatDOMBearing(maxBearing);
+      const maxBearing = this.c.bearing >= this.c2.bearing ? this.c.bearing : this.c2.bearing;
+      return this.formatDOMBearing(maxBearing);
     },
     DOMminelevation() {
       const minElevation = this.c.elevation <= this.c2.elevation ? this.c.elevation : this.c2.elevation;
@@ -1683,8 +1667,8 @@ export default {
       return this.mortarTypes[this.mTypeIndex];
     },
     currentTType() {
-        return this.targetTypes[this.tTypeIndex];
-    }
+      return this.targetTypes[this.tTypeIndex];
+    },
   },
 };
 </script>
