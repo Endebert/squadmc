@@ -258,7 +258,7 @@
   <v-content class="fixedPos">
     <div id="map" class="fixedPos"></div>
   </v-content>
-  <v-content class="fixedPos" style="pointer-events: none" >
+  <v-content class="fixedPos" style="pointer-events: none;" >
     <div class="bottom-bar front" style="pointer-events: none;">
       <div style="display: flex; align-items: flex-end">
         <div class="ma-2 px-1 secondary font-mono" style="width: fit-content; flex: 0 1 auto"
@@ -327,7 +327,7 @@
           </v-dialog>
         </div>
       </div>
-      <div id="my-footer" v-if="mortar && target && secondaryTarget == undefined" style="background-color: #212121">
+      <div id="my-footer" v-if="mortar && target && secondaryTarget == undefined" style="background-color: #212121;">
         <v-speed-dial>
           <v-btn fab small slot="activator" class="secondary" style="width: 32px; height: 32px;">
             <img :src="mortar.sUrl" style="width: 48px;">
@@ -372,7 +372,7 @@
       </div>
       <div id="my-footer"
         v-if="mortar && target && tTypeIndex > TARGET_TYPE.POINT && secondaryTarget"
-        style="background-color: #212121">
+        style="background-color: #212121;">
         <v-speed-dial>
           <v-btn fab small slot="activator" class="secondary"
             style="width: 32px; height: 32px; margin-left: 4px; margin-right: 4px;">
@@ -434,24 +434,30 @@
           </div>
         </div>
       </div>
-      <div class="flex" style="flex;background-color: #212121">
-        <div class="font-mono flex column"
-          v-if="tTypeIndex > TARGET_TYPE.POINT && secondaryTarget" v-for="(aShot, index) in aShots" :key="index">
-          <div class="flex" style="width: 100%;">
+      <div id="my-subtargets" class="flex" style="flex;background-color: #212121; align-items: center;"
+        v-if="aSubTargets.length > 0">
+        <div class="flex" v-if="currentSubTarget > 0">
+          <v-icon @click="currentSubTarget--">keyboard_arrow_left</v-icon>
+        </div>
+        <div class="font-mono flex column" style="flex-grow: 1;">
+          <div class="flex">
             <div class="px-1" style="flex: 1 0 auto; text-align: center; font-size: small">
-                Round {{index + 1}}
+                Round {{ currentSubTarget + 1 }} / {{ secondaryShots }}
           </div>
           </div>
-          <div class="flex" style="width: 100%;">
+          <div class="flex">
             <div class="px-1" style="flex: 1 0 auto; text-align: center; font-size: small">
-                {{ aShot.bearing }}
+                {{ aSubTargets[currentSubTarget].bearing }}
             </div>
           </div>
-          <div class="flex" style="width: 100%;">
+          <div class="flex">
             <div class="px-1" style="flex: 1 0 auto; text-align: center; font-size: small">
-                {{ aShot.elevation }}
+                {{ aSubTargets[currentSubTarget].elevation }}
             </div>
           </div>
+        </div>
+        <div class="flex" v-if="currentSubTarget < aSubTargets.length - 1">
+          <v-icon @click="currentSubTarget++">keyboard_arrow_right</v-icon>
         </div>
       </div>
     </div>
@@ -594,7 +600,8 @@ export default {
       secondaryShots: Number.parseInt(this.fromStorage("secondaryShots", "5"), 10),
       distLine: undefined, // the line
       secondaryLine: undefined, // The secondary line
-      aShots: [], // values of intermediary shots (for line and area target)
+      aSubTargets: [], // values of intermediary shots (for line and area target)
+      currentSubTarget: Number.parseInt(this.fromStorage("currentSubTarget", "0"), 10),
       // available colors
       colors: {
         pin: {
@@ -1085,8 +1092,8 @@ export default {
         const latVariation = (boundaries.maxLat - boundaries.minLat) / (interval + 1);
         const lngVariation = (boundaries.maxLng - boundaries.minLng) / (interval + 1);
 
-        this.aShots = [];
-        this.aShots.push({
+        this.aSubTargets = [];
+        this.aSubTargets.push({
           bearing: this.formatDOMBearing(this.c.bearing),
           elevation: this.formatDOMElevation(this.c.elevation),
         });// First shot is fixed
@@ -1096,20 +1103,20 @@ export default {
         for (let i = 1; i <= interval; i++) { // Interval shots are computed
           point.pos = new LatLng(boundaries.minLat + (latVariation * i), boundaries.minLng + (lngVariation * i));
           coord = this.coordMortar(this.mortar, point);
-          this.aShots.push({
+          this.aSubTargets.push({
             bearing: this.formatDOMBearing(coord.bearing),
             elevation: this.formatDOMElevation(coord.elevation),
           });
         }
 
-        this.aShots.push({
+        this.aSubTargets.push({
           bearing: this.formatDOMBearing(this.c2.bearing),
           elevation: this.formatDOMElevation(this.c2.elevation),
         });// Last shot is fixed
         console.log("calcShots", this.shots);
       }
       if (this.tTypeIndex === TARGET_TYPE.AREA) {
-        this.aShots = [];
+        this.aSubTargets = [];
         const interval = 3;
         const boundaries = this.getCoordsBoundaries();
         const latVariation = (boundaries.maxLat - boundaries.minLat) / (interval + 1);
@@ -1142,108 +1149,108 @@ export default {
         switch (this.secondaryShots) {
           case 3:
             if (random <= 25) {
-              this.aShots.push(coords[0][0]);
-              this.aShots.push(coords[1][1]);
-              this.aShots.push(coords[2][2]);
+              this.aSubTargets.push(coords[0][0]);
+              this.aSubTargets.push(coords[1][1]);
+              this.aSubTargets.push(coords[2][2]);
             } else if (random <= 50) {
-              this.aShots.push(coords[0][2]);
-              this.aShots.push(coords[1][1]);
-              this.aShots.push(coords[2][0]);
+              this.aSubTargets.push(coords[0][2]);
+              this.aSubTargets.push(coords[1][1]);
+              this.aSubTargets.push(coords[2][0]);
             } else if (random <= 75) {
-              this.aShots.push(coords[1][0]);
-              this.aShots.push(coords[1][1]);
-              this.aShots.push(coords[1][2]);
+              this.aSubTargets.push(coords[1][0]);
+              this.aSubTargets.push(coords[1][1]);
+              this.aSubTargets.push(coords[1][2]);
             } else if (random <= 100) {
-              this.aShots.push(coords[0][1]);
-              this.aShots.push(coords[1][1]);
-              this.aShots.push(coords[2][1]);
+              this.aSubTargets.push(coords[0][1]);
+              this.aSubTargets.push(coords[1][1]);
+              this.aSubTargets.push(coords[2][1]);
             }
             break;
           case 4:
             if (random <= 50) {
-              this.aShots.push(coords[0][0]);
-              this.aShots.push(coords[2][0]);
-              this.aShots.push(coords[0][2]);
-              this.aShots.push(coords[2][2]);
+              this.aSubTargets.push(coords[0][0]);
+              this.aSubTargets.push(coords[2][0]);
+              this.aSubTargets.push(coords[0][2]);
+              this.aSubTargets.push(coords[2][2]);
             } else if (random <= 100) {
-              this.aShots.push(coords[1][0]);
-              this.aShots.push(coords[0][1]);
-              this.aShots.push(coords[2][1]);
-              this.aShots.push(coords[1][2]);
+              this.aSubTargets.push(coords[1][0]);
+              this.aSubTargets.push(coords[0][1]);
+              this.aSubTargets.push(coords[2][1]);
+              this.aSubTargets.push(coords[1][2]);
             }
             break;
           default:
           case 5:
             if (random <= 50) {
-              this.aShots.push(coords[0][0]);
-              this.aShots.push(coords[2][0]);
-              this.aShots.push(coords[0][2]);
-              this.aShots.push(coords[2][2]);
-              this.aShots.push(coords[1][1]);
+              this.aSubTargets.push(coords[0][0]);
+              this.aSubTargets.push(coords[2][0]);
+              this.aSubTargets.push(coords[0][2]);
+              this.aSubTargets.push(coords[2][2]);
+              this.aSubTargets.push(coords[1][1]);
             } else if (random <= 100) {
-              this.aShots.push(coords[1][0]);
-              this.aShots.push(coords[0][1]);
-              this.aShots.push(coords[2][1]);
-              this.aShots.push(coords[1][2]);
-              this.aShots.push(coords[1][1]);
+              this.aSubTargets.push(coords[1][0]);
+              this.aSubTargets.push(coords[0][1]);
+              this.aSubTargets.push(coords[2][1]);
+              this.aSubTargets.push(coords[1][2]);
+              this.aSubTargets.push(coords[1][1]);
             }
             break;
           case 6:
             if (random <= 50) {
-              this.aShots.push(coords[0][0]);
-              this.aShots.push(coords[1][0]);
-              this.aShots.push(coords[2][0]);
-              this.aShots.push(coords[0][2]);
-              this.aShots.push(coords[1][2]);
-              this.aShots.push(coords[2][2]);
+              this.aSubTargets.push(coords[0][0]);
+              this.aSubTargets.push(coords[1][0]);
+              this.aSubTargets.push(coords[2][0]);
+              this.aSubTargets.push(coords[0][2]);
+              this.aSubTargets.push(coords[1][2]);
+              this.aSubTargets.push(coords[2][2]);
             } else if (random <= 100) {
-              this.aShots.push(coords[0][0]);
-              this.aShots.push(coords[0][1]);
-              this.aShots.push(coords[0][2]);
-              this.aShots.push(coords[2][2]);
-              this.aShots.push(coords[2][2]);
-              this.aShots.push(coords[2][2]);
+              this.aSubTargets.push(coords[0][0]);
+              this.aSubTargets.push(coords[0][1]);
+              this.aSubTargets.push(coords[0][2]);
+              this.aSubTargets.push(coords[2][2]);
+              this.aSubTargets.push(coords[2][2]);
+              this.aSubTargets.push(coords[2][2]);
             }
             break;
           case 7:
             if (random <= 50) {
-              this.aShots.push(coords[0][0]);
-              this.aShots.push(coords[1][0]);
-              this.aShots.push(coords[2][0]);
-              this.aShots.push(coords[0][2]);
-              this.aShots.push(coords[1][2]);
-              this.aShots.push(coords[2][2]);
-              this.aShots.push(coords[1][1]);
+              this.aSubTargets.push(coords[0][0]);
+              this.aSubTargets.push(coords[1][0]);
+              this.aSubTargets.push(coords[2][0]);
+              this.aSubTargets.push(coords[0][2]);
+              this.aSubTargets.push(coords[1][2]);
+              this.aSubTargets.push(coords[2][2]);
+              this.aSubTargets.push(coords[1][1]);
             } else if (random <= 100) {
-              this.aShots.push(coords[0][0]);
-              this.aShots.push(coords[0][1]);
-              this.aShots.push(coords[0][2]);
-              this.aShots.push(coords[2][0]);
-              this.aShots.push(coords[2][1]);
-              this.aShots.push(coords[2][2]);
-              this.aShots.push(coords[1][1]);
+              this.aSubTargets.push(coords[0][0]);
+              this.aSubTargets.push(coords[0][1]);
+              this.aSubTargets.push(coords[0][2]);
+              this.aSubTargets.push(coords[2][0]);
+              this.aSubTargets.push(coords[2][1]);
+              this.aSubTargets.push(coords[2][2]);
+              this.aSubTargets.push(coords[1][1]);
             }
             break;
           case 8:
-            this.aShots.push(coords[0][0]);
-            this.aShots.push(coords[0][1]);
-            this.aShots.push(coords[0][2]);
-            this.aShots.push(coords[1][0]);
-            this.aShots.push(coords[1][2]);
-            this.aShots.push(coords[2][0]);
-            this.aShots.push(coords[2][1]);
-            this.aShots.push(coords[2][2]);
+            this.aSubTargets.push(coords[0][0]);
+            this.aSubTargets.push(coords[0][1]);
+            this.aSubTargets.push(coords[0][2]);
+            this.aSubTargets.push(coords[1][0]);
+            this.aSubTargets.push(coords[1][2]);
+            this.aSubTargets.push(coords[2][0]);
+            this.aSubTargets.push(coords[2][1]);
+            this.aSubTargets.push(coords[2][2]);
             break;
           case 9:
-            this.aShots.push(coords[0][0]);
-            this.aShots.push(coords[0][1]);
-            this.aShots.push(coords[0][2]);
-            this.aShots.push(coords[1][0]);
-            this.aShots.push(coords[1][1]);
-            this.aShots.push(coords[1][2]);
-            this.aShots.push(coords[2][0]);
-            this.aShots.push(coords[2][1]);
-            this.aShots.push(coords[2][2]);
+            this.aSubTargets.push(coords[0][0]);
+            this.aSubTargets.push(coords[0][1]);
+            this.aSubTargets.push(coords[0][2]);
+            this.aSubTargets.push(coords[1][0]);
+            this.aSubTargets.push(coords[1][1]);
+            this.aSubTargets.push(coords[1][2]);
+            this.aSubTargets.push(coords[2][0]);
+            this.aSubTargets.push(coords[2][1]);
+            this.aSubTargets.push(coords[2][2]);
             break;
         }
       }
@@ -1279,15 +1286,21 @@ export default {
           this.target = this.placedTargets[i === 0 ? 0 : i - 1];
           if (this.target.pUrl === this.secondaryTarget.pUrl) {
             this.secondaryTarget = undefined;
+            this.aSubTargets = [];
+            this.currentSubTarget = 0;
             this.drawSecondaryLine();
           }
         } else {
           this.target = undefined;
           this.secondaryTarget = undefined;
+          this.aSubTargets = [];
+          this.currentSubTarget = 0;
           this.drawSecondaryLine();
         }
       } else if (tTarget === this.secondaryTarget) {
         this.secondaryTarget = undefined;
+        this.aSubTargets = [];
+        this.currentSubTarget = 0;
         this.drawSecondaryLine();
       }
       tTarget.removeFrom(this.map);
@@ -1623,6 +1636,10 @@ export default {
       this.drawSecondaryLine();
     },
 
+    currentSubTarget(i) {
+      this.toStorage("currentSubTarget", i);
+    },
+
     /* PostScriptum exclusive */
 
     /**
@@ -1790,7 +1807,7 @@ body::-webkit-scrollbar {
   height: 100%;
 }
 
-#my-footer {
+#my-footer, #my-subtargets {
   display: flex; align-items: center; pointer-events: all
 }
 
