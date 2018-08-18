@@ -327,7 +327,52 @@
           </v-dialog>
         </div>
       </div>
-      <div id="my-footer" v-if="mortar && target" style="background-color: #212121">
+      <div id="my-footer" v-if="mortar && target && secondaryTarget == undefined" style="background-color: #212121">
+        <v-speed-dial>
+          <v-btn fab small slot="activator" class="secondary" style="width: 32px; height: 32px;">
+            <img :src="mortar.sUrl" style="width: 48px;">
+          </v-btn>
+          <v-btn icon
+                 v-for="(aMortar, index) in placedMortars"
+                 :key="index"
+                 @click="mortar = placedMortars[index]"
+          >
+            <img :src="aMortar.sUrl" style="width: 48px;">
+          </v-btn>
+        </v-speed-dial>
+        <v-icon>arrow_forward</v-icon>
+        <v-speed-dial v-if="target">
+          <v-btn fab small slot="activator" class="secondary" style="width: 32px; height: 32px;">
+            <img :src="target.sUrl" style="width: 48px;">
+          </v-btn>
+          <v-btn icon
+                 v-for="(aTarget, index) in placedTargets"
+                 :key="index"
+                 v-if="secondaryTarget !== undefined && aTarget.sUrl != secondaryTarget.sUrl"
+                 @click="target = placedTargets[index]">
+            <img :src="aTarget.sUrl" style="width: 48px;">
+          </v-btn>
+        </v-speed-dial>
+        <div class="font-mono flex column">
+          <div class="flex" style="width: 100%;">
+            <div class="px-1" style="flex: 1 0 auto; text-align: center; font-size: large">
+            {{DOMbearing}}
+            </div>
+            <div class="px-1" style="flex: 1 0 auto; text-align: center; font-size: large">
+            {{DOMelevation}}
+            </div>
+          </div>
+          <div class="flex" style="width: 100%;">
+            <div class="px-1 body-1" style="flex: 1 0 auto; text-align: center; font-size: small; color: #9e9e9e"
+            >{{DOMdist}}</div>
+            <div class="px-1 body-1" style="flex: 1 0 auto; text-align: center; font-size: small; color: #9e9e9e"
+            >{{DOMhDelta}}</div>
+          </div>
+        </div>
+      </div>
+      <div id="my-footer"
+        v-if="mortar && target && tTypeIndex > TARGET_TYPE.POINT && secondaryTarget"
+        style="background-color: #212121">
         <v-speed-dial>
           <v-btn fab small slot="activator" class="secondary" style="width: 32px; height: 32px;">
             <img :src="mortar.sUrl" style="width: 48px;">
@@ -478,6 +523,7 @@
   <v-dialog v-model="changelogDialog" max-width="600px">
     <v-card>
       <v-card-text>
+        <Changelog/>
         <Changelog/>
       </v-card-text>
       <v-card-actions>
@@ -867,7 +913,7 @@ export default {
           for (let i = 0; i < this.placedTargets.length; i += 1) {
             if (this.colors.pin.target[urlIndex] === this.placedTargets[i].pUrl) {
               this.placedTargets[i].pos = pos;
-              if (this.placedTargets[i].pUrl === this.secondaryTarget.pUrl) {
+              if (this.secondaryTarget !== undefined && this.placedTargets[i].pUrl === this.secondaryTarget.pUrl) {
                 this.secondaryTarget = this.placedTargets[i];
               } else {
                 this.target = this.placedTargets[i];
@@ -1246,11 +1292,16 @@ export default {
           this.target = this.placedTargets[i === 0 ? 0 : i - 1];
           if (this.target.pUrl === this.secondaryTarget.pUrl) {
             this.secondaryTarget = undefined;
+            this.drawSecondaryLine();
           }
         } else {
           this.target = undefined;
           this.secondaryTarget = undefined;
+          this.drawSecondaryLine();
         }
+      } else if (tTarget === this.secondaryTarget) {
+        this.secondaryTarget = undefined;
+        this.drawSecondaryLine();
       }
       tTarget.removeFrom(this.map);
     },
