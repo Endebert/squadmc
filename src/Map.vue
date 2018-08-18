@@ -82,6 +82,24 @@
         </v-list-tile-content>
       </v-list-tile>
     </v-list>
+    <v-divider></v-divider>
+    <v-list class="pa-0" two-line v-if="advancedMode">
+      <v-list-tile>
+        <v-list-tile-content>
+          <v-list-tile-title>Set target type</v-list-tile-title>
+          <v-list-tile-sub-title>
+            <v-btn-toggle v-model="tTypeIndex" mandatory style="display: flex">
+              <v-btn flat v-for="(tType, i) in targetTypes" :key="i"
+                     style="flex: 1 0 0; border: none">{{tType}}</v-btn>
+            </v-btn-toggle></v-list-tile-sub-title>
+        </v-list-tile-content>
+      </v-list-tile>
+       <v-list-tile v-if="tTypeIndex > TARGET_TYPE.POINT">
+          <div class="pr-3">Rounds</div>
+          <v-slider v-model="secondaryShots" hide-details class="pa-0 pr-3"
+                    step="1" min="3" max="9" thumb-label="always" :thumb-size="24" ticks></v-slider>
+        </v-list-tile>
+    </v-list>
     <v-divider v-if="postScriptum"></v-divider>
     <v-list class="pa-0">
       <v-list-group>
@@ -330,17 +348,32 @@
           <v-btn icon
                  v-for="(aTarget, index) in placedTargets"
                  :key="index"
+                 v-if="secondaryTarget !== undefined && aTarget.sUrl != secondaryTarget.sUrl"
                  @click="target = placedTargets[index]">
             <img :src="aTarget.sUrl" style="width: 48px;">
           </v-btn>
         </v-speed-dial>
-        <div class="font-mono flex column" >
+        <v-icon v-if="tTypeIndex > TARGET_TYPE.POINT && secondaryTarget">arrow_forward</v-icon>
+        <v-speed-dial v-if="tTypeIndex > TARGET_TYPE.POINT && secondaryTarget">
+          <v-btn fab small slot="activator" class="secondary" style="width: 32px; height: 32px;">
+            <img :src="secondaryTarget.sUrl" style="width: 48px;">
+          </v-btn>
+          <v-btn icon
+                 v-for="(aTarget, index) in placedTargets"
+                 :key="index"
+                 v-if="aTarget.sUrl != target.sUrl"
+                 @click="secondaryTarget = placedTargets[index]">
+            <img :src="aTarget.sUrl" style="width: 48px;">
+          </v-btn>
+        </v-speed-dial>
+        <div class="font-mono flex column"
+          v-if="tTypeIndex <= 0 || (tTypeIndex > TARGET_TYPE.POINT && secondaryTarget === undefined)">
           <div class="flex" style="width: 100%;">
-            <div class="px-1" style="flex: 1 0 auto; text-align: center; font-size: large"
-            >{{DOMbearing}}
+            <div class="px-1" style="flex: 1 0 auto; text-align: center; font-size: large">
+            {{DOMbearing}}
             </div>
-            <div class="px-1" style="flex: 1 0 auto; text-align: center; font-size: large"
-            >{{DOMelevation}}
+            <div class="px-1" style="flex: 1 0 auto; text-align: center; font-size: large">
+            {{DOMelevation}}
             </div>
           </div>
           <div class="flex" style="width: 100%;">
@@ -348,6 +381,44 @@
             >{{DOMdist}}</div>
             <div class="px-1 body-1" style="flex: 1 0 auto; text-align: center; font-size: small; color: #9e9e9e"
             >{{DOMhDelta}}</div>
+          </div>
+        </div>
+        <div class="font-mono flex column" v-if="tTypeIndex > TARGET_TYPE.POINT && secondaryTarget">
+          <div class="flex" style="width: 100%;">
+            <div class="px-1" style="flex: 1 0 auto; text-align: center; font-size: large">
+            {{DOMminbearing}}
+            </div>
+            <v-icon>arrow_forward</v-icon>
+            <div class="px-1" style="flex: 1 0 auto; text-align: center; font-size: large">
+            {{DOMmaxbearing}}
+            </div>
+          </div>
+          <div class="flex" style="width: 100%;">
+            <div class="px-1" style="flex: 1 0 auto; text-align: center; font-size: large">
+            {{DOMminelevation}}
+            </div>
+            <v-icon>arrow_forward</v-icon>
+            <div class="px-1" style="flex: 1 0 auto; text-align: center; font-size: large">
+            {{DOMmaxelevation}}
+            </div>
+          </div>
+        </div>
+        <div class="font-mono flex column"
+          v-if="tTypeIndex > TARGET_TYPE.POINT && secondaryTarget" v-for="(aShot, index) in aShots" :key="index">
+          <div class="flex" style="width: 100%;">
+            <div class="px-1" style="flex: 1 0 auto; text-align: center; font-size: small">
+                Round {{index + 1}}
+          </div>
+          </div>
+          <div class="flex" style="width: 100%;">
+            <div class="px-1" style="flex: 1 0 auto; text-align: center; font-size: small">
+                {{ aShot.bearing }}
+            </div>
+          </div>
+          <div class="flex" style="width: 100%;">
+            <div class="px-1" style="flex: 1 0 auto; text-align: center; font-size: small">
+                {{ aShot.elevation }}
+            </div>
           </div>
         </div>
       </div>
@@ -423,7 +494,7 @@ import Vue from "vue";
 import Vuetify from "vuetify";
 import "vuetify/dist/vuetify.min.css";
 
-import { CRS, LatLng, Map, Point, Polyline, Transformation } from "leaflet";
+import { CRS, LatLng, Map, Point, Polyline, Transformation, Rectangle } from "leaflet";
 
 import SquadGrid from "./assets/Leaflet_extensions/SquadGrid";
 import LocationLayer from "./assets/Leaflet_extensions/LocationLayer";
@@ -438,7 +509,7 @@ import {
 } from "./assets/Utils";
 import {
   ICON_SIZE,
-  PIN_TYPE, PS_3INCH_MAX_DISTANCE, PS_3INCH_VELOCITY,
+  PIN_TYPE, TARGET_TYPE, PS_3INCH_MAX_DISTANCE, PS_3INCH_VELOCITY,
   PS_4INCH_MAX_DISTANCE,
   PS_4INCH_VELOCITY,
   PS_8CM_MAX_DISTANCE,
@@ -486,7 +557,11 @@ export default {
       calcTimeout: undefined, // value of timeout for delayed calculations set, see calcMortar()
       mortar: undefined, // active mortar (for line drawing)
       target: undefined, // active target (for line drawing)
+      secondaryTarget: undefined, // secondary target (for line and area target type)
+      secondaryShots: Number.parseInt(this.fromStorage("secondaryShots", "5"), 10),
       distLine: undefined, // the line
+      secondaryLine: undefined, // The secondary line
+      aShots: [], // values of intermediary shots (for line and area target)
       // available colors
       colors: {
         pin: {
@@ -517,7 +592,14 @@ export default {
         dist: undefined,
         hDelta: undefined,
       },
-
+      // secondaries values for mortar settings, distance, etc.
+      c2: {
+        bearing: undefined,
+        elevation: undefined,
+        dist: undefined,
+        hDelta: undefined,
+      },
+      TARGET_TYPE, // reference to target types
       PIN_TYPE, // reference to pin types
       pad, // reference to padding function used for formatting distance, heightDiff, etc.
 
@@ -538,6 +620,13 @@ export default {
         mError: false,
         tError: false,
       },
+
+      targetTypes: [
+        "POINT",
+        "LINE",
+        "AREA",
+      ],
+      tTypeIndex: Number.parseInt(this.fromStorage("tTypeIndex", "0"), 10),
 
       /* PostScriptum exclusive */
       mortarTypes: [
@@ -616,6 +705,7 @@ export default {
       // clear map related objects
       this.mortar = undefined;
       this.target = undefined;
+      this.targetSecondary = undefined;
       this.placedTargets = [];
       this.placedMortars = [];
       this.placedFobs = [];
@@ -777,13 +867,21 @@ export default {
           for (let i = 0; i < this.placedTargets.length; i += 1) {
             if (this.colors.pin.target[urlIndex] === this.placedTargets[i].pUrl) {
               this.placedTargets[i].pos = pos;
-              this.target = this.placedTargets[i];
+              if (this.placedTargets[i].pUrl === this.secondaryTarget.pUrl) {
+                this.secondaryTarget = this.placedTargets[i];
+              } else {
+                this.target = this.placedTargets[i];
+              }
               return;
             }
           }
           pin = new PinHolder(type, this.colors.pin.target[urlIndex], this.pinSize);
           this.placedTargets.push(pin);
-          this.target = pin;
+          if (this.tTypeIndex > TARGET_TYPE.POINT && this.target !== undefined) {
+            this.secondaryTarget = pin;
+          } else {
+            this.target = pin;
+          }
           break;
         case PIN_TYPE.FOB:
           for (let i = 0; i < this.placedFobs.length; i += 1) {
@@ -808,16 +906,37 @@ export default {
         pin.addTo(this.map);
       }
     },
-    /**
-     * Calculates mortar settings.
-     *
-     * @param {PinHolder} mortar - mortar pin
-     * @param {PinHolder} target - target pin
-     * @param {Boolean} delayUpdate - whether or not to delay updating values for DOM
-     */
-    calcMortar(mortar, target, delayUpdate = true) {
-      console.log("calcMortar", [mortar, target]);
-
+    drawSecondaryLine() {
+      console.log("drawSecondaryLines()");
+      this.clearSecondaryLines();
+      if (this.advancedMode && this.target && this.secondaryTarget) {
+        if (this.tTypeIndex === TARGET_TYPE.LINE) { // Line target type
+          const line = new Polyline([this.target.pos, this.secondaryTarget.pos], {
+            color: "#3333ff",
+            interactive: false,
+            clickable: false, // legacy support
+          });
+          if (!this.map.hasLayer(line)) {
+            this.secondaryLine = line;
+            this.map.addLayer(line);
+          }
+        }
+        if (this.tTypeIndex === TARGET_TYPE.AREA) { // Area target type
+          const rectangle = new Rectangle(
+            [
+              [this.target.pos.lat, this.target.pos.lng],
+              [this.secondaryTarget.pos.lat, this.secondaryTarget.pos.lng],
+            ],
+            { color: "#3333ff", weight: 1 },
+          );
+          if (!this.map.hasLayer(rectangle)) {
+            this.secondaryLine = rectangle;
+            this.map.addLayer(rectangle);
+          }
+        }
+      }
+    },
+    coordMortar(mortar, target) {
       const s = mortar.pos;
       const e = target.pos;
 
@@ -840,6 +959,28 @@ export default {
       const mVelocity = this.postScriptum ? this.currentMType[1] : SQUAD_VELOCITY;
       const elevation = calcMortarAngle(dist, hDelta, mVelocity);
 
+      const newC = {
+        bearing,
+        elevation,
+        dist,
+        hDelta,
+      };
+
+      return newC;
+    },
+    /**
+     * Calculates mortar settings.
+     *
+     * @param {PinHolder} mortar - mortar pin
+     * @param {PinHolder} target - target pin
+     * @param {Boolean} delayUpdate - whether or not to delay updating values for DOM
+     */
+    calcMortar(mortar, target, delayUpdate = true) {
+      console.log("calcMortar", [mortar, target]);
+
+      const s = mortar.pos;
+      const e = target.pos;
+
       // create or move the line
       if (!this.distLine) {
         this.distLine = new Polyline([s, e], {
@@ -851,23 +992,18 @@ export default {
         this.distLine.setLatLngs([s, e]);
       }
 
+      // new this.c object before setting it
+      const newC = this.coordMortar(mortar, target);
+
       // isNaN is used as elevation might be NaN
       this.distLine.setStyle({
-        color: Number.isNaN(elevation) || elevation > 1580 || elevation < 800 ? "#f44336" : "#4caf50",
+        color: Number.isNaN(newC.elevation) || newC.elevation > 1580 || newC.elevation < 800 ? "#f44336" : "#4caf50",
       });
 
       // add to map if it isn't shown yet
       if (!this.map.hasLayer(this.distLine)) {
         this.map.addLayer(this.distLine);
       }
-
-      // new this.c object before setting it
-      const newC = {
-        bearing,
-        elevation,
-        dist,
-        hDelta,
-      };
 
       if (this.calcTimeout) { clearTimeout(this.calcTimeout); }
 
@@ -878,6 +1014,205 @@ export default {
         }, 250);
       } else {
         this.c = newC;
+      }
+    },
+    calcMortarSecondary(mortar, target, delayUpdate = true) {
+      console.log("calcMortarSecondary", [mortar, target]);
+
+      const newC = this.coordMortar(mortar, target);
+
+      this.drawSecondaryLine();
+      if (this.calcTimeout) { clearTimeout(this.calcTimeout); }
+
+      // if we want to delay the calc update, we set a timer that will set this.c
+      if (delayUpdate) {
+        this.calcTimeout = setTimeout(() => {
+          this.c2 = newC;
+          this.calcShots();
+        }, 250);
+      } else {
+        this.c2 = newC;
+        this.calcShots();
+      }
+    },
+    getCoordsBoundaries() {
+      const s = this.target.pos;
+      const e = this.secondaryTarget.pos;
+      return {
+        minLat: s.lat <= e.lat ? s.lat : e.lat,
+        maxLat: s.lat > e.lat ? s.lat : e.lat,
+        minLng: s.lng <= e.lng ? s.lng : e.lng,
+        maxLng: s.lng > e.lng ? s.lng : e.lng,
+      };
+    },
+    calcShots() {
+      if (this.tTypeIndex === TARGET_TYPE.LINE) {
+        const interval = this.secondaryShots - 2;
+        const boundaries = this.getCoordsBoundaries();
+        const latVariation = (boundaries.maxLat - boundaries.minLat) / (interval + 1);
+        const lngVariation = (boundaries.maxLng - boundaries.minLng) / (interval + 1);
+
+        this.aShots = [];
+        this.aShots.push({
+          bearing: this.formatDOMBearing(this.c.bearing),
+          elevation: this.formatDOMElevation(this.c.elevation),
+        });// First shot is fixed
+
+        const point = {};
+        let coord;
+        for (let i = 1; i <= interval; i++) { // Interval shots are computed
+          point.pos = new LatLng(boundaries.minLat + (latVariation * i), boundaries.minLng + (lngVariation * i));
+          coord = this.coordMortar(this.mortar, point);
+          this.aShots.push({
+            bearing: this.formatDOMBearing(coord.bearing),
+            elevation: this.formatDOMElevation(coord.elevation),
+          });
+        }
+
+        this.aShots.push({
+          bearing: this.formatDOMBearing(this.c2.bearing),
+          elevation: this.formatDOMElevation(this.c2.elevation),
+        });// Last shot is fixed
+        console.log("calcShots", this.shots);
+      }
+      if (this.tTypeIndex === TARGET_TYPE.AREA) {
+        this.aShots = [];
+        const interval = 3;
+        const boundaries = this.getCoordsBoundaries();
+        const latVariation = (boundaries.maxLat - boundaries.minLat) / (interval + 1);
+        const lngVariation = (boundaries.maxLng - boundaries.minLng) / (interval + 1);
+
+        const latitudes = [];
+        const longitudes = [];
+        for (let i = 1; i <= interval; i++) {
+          latitudes.push(boundaries.minLat + (latVariation * i));
+          longitudes.push(boundaries.minLng + (lngVariation * i));
+        }
+        const coords = [];
+        const point = {};
+        let coord;
+        for (let i = 0; i < interval; i++) {
+          for (let j = 0; j < interval; j++) {
+            point.pos = new LatLng(latitudes[i], longitudes[j]);
+            coord = this.coordMortar(this.mortar, point);
+            if (coords[i] === undefined) {
+              coords[i] = [];
+            }
+            coords[i][j] = {
+              bearing: this.formatDOMBearing(coord.bearing),
+              elevation: this.formatDOMElevation(coord.elevation),
+            };
+          }
+        }
+        const random = Math.floor(Math.random() * Math.floor(100));// get random value between 0-100
+        // will choose a random pattern on the 9 points available depends of the numbers of points wanted
+        switch (this.secondaryShots) {
+          case 3:
+            if (random <= 25) {
+              this.aShots.push(coords[0][0]);
+              this.aShots.push(coords[1][1]);
+              this.aShots.push(coords[2][2]);
+            } else if (random <= 50) {
+              this.aShots.push(coords[0][2]);
+              this.aShots.push(coords[1][1]);
+              this.aShots.push(coords[2][0]);
+            } else if (random <= 75) {
+              this.aShots.push(coords[1][0]);
+              this.aShots.push(coords[1][1]);
+              this.aShots.push(coords[1][2]);
+            } else if (random <= 100) {
+              this.aShots.push(coords[0][1]);
+              this.aShots.push(coords[1][1]);
+              this.aShots.push(coords[2][1]);
+            }
+            break;
+          case 4:
+            if (random <= 50) {
+              this.aShots.push(coords[0][0]);
+              this.aShots.push(coords[2][0]);
+              this.aShots.push(coords[0][2]);
+              this.aShots.push(coords[2][2]);
+            } else if (random <= 100) {
+              this.aShots.push(coords[1][0]);
+              this.aShots.push(coords[0][1]);
+              this.aShots.push(coords[2][1]);
+              this.aShots.push(coords[1][2]);
+            }
+            break;
+          default:
+          case 5:
+            if (random <= 50) {
+              this.aShots.push(coords[0][0]);
+              this.aShots.push(coords[2][0]);
+              this.aShots.push(coords[0][2]);
+              this.aShots.push(coords[2][2]);
+              this.aShots.push(coords[1][1]);
+            } else if (random <= 100) {
+              this.aShots.push(coords[1][0]);
+              this.aShots.push(coords[0][1]);
+              this.aShots.push(coords[2][1]);
+              this.aShots.push(coords[1][2]);
+              this.aShots.push(coords[1][1]);
+            }
+            break;
+          case 6:
+            if (random <= 50) {
+              this.aShots.push(coords[0][0]);
+              this.aShots.push(coords[1][0]);
+              this.aShots.push(coords[2][0]);
+              this.aShots.push(coords[0][2]);
+              this.aShots.push(coords[1][2]);
+              this.aShots.push(coords[2][2]);
+            } else if (random <= 100) {
+              this.aShots.push(coords[0][0]);
+              this.aShots.push(coords[0][1]);
+              this.aShots.push(coords[0][2]);
+              this.aShots.push(coords[2][2]);
+              this.aShots.push(coords[2][2]);
+              this.aShots.push(coords[2][2]);
+            }
+            break;
+          case 7:
+            if (random <= 50) {
+              this.aShots.push(coords[0][0]);
+              this.aShots.push(coords[1][0]);
+              this.aShots.push(coords[2][0]);
+              this.aShots.push(coords[0][2]);
+              this.aShots.push(coords[1][2]);
+              this.aShots.push(coords[2][2]);
+              this.aShots.push(coords[1][1]);
+            } else if (random <= 100) {
+              this.aShots.push(coords[0][0]);
+              this.aShots.push(coords[0][1]);
+              this.aShots.push(coords[0][2]);
+              this.aShots.push(coords[2][0]);
+              this.aShots.push(coords[2][1]);
+              this.aShots.push(coords[2][2]);
+              this.aShots.push(coords[1][1]);
+            }
+            break;
+          case 8:
+            this.aShots.push(coords[0][0]);
+            this.aShots.push(coords[0][1]);
+            this.aShots.push(coords[0][2]);
+            this.aShots.push(coords[1][0]);
+            this.aShots.push(coords[1][2]);
+            this.aShots.push(coords[2][0]);
+            this.aShots.push(coords[2][1]);
+            this.aShots.push(coords[2][2]);
+            break;
+          case 9:
+            this.aShots.push(coords[0][0]);
+            this.aShots.push(coords[0][1]);
+            this.aShots.push(coords[0][2]);
+            this.aShots.push(coords[1][0]);
+            this.aShots.push(coords[1][1]);
+            this.aShots.push(coords[1][2]);
+            this.aShots.push(coords[2][0]);
+            this.aShots.push(coords[2][1]);
+            this.aShots.push(coords[2][2]);
+            break;
+        }
       }
     },
     /**
@@ -909,11 +1244,24 @@ export default {
       if (tTarget === this.target) {
         if (this.placedTargets.length > 0) {
           this.target = this.placedTargets[i === 0 ? 0 : i - 1];
+          if (this.target.pUrl === this.secondaryTarget.pUrl) {
+            this.secondaryTarget = undefined;
+          }
         } else {
           this.target = undefined;
+          this.secondaryTarget = undefined;
         }
       }
       tTarget.removeFrom(this.map);
+    },
+    formatDOMElevation(elevation) {
+      if (Number.isNaN(elevation) || elevation > 1580 || elevation < 800) {
+        return "∠XXXX.Xmil";
+      }
+      return `∠${pad((Math.round(elevation * 10) / 10).toFixed(1), 6)}mil`;
+    },
+    formatDOMBearing(bearing) {
+      return `✵${pad((Math.round(bearing * 10) / 10).toFixed(1), 5)}°`;
     },
     /**
      * Remove an already placed fob, specified by its index in placedFobs
@@ -971,6 +1319,12 @@ export default {
     openGitHub() {
       window.open("https://github.com/Endebert/squadmc", "_blank");
     },
+    clearSecondaryLines() {
+      if (this.secondaryLine !== undefined) {
+        this.map.removeLayer(this.secondaryLine);
+        this.secondaryLine = undefined;
+      }
+    },
 
     /**
      * This function works in tandem with showHeightmap watcher.
@@ -998,7 +1352,12 @@ export default {
     },
     onDragEndListener() {
       this.dragging = false;
-      if (this.mortar && this.target) { this.calcMortar(this.mortar, this.target, false); }
+      if (this.mortar && this.target) {
+        this.calcMortar(this.mortar, this.target, false);
+        if (this.secondaryTarget) {
+          this.calcMortarSecondary(this.mortar, this.secondaryTarget, false);
+        }
+      }
     },
 
     /**
@@ -1099,6 +1458,7 @@ export default {
       console.log("mortarPosWatcher");
       if (this.mortar && this.target) {
         this.calcMortar(this.mortar, this.target, this.delayCalcUpdate);
+        this.calcMortarSecondary(this.mortar, this.secondaryTarget, this.delayCalcUpdate);
       } else if (this.map.hasLayer(this.distLine)) {
         this.map.removeLayer(this.distLine);
       }
@@ -1110,8 +1470,17 @@ export default {
       console.log("targetPosWatcher");
       if (this.mortar && this.target) {
         this.calcMortar(this.mortar, this.target, this.delayCalcUpdate);
+        this.drawSecondaryLine();
       } else if (this.map.hasLayer(this.distLine)) {
         this.map.removeLayer(this.distLine);
+      }
+    },
+    "secondaryTarget.pos": function secondaryTargetPosWatcher() {
+      console.log("secondaryTargetPosWatcher");
+      if (this.mortar && this.target && this.secondaryTarget) {
+        this.calcMortarSecondary(this.mortar, this.secondaryTarget, this.delayCalcUpdate);
+      } else {
+        this.clearSecondaryLines();
       }
     },
     /**
@@ -1130,6 +1499,12 @@ export default {
         newM.setActive(true, this.map);
       }
     },
+    secondaryShots(i) {
+      this.toStorage("secondaryShots", i);
+      if (this.advancedMode && this.target && this.secondaryTarget && this.tTypeIndex > TARGET_TYPE.POINT) {
+        this.calcShots();
+      }
+    },
     /**
      * Resets map when advancedMode is disabled (fixes orphaned markers)
      * @param {Boolean} b - advancedMode state boolean
@@ -1144,6 +1519,8 @@ export default {
         while (this.placedTargets.length > 0) {
           this.removeTarget(0);
         }
+        // set targetType to point
+        this.tTypeIndex = 0;
       }
       this.toStorage("advancedMode", b);
     },
@@ -1198,6 +1575,15 @@ export default {
     hideLoadingBar(b) {
       this.toStorage("hideLoadingBar", b);
     },
+    tTypeIndex(newIndex) {
+      this.toStorage("tTypeIndex", newIndex);
+      this.placedTargets.forEach((marker) => {
+        if (marker.sUrl !== this.target.sUrl) {
+          this.secondaryTarget = marker;
+        }
+      });
+      this.drawSecondaryLine();
+    },
 
     /* PostScriptum exclusive */
 
@@ -1213,8 +1599,10 @@ export default {
 
       if (this.mortar && this.target) {
         this.calcMortar(this.mortar, this.target);
+        if (this.secondaryTarget) {
+          this.calcMortarSecondary(this.mortar, this.secondaryTarget);
+        }
       }
-
       this.toStorage("mTypeIndex", newIndex);
     },
   },
@@ -1224,17 +1612,14 @@ export default {
      * @return {String} formatted string
      */
     DOMbearing() {
-      return `✵${pad((Math.round(this.c.bearing * 10) / 10).toFixed(1), 5)}°`;
+      return this.formatDOMBearing(this.c.bearing);
     },
     /**
      * Returns formatted elevation string for DOM element
      * @return {String} formatted string
      */
     DOMelevation() {
-      if (Number.isNaN(this.c.elevation) || this.c.elevation > 1580 || this.c.elevation < 800) {
-        return "∠XXXX.Xmil";
-      }
-      return `∠${pad((Math.round(this.c.elevation * 10) / 10).toFixed(1), 6)}mil`;
+      return this.formatDOMElevation(this.c.elevation);
     },
     /**
      * Returns formatted dist string for DOM element
@@ -1254,6 +1639,24 @@ export default {
       return `↕-${pad(Math.round(-this.c.hDelta), 3)}m`;
     },
 
+    DOMminbearing() {
+      const minBearing = this.c.bearing <= this.c2.bearing ? this.c.bearing : this.c2.bearing;
+      return this.formatDOMBearing(minBearing);
+    },
+
+    DOMmaxbearing() {
+      const maxBearing = this.c.bearing >= this.c2.bearing ? this.c.bearing : this.c2.bearing;
+      return this.formatDOMBearing(maxBearing);
+    },
+    DOMminelevation() {
+      const minElevation = this.c.elevation <= this.c2.elevation ? this.c.elevation : this.c2.elevation;
+      return this.formatDOMElevation(minElevation);
+    },
+    DOMmaxelevation() {
+      const maxElevation = this.c.elevation >= this.c2.elevation ? this.c.elevation : this.c2.elevation;
+      return this.formatDOMElevation(maxElevation);
+    },
+
     /* PostScriptum exclusive */
 
     /**
@@ -1262,6 +1665,9 @@ export default {
      */
     currentMType() {
       return this.mortarTypes[this.mTypeIndex];
+    },
+    currentTType() {
+      return this.targetTypes[this.tTypeIndex];
     },
   },
 };

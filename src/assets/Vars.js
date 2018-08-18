@@ -2,7 +2,6 @@
  * Small utility file exporting static values that are reused often
  * @type {number}
  */
-
 export const ICON_SIZE = 48;
 export const MIN_DISTANCE = 50;
 export const FOB_RANGE = 150;
@@ -21,6 +20,11 @@ export const PIN_TYPE = Object.freeze({
   MORTAR: 0,
   TARGET: 1,
   FOB: 2,
+});
+export const TARGET_TYPE =  Object.freeze({
+  POINT: 0,
+  LINE: 1,
+  AREA: 2,
 });
 const PIN_MAP = {};
 PIN_MAP[PIN_TYPE.MORTAR] = [
