@@ -1117,6 +1117,7 @@ export default {
       }
       if (this.tTypeIndex === TARGET_TYPE.AREA) {
         this.aSubTargets = [];
+		this.currentSubTarget = 0;
         const interval = 3;
         const boundaries = this.getCoordsBoundaries();
         const latVariation = (boundaries.maxLat - boundaries.minLat) / (interval + 1);
