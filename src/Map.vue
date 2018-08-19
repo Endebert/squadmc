@@ -1685,6 +1685,7 @@ export default {
         }
       });
       this.drawSecondaryLine();
+      this.calcSubTargets();
     },
 
     currentSubTarget(index) {
