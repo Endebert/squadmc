@@ -1098,6 +1098,8 @@ export default {
     addSubtarget(coords) {
       const subTargetIndex = this.aSubTargets.length;
       const pos = new LatLng(coords.lat, coords.lng);
+      const color = Number.isNaN(coords.elevation)
+       || coords.elevation > 1580 || coords.elevation < 800 ? "#f44336" : "#4caf50";
       const subTarget = {
         pos,
         coords: {
@@ -1107,7 +1109,7 @@ export default {
           DOMElevation: this.formatDOMElevation(coords.elevation),
         },
         mapLayer: new Circle(pos, {
-          color: "#ff3333",
+          color,
           fillOpacity: 1,
           bubblingMouseEvents: false,
           subTargetIndex, // additionnal options in order to handle easily click event
