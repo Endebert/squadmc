@@ -1133,9 +1133,8 @@ export default {
       this.removeSubTargets();
       if (this.tTypeIndex === TARGET_TYPE.LINE) {
         const interval = this.secondaryShots - 2;
-        const boundaries = this.getCoordsBoundaries();
-        const latVariation = (boundaries.maxLat - boundaries.minLat) / (interval + 1);
-        const lngVariation = (boundaries.maxLng - boundaries.minLng) / (interval + 1);
+        const latVariation = (this.secondaryTarget.pos.lat - this.target.pos.lat) / (interval + 1);
+        const lngVariation = (this.secondaryTarget.pos.lng - this.target.pos.lng) / (interval + 1);
 
         this.addSubtarget({
           lat: this.target.pos.lat,
@@ -1147,7 +1146,7 @@ export default {
         const point = {};
         let coord;
         for (let i = 1; i <= interval; i++) { // Interval shots are computed
-          point.pos = new LatLng(boundaries.minLat + (latVariation * i), boundaries.minLng + (lngVariation * i));
+          point.pos = new LatLng(this.target.pos.lat + (latVariation * i), this.target.pos.lng + (lngVariation * i));
           coord = this.coordMortar(this.mortar, point);
           this.addSubtarget({
             lat: point.pos.lat,
