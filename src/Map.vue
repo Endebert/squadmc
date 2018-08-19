@@ -1069,11 +1069,11 @@ export default {
       if (delayUpdate) {
         this.calcTimeout = setTimeout(() => {
           this.c2 = newC;
-          this.calcShots();
+          this.calcSubTargets();
         }, 250);
       } else {
         this.c2 = newC;
-        this.calcShots();
+        this.calcSubTargets();
       }
     },
     getCoordsBoundaries() {
@@ -1109,8 +1109,11 @@ export default {
           DOMElevation: this.formatDOMElevation(coords.elevation),
         },
         mapLayer: new Circle(pos, {
-          color,
+          color: subTargetIndex === this.currentSubTarget ? "#3333ff" : color,
+          fillColor: color,
+          weight: 3,
           fillOpacity: 1,
+          radius: 3,
           bubblingMouseEvents: false,
           subTargetIndex, // additionnal options in order to handle easily click event
           app: this, // additionnal options in order to handle easily click event
@@ -1126,7 +1129,7 @@ export default {
       console.log("click on subTarget", e.target.options.subTargetIndex);
       e.target.options.app.currentSubTarget = e.target.options.subTargetIndex;
     },
-    calcShots() {
+    calcSubTargets() {
       this.removeSubTargets();
       if (this.tTypeIndex === TARGET_TYPE.LINE) {
         const interval = this.secondaryShots - 2;
@@ -1160,7 +1163,7 @@ export default {
           bearing: this.c2.bearing,
           elevation: this.c2.elevation,
         });// Last shot is fixed
-        console.log("calcShots", this.shots);
+        console.log("calcSubTargets", this.aSubTargets);
       }
       if (this.tTypeIndex === TARGET_TYPE.AREA) {
         const interval = 3;
@@ -1601,7 +1604,7 @@ export default {
     secondaryShots(i) {
       this.toStorage("secondaryShots", i);
       if (this.advancedMode && this.target && this.secondaryTarget && this.tTypeIndex > TARGET_TYPE.POINT) {
-        this.calcShots();
+        this.calcSubTargets();
       }
     },
     /**
@@ -1684,8 +1687,20 @@ export default {
       this.drawSecondaryLine();
     },
 
-    currentSubTarget(i) {
-      this.toStorage("currentSubTarget", i);
+    currentSubTarget(index) {
+      let color = NaN;
+      console.log("Selected subTarget", this.aSubTargets[index]);
+      for (let i = 0; i < this.aSubTargets.length; i++) { // reset all subtargets colors
+        color = Number.isNaN(this.aSubTargets[i].coords.elevation)
+          || this.aSubTargets[i].coords.elevation > 1580
+          || this.aSubTargets[i].coords.elevation < 800 ? "#f44336" : "#4caf50";
+        this.aSubTargets[i].mapLayer.setStyle({
+          color: i === index ? "#3333ff" : color, // except currently selected subtarget
+          fillColor: color,
+        });
+      }
+
+      this.toStorage("currentSubTarget", index);
     },
 
     /* PostScriptum exclusive */
