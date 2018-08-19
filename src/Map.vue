@@ -447,12 +447,12 @@
           </div>
           <div class="flex">
             <div class="px-1" style="flex: 1 0 auto; text-align: center; font-size: small">
-                {{ aSubTargets[currentSubTarget].bearing }}
+                {{ aSubTargets[currentSubTarget].coords.DOMBearing }}
             </div>
           </div>
           <div class="flex">
             <div class="px-1" style="flex: 1 0 auto; text-align: center; font-size: small">
-                {{ aSubTargets[currentSubTarget].elevation }}
+                {{ aSubTargets[currentSubTarget].coords.DOMElevation }}
             </div>
           </div>
         </div>
@@ -533,7 +533,7 @@ import Vue from "vue";
 import Vuetify from "vuetify";
 import "vuetify/dist/vuetify.min.css";
 
-import { CRS, LatLng, Map, Point, Polyline, Transformation, Rectangle } from "leaflet";
+import { CRS, LatLng, Map, Point, Polyline, Transformation, Rectangle, Circle } from "leaflet";
 
 import SquadGrid from "./assets/Leaflet_extensions/SquadGrid";
 import LocationLayer from "./assets/Leaflet_extensions/LocationLayer";
@@ -600,8 +600,9 @@ export default {
       secondaryShots: Number.parseInt(this.fromStorage("secondaryShots", "5"), 10),
       distLine: undefined, // the line
       secondaryLine: undefined, // The secondary line
-      aSubTargets: [], // values of intermediary shots (for line and area target)
-      currentSubTarget: Number.parseInt(this.fromStorage("currentSubTarget", "0"), 10),
+      aSubTargets: [], // list of precomputed subtargets (for line and area target)
+      currentSubTarget: Number.parseInt(this.fromStorage("currentSubTarget", "0"), 10), // currently selected subtarget
+      subtargetsPoints: [], // drawing subtargets on map
       // available colors
       colors: {
         pin: {
@@ -1085,17 +1086,57 @@ export default {
         maxLng: s.lng > e.lng ? s.lng : e.lng,
       };
     },
+    removeSubTargets() {
+      this.aSubTargets.forEach((subtarget) => {
+        if (this.map.hasLayer(subtarget.mapLayer)) {
+          this.map.removeLayer(subtarget.mapLayer);
+        }
+      });
+      this.aSubTargets = [];
+      this.currentSubTarget = 0;
+    },
+    addSubtarget(coords) {
+      const subTargetIndex = this.aSubTargets.length;
+      const pos = new LatLng(coords.lat, coords.lng);
+      const subTarget = {
+        pos,
+        coords: {
+          bearing: coords.bearing,
+          elevation: coords.elevation,
+          DOMBearing: this.formatDOMBearing(coords.bearing),
+          DOMElevation: this.formatDOMElevation(coords.elevation),
+        },
+        mapLayer: new Circle(pos, {
+          color: "#ff3333",
+          fillOpacity: 1,
+          bubblingMouseEvents: false,
+          subTargetIndex, // additionnal options in order to handle easily click event
+          app: this, // additionnal options in order to handle easily click event
+        }),
+      };
+      if (!this.map.hasLayer(subTarget.mapLayer)) {
+        subTarget.mapLayer.on("click", this.clickOnSubTargetLayer);
+        this.map.addLayer(subTarget.mapLayer);
+      }
+      this.aSubTargets.push(subTarget);
+    },
+    clickOnSubTargetLayer(e) {
+      console.log("click on subTarget", e.target.options.subTargetIndex);
+      e.target.options.app.currentSubTarget = e.target.options.subTargetIndex;
+    },
     calcShots() {
+      this.removeSubTargets();
       if (this.tTypeIndex === TARGET_TYPE.LINE) {
         const interval = this.secondaryShots - 2;
         const boundaries = this.getCoordsBoundaries();
         const latVariation = (boundaries.maxLat - boundaries.minLat) / (interval + 1);
         const lngVariation = (boundaries.maxLng - boundaries.minLng) / (interval + 1);
 
-        this.aSubTargets = [];
-        this.aSubTargets.push({
-          bearing: this.formatDOMBearing(this.c.bearing),
-          elevation: this.formatDOMElevation(this.c.elevation),
+        this.addSubtarget({
+          lat: this.target.pos.lat,
+          lng: this.target.pos.lng,
+          bearing: this.c.bearing,
+          elevation: this.c.elevation,
         });// First shot is fixed
 
         const point = {};
@@ -1103,21 +1144,23 @@ export default {
         for (let i = 1; i <= interval; i++) { // Interval shots are computed
           point.pos = new LatLng(boundaries.minLat + (latVariation * i), boundaries.minLng + (lngVariation * i));
           coord = this.coordMortar(this.mortar, point);
-          this.aSubTargets.push({
-            bearing: this.formatDOMBearing(coord.bearing),
-            elevation: this.formatDOMElevation(coord.elevation),
+          this.addSubtarget({
+            lat: point.pos.lat,
+            lng: point.pos.lng,
+            bearing: coord.bearing,
+            elevation: coord.elevation,
           });
         }
 
-        this.aSubTargets.push({
-          bearing: this.formatDOMBearing(this.c2.bearing),
-          elevation: this.formatDOMElevation(this.c2.elevation),
+        this.addSubtarget({
+          lat: this.secondaryTarget.pos.lat,
+          lng: this.secondaryTarget.pos.lng,
+          bearing: this.c2.bearing,
+          elevation: this.c2.elevation,
         });// Last shot is fixed
         console.log("calcShots", this.shots);
       }
       if (this.tTypeIndex === TARGET_TYPE.AREA) {
-        this.aSubTargets = [];
-		this.currentSubTarget = 0;
         const interval = 3;
         const boundaries = this.getCoordsBoundaries();
         const latVariation = (boundaries.maxLat - boundaries.minLat) / (interval + 1);
@@ -1140,8 +1183,10 @@ export default {
               coords[i] = [];
             }
             coords[i][j] = {
-              bearing: this.formatDOMBearing(coord.bearing),
-              elevation: this.formatDOMElevation(coord.elevation),
+              lat: point.pos.lat,
+              lng: point.pos.lng,
+              bearing: coord.bearing,
+              elevation: coord.elevation,
             };
           }
         }
@@ -1150,108 +1195,108 @@ export default {
         switch (this.secondaryShots) {
           case 3:
             if (random <= 25) {
-              this.aSubTargets.push(coords[0][0]);
-              this.aSubTargets.push(coords[1][1]);
-              this.aSubTargets.push(coords[2][2]);
+              this.addSubtarget(coords[0][0]);
+              this.addSubtarget(coords[1][1]);
+              this.addSubtarget(coords[2][2]);
             } else if (random <= 50) {
-              this.aSubTargets.push(coords[0][2]);
-              this.aSubTargets.push(coords[1][1]);
-              this.aSubTargets.push(coords[2][0]);
+              this.addSubtarget(coords[0][2]);
+              this.addSubtarget(coords[1][1]);
+              this.addSubtarget(coords[2][0]);
             } else if (random <= 75) {
-              this.aSubTargets.push(coords[1][0]);
-              this.aSubTargets.push(coords[1][1]);
-              this.aSubTargets.push(coords[1][2]);
+              this.addSubtarget(coords[1][0]);
+              this.addSubtarget(coords[1][1]);
+              this.addSubtarget(coords[1][2]);
             } else if (random <= 100) {
-              this.aSubTargets.push(coords[0][1]);
-              this.aSubTargets.push(coords[1][1]);
-              this.aSubTargets.push(coords[2][1]);
+              this.addSubtarget(coords[0][1]);
+              this.addSubtarget(coords[1][1]);
+              this.addSubtarget(coords[2][1]);
             }
             break;
           case 4:
             if (random <= 50) {
-              this.aSubTargets.push(coords[0][0]);
-              this.aSubTargets.push(coords[2][0]);
-              this.aSubTargets.push(coords[0][2]);
-              this.aSubTargets.push(coords[2][2]);
+              this.addSubtarget(coords[0][0]);
+              this.addSubtarget(coords[2][0]);
+              this.addSubtarget(coords[0][2]);
+              this.addSubtarget(coords[2][2]);
             } else if (random <= 100) {
-              this.aSubTargets.push(coords[1][0]);
-              this.aSubTargets.push(coords[0][1]);
-              this.aSubTargets.push(coords[2][1]);
-              this.aSubTargets.push(coords[1][2]);
+              this.addSubtarget(coords[1][0]);
+              this.addSubtarget(coords[0][1]);
+              this.addSubtarget(coords[2][1]);
+              this.addSubtarget(coords[1][2]);
             }
             break;
           default:
           case 5:
             if (random <= 50) {
-              this.aSubTargets.push(coords[0][0]);
-              this.aSubTargets.push(coords[2][0]);
-              this.aSubTargets.push(coords[0][2]);
-              this.aSubTargets.push(coords[2][2]);
-              this.aSubTargets.push(coords[1][1]);
+              this.addSubtarget(coords[0][0]);
+              this.addSubtarget(coords[2][0]);
+              this.addSubtarget(coords[0][2]);
+              this.addSubtarget(coords[2][2]);
+              this.addSubtarget(coords[1][1]);
             } else if (random <= 100) {
-              this.aSubTargets.push(coords[1][0]);
-              this.aSubTargets.push(coords[0][1]);
-              this.aSubTargets.push(coords[2][1]);
-              this.aSubTargets.push(coords[1][2]);
-              this.aSubTargets.push(coords[1][1]);
+              this.addSubtarget(coords[1][0]);
+              this.addSubtarget(coords[0][1]);
+              this.addSubtarget(coords[2][1]);
+              this.addSubtarget(coords[1][2]);
+              this.addSubtarget(coords[1][1]);
             }
             break;
           case 6:
             if (random <= 50) {
-              this.aSubTargets.push(coords[0][0]);
-              this.aSubTargets.push(coords[1][0]);
-              this.aSubTargets.push(coords[2][0]);
-              this.aSubTargets.push(coords[0][2]);
-              this.aSubTargets.push(coords[1][2]);
-              this.aSubTargets.push(coords[2][2]);
+              this.addSubtarget(coords[0][0]);
+              this.addSubtarget(coords[1][0]);
+              this.addSubtarget(coords[2][0]);
+              this.addSubtarget(coords[0][2]);
+              this.addSubtarget(coords[1][2]);
+              this.addSubtarget(coords[2][2]);
             } else if (random <= 100) {
-              this.aSubTargets.push(coords[0][0]);
-              this.aSubTargets.push(coords[0][1]);
-              this.aSubTargets.push(coords[0][2]);
-              this.aSubTargets.push(coords[2][2]);
-              this.aSubTargets.push(coords[2][2]);
-              this.aSubTargets.push(coords[2][2]);
+              this.addSubtarget(coords[0][0]);
+              this.addSubtarget(coords[0][1]);
+              this.addSubtarget(coords[0][2]);
+              this.addSubtarget(coords[2][2]);
+              this.addSubtarget(coords[2][2]);
+              this.addSubtarget(coords[2][2]);
             }
             break;
           case 7:
             if (random <= 50) {
-              this.aSubTargets.push(coords[0][0]);
-              this.aSubTargets.push(coords[1][0]);
-              this.aSubTargets.push(coords[2][0]);
-              this.aSubTargets.push(coords[0][2]);
-              this.aSubTargets.push(coords[1][2]);
-              this.aSubTargets.push(coords[2][2]);
-              this.aSubTargets.push(coords[1][1]);
+              this.addSubtarget(coords[0][0]);
+              this.addSubtarget(coords[1][0]);
+              this.addSubtarget(coords[2][0]);
+              this.addSubtarget(coords[0][2]);
+              this.addSubtarget(coords[1][2]);
+              this.addSubtarget(coords[2][2]);
+              this.addSubtarget(coords[1][1]);
             } else if (random <= 100) {
-              this.aSubTargets.push(coords[0][0]);
-              this.aSubTargets.push(coords[0][1]);
-              this.aSubTargets.push(coords[0][2]);
-              this.aSubTargets.push(coords[2][0]);
-              this.aSubTargets.push(coords[2][1]);
-              this.aSubTargets.push(coords[2][2]);
-              this.aSubTargets.push(coords[1][1]);
+              this.addSubtarget(coords[0][0]);
+              this.addSubtarget(coords[0][1]);
+              this.addSubtarget(coords[0][2]);
+              this.addSubtarget(coords[2][0]);
+              this.addSubtarget(coords[2][1]);
+              this.addSubtarget(coords[2][2]);
+              this.addSubtarget(coords[1][1]);
             }
             break;
           case 8:
-            this.aSubTargets.push(coords[0][0]);
-            this.aSubTargets.push(coords[0][1]);
-            this.aSubTargets.push(coords[0][2]);
-            this.aSubTargets.push(coords[1][0]);
-            this.aSubTargets.push(coords[1][2]);
-            this.aSubTargets.push(coords[2][0]);
-            this.aSubTargets.push(coords[2][1]);
-            this.aSubTargets.push(coords[2][2]);
+            this.addSubtarget(coords[0][0]);
+            this.addSubtarget(coords[0][1]);
+            this.addSubtarget(coords[0][2]);
+            this.addSubtarget(coords[1][0]);
+            this.addSubtarget(coords[1][2]);
+            this.addSubtarget(coords[2][0]);
+            this.addSubtarget(coords[2][1]);
+            this.addSubtarget(coords[2][2]);
             break;
           case 9:
-            this.aSubTargets.push(coords[0][0]);
-            this.aSubTargets.push(coords[0][1]);
-            this.aSubTargets.push(coords[0][2]);
-            this.aSubTargets.push(coords[1][0]);
-            this.aSubTargets.push(coords[1][1]);
-            this.aSubTargets.push(coords[1][2]);
-            this.aSubTargets.push(coords[2][0]);
-            this.aSubTargets.push(coords[2][1]);
-            this.aSubTargets.push(coords[2][2]);
+            this.addSubtarget(coords[0][0]);
+            this.addSubtarget(coords[0][1]);
+            this.addSubtarget(coords[0][2]);
+            this.addSubtarget(coords[1][0]);
+            this.addSubtarget(coords[1][1]);
+            this.addSubtarget(coords[1][2]);
+            this.addSubtarget(coords[2][0]);
+            this.addSubtarget(coords[2][1]);
+            this.addSubtarget(coords[2][2]);
             break;
         }
       }
@@ -1287,21 +1332,18 @@ export default {
           this.target = this.placedTargets[i === 0 ? 0 : i - 1];
           if (this.target.pUrl === this.secondaryTarget.pUrl) {
             this.secondaryTarget = undefined;
-            this.aSubTargets = [];
-            this.currentSubTarget = 0;
+            this.removeSubTargets();
             this.drawSecondaryLine();
           }
         } else {
           this.target = undefined;
           this.secondaryTarget = undefined;
-          this.aSubTargets = [];
-          this.currentSubTarget = 0;
+          this.removeSubTargets();
           this.drawSecondaryLine();
         }
       } else if (tTarget === this.secondaryTarget) {
         this.secondaryTarget = undefined;
-        this.aSubTargets = [];
-        this.currentSubTarget = 0;
+        this.removeSubTargets();
         this.drawSecondaryLine();
       }
       tTarget.removeFrom(this.map);
@@ -1510,6 +1552,7 @@ export default {
       console.log("mortarPosWatcher");
       if (this.mortar && this.target) {
         this.calcMortar(this.mortar, this.target, this.delayCalcUpdate);
+        this.removeSubTargets();
         this.calcMortarSecondary(this.mortar, this.secondaryTarget, this.delayCalcUpdate);
       } else if (this.map.hasLayer(this.distLine)) {
         this.map.removeLayer(this.distLine);
@@ -1522,6 +1565,7 @@ export default {
       console.log("targetPosWatcher");
       if (this.mortar && this.target) {
         this.calcMortar(this.mortar, this.target, this.delayCalcUpdate);
+        this.removeSubTargets();
         this.drawSecondaryLine();
       } else if (this.map.hasLayer(this.distLine)) {
         this.map.removeLayer(this.distLine);
@@ -1530,6 +1574,7 @@ export default {
     "secondaryTarget.pos": function secondaryTargetPosWatcher() {
       console.log("secondaryTargetPosWatcher");
       if (this.mortar && this.target && this.secondaryTarget) {
+        this.removeSubTargets();
         this.calcMortarSecondary(this.mortar, this.secondaryTarget, this.delayCalcUpdate);
       } else {
         this.clearSecondaryLines();
