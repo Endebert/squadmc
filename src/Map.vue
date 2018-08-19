@@ -552,7 +552,7 @@ import {
   PS_4INCH_MAX_DISTANCE,
   PS_4INCH_VELOCITY,
   PS_8CM_MAX_DISTANCE,
-  PS_8CM_VELOCITY, SQUAD_MAX_DISTANCE, SQUAD_VELOCITY,
+  PS_8CM_VELOCITY, SQUAD_MAX_DISTANCE, SQUAD_VELOCITY, SUBTARGET_RADIUS,
 } from "./assets/Vars";
 import PinHolder from "./assets/PinHolder";
 import MapData from "./assets/MapData";
@@ -640,6 +640,7 @@ export default {
         dist: undefined,
         hDelta: undefined,
       },
+      SUBTARGET_RADIUS, // subtarget radius for map zoom
       TARGET_TYPE, // reference to target types
       PIN_TYPE, // reference to pin types
       pad, // reference to padding function used for formatting distance, heightDiff, etc.
@@ -728,6 +729,7 @@ export default {
 
       this.map.on("mousemove", this.onMouseMove, this);
       this.map.on("click", this.onMapClick, this);
+      this.map.on("zoomend", this.onZoomEnd, this);
     },
 
     /**
@@ -806,6 +808,12 @@ export default {
       this.map._resetView(this.map.getCenter(), this.map.getZoom());
 
       this.squadMap = squadMap;
+    },
+    onZoomEnd() {
+      this.aSubTargets.forEach((subTarget) => {
+        subTarget.mapLayer.setRadius(SUBTARGET_RADIUS[this.map.getZoom()]);
+      });
+      console.log("onZoomEnd:", this.map.getZoom());
     },
     /**
      * Handles "mousemove" events on leaflet map
@@ -1113,7 +1121,7 @@ export default {
           fillColor: color,
           weight: 3,
           fillOpacity: 1,
-          radius: 3,
+          radius: SUBTARGET_RADIUS[this.map.getZoom()],
           bubblingMouseEvents: false,
           subTargetIndex, // additionnal options in order to handle easily click event
           app: this, // additionnal options in order to handle easily click event

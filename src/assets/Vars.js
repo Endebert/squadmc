@@ -21,11 +21,20 @@ export const PIN_TYPE = Object.freeze({
   TARGET: 1,
   FOB: 2,
 });
-export const TARGET_TYPE =  Object.freeze({
+export const TARGET_TYPE = Object.freeze({
   POINT: 0,
   LINE: 1,
   AREA: 2,
 });
+export const SUBTARGET_RADIUS = [
+  100,
+  80,
+  50,
+  35,
+  12,
+  5,
+  3,
+];
 const PIN_MAP = {};
 PIN_MAP[PIN_TYPE.MORTAR] = [
   ["/img/svg/mortar_pin_red.svg", "/img/svg/mortar_symbol_red.svg", "#F44336"],
