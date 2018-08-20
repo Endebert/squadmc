@@ -1289,7 +1289,7 @@ export default {
             }
             break;
           case 7:
-            if (random <= 50) {
+            if (random <= 25) {
               this.addSubtarget(coords[0][0]);
               this.addSubtarget(coords[1][0]);
               this.addSubtarget(coords[2][0]);
@@ -1297,7 +1297,7 @@ export default {
               this.addSubtarget(coords[1][2]);
               this.addSubtarget(coords[2][2]);
               this.addSubtarget(coords[1][1]);
-            } else if (random <= 100) {
+            } else if (random <= 50) {
               this.addSubtarget(coords[0][0]);
               this.addSubtarget(coords[0][1]);
               this.addSubtarget(coords[0][2]);
@@ -1305,6 +1305,22 @@ export default {
               this.addSubtarget(coords[2][1]);
               this.addSubtarget(coords[2][2]);
               this.addSubtarget(coords[1][1]);
+            } else if (random <= 75) {
+              this.addSubtarget(coords[0][0]);
+              this.addSubtarget(coords[1][0]);
+              this.addSubtarget(coords[0][1]);
+              this.addSubtarget(coords[1][1]);
+              this.addSubtarget(coords[2][1]);
+              this.addSubtarget(coords[1][2]);
+              this.addSubtarget(coords[2][2]);
+            } else if (random <= 100) {
+              this.addSubtarget(coords[2][0]);
+              this.addSubtarget(coords[1][0]);
+              this.addSubtarget(coords[0][1]);
+              this.addSubtarget(coords[1][1]);
+              this.addSubtarget(coords[2][1]);
+              this.addSubtarget(coords[1][2]);
+              this.addSubtarget(coords[0][2]);
             }
             break;
           case 8:
