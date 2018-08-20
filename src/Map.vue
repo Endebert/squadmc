@@ -435,7 +435,10 @@
         </div>
       </div>
       <div id="my-subtargets" class="flex" style="flex;background-color: #212121; align-items: center;"
-        v-if="aSubTargets.length > 0">
+        v-if="aSubTargets.length > 0" v-touch="{
+          left: () => onSwipe('Left'),
+          right: () => onSwipe('Right')
+        }">
         <div class="flex" v-if="currentSubTarget > 0">
           <v-icon @click="currentSubTarget--">keyboard_arrow_left</v-icon>
         </div>
@@ -808,6 +811,21 @@ export default {
       this.map._resetView(this.map.getCenter(), this.map.getZoom());
 
       this.squadMap = squadMap;
+    },
+    onSwipe(direction) {
+      console.debug("onSwipe", direction);
+      switch (direction) {
+        case ("Right"):
+          this.currentSubTarget =
+            this.currentSubTarget > 0 ? this.currentSubTarget - 1 : this.currentSubTarget;
+          break;
+        case ("Left"):
+          this.currentSubTarget =
+            this.currentSubTarget < this.aSubTargets.length ? this.currentSubTarget + 1 : this.currentSubTarget;
+          break;
+        default:
+          break;
+      }
     },
     onZoomEnd() {
       this.aSubTargets.forEach((subTarget) => {
