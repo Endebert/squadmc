@@ -1265,8 +1265,8 @@ export default {
               this.addSubtarget(coords[0][0]);
               this.addSubtarget(coords[0][1]);
               this.addSubtarget(coords[0][2]);
-              this.addSubtarget(coords[2][2]);
-              this.addSubtarget(coords[2][2]);
+              this.addSubtarget(coords[2][0]);
+              this.addSubtarget(coords[2][1]);
               this.addSubtarget(coords[2][2]);
             }
             break;
