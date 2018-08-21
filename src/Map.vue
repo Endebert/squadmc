@@ -100,7 +100,7 @@
           <v-list-tile-sub-title>
             <v-slider v-model="secondaryRoundsSpacing" hide-details class="pa-0 pr-3"
               always-dirty style="padding-left: 10px!important;"
-                    step="1" min="0" max="3" :thumb-size="24" ticks :tick-labels="SUBTARGET_ROUND_SPACING">
+                    step="1" min="0" max="4" :thumb-size="24" ticks :tick-labels="SUBTARGET_ROUND_SPACING">
             </v-slider>
           </v-list-tile-sub-title>
           </v-list-tile-content>
