@@ -95,9 +95,15 @@
         </v-list-tile-content>
       </v-list-tile>
        <v-list-tile v-if="tTypeIndex > TARGET_TYPE.POINT">
-          <div class="pr-3">Rounds</div>
-          <v-slider v-model="secondaryShots" hide-details class="pa-0 pr-3"
-                    step="1" min="3" max="9" thumb-label="always" :thumb-size="24" ticks></v-slider>
+         <v-list-tile-content>
+          <v-list-tile-title>Distance between rounds</v-list-tile-title>
+          <v-list-tile-sub-title>
+            <v-slider v-model="secondaryRoundsSpacing" hide-details class="pa-0 pr-3"
+              always-dirty style="padding-left: 10px!important;"
+                    step="1" min="0" max="3" :thumb-size="24" ticks :tick-labels="SUBTARGET_ROUND_SPACING">
+            </v-slider>
+          </v-list-tile-sub-title>
+          </v-list-tile-content>
         </v-list-tile>
     </v-list>
     <v-divider v-if="postScriptum"></v-divider>
@@ -445,7 +451,7 @@
         <div class="font-mono flex column" style="flex-grow: 1;">
           <div class="flex">
             <div class="px-1" style="flex: 1 0 auto; text-align: center; font-size: small">
-                Round {{ currentSubTarget + 1 }} / {{ secondaryShots }}
+                Round {{ currentSubTarget + 1 }} / {{ aSubTargets.length }}
           </div>
           </div>
           <div class="flex">
@@ -461,6 +467,15 @@
         </div>
         <div class="flex" v-if="currentSubTarget < aSubTargets.length - 1">
           <v-icon @click="currentSubTarget++">keyboard_arrow_right</v-icon>
+        </div>
+      </div>
+      <div id="my-subtargets"  class="flex" style="flex;background-color: #212121; text-align: center;"
+        v-if="warningTooMuchSubTargets === true">
+        <div class="flex" v-if="tTypeIndex === TARGET_TYPE.LINE">
+          Your line is too long and will generate too many targets (max: {{ MAX_SUBTARGETS_COUNT }})
+        </div>
+        <div class="flex" v-if="tTypeIndex === TARGET_TYPE.AREA">
+          Your area is too wide and will generate too many targets (max: {{ MAX_SUBTARGETS_COUNT }})
         </div>
       </div>
     </div>
@@ -556,6 +571,7 @@ import {
   PS_4INCH_VELOCITY,
   PS_8CM_MAX_DISTANCE,
   PS_8CM_VELOCITY, SQUAD_MAX_DISTANCE, SQUAD_VELOCITY, SUBTARGET_RADIUS,
+  SUBTARGET_ROUND_SPACING, MAX_SUBTARGETS_COUNT,
 } from "./assets/Vars";
 import PinHolder from "./assets/PinHolder";
 import MapData from "./assets/MapData";
@@ -600,12 +616,13 @@ export default {
       mortar: undefined, // active mortar (for line drawing)
       target: undefined, // active target (for line drawing)
       secondaryTarget: undefined, // secondary target (for line and area target type)
-      secondaryShots: Number.parseInt(this.fromStorage("secondaryShots", "5"), 10),
+      secondaryRoundsSpacing: Number.parseInt(this.fromStorage("secondaryRoundsSpacing", "0"), 10),
       distLine: undefined, // the line
       secondaryLine: undefined, // The secondary line
       aSubTargets: [], // list of precomputed subtargets (for line and area target)
       currentSubTarget: Number.parseInt(this.fromStorage("currentSubTarget", "0"), 10), // currently selected subtarget
       subtargetsPoints: [], // drawing subtargets on map
+      warningTooMuchSubTargets: false,
       // available colors
       colors: {
         pin: {
@@ -643,6 +660,8 @@ export default {
         dist: undefined,
         hDelta: undefined,
       },
+      MAX_SUBTARGETS_COUNT, // max amount of subtargets to avoid perfs issues
+      SUBTARGET_ROUND_SPACING, // round spacing available values
       SUBTARGET_RADIUS, // subtarget radius for map zoom
       TARGET_TYPE, // reference to target types
       PIN_TYPE, // reference to pin types
@@ -1003,20 +1022,25 @@ export default {
         }
       }
     },
+    calcDistBetween2Pos(posA, posB) {
+      const a = posA.lat - posB.lat;
+      const b = posA.lng - posB.lng;
+
+      return Math.sqrt(a * a + b * b);
+    },
+    calcBearingBetween2Pos(posA, posB) {
+      // oh no, vector maths!
+      let bearing = Math.atan2(posA.lng - posB.lng, posA.lat - posB.lat) * 180 / Math.PI;
+      bearing = (Math.round((180 - bearing) * 10) / 10) % 360;
+
+      return bearing;
+    },
     coordMortar(mortar, target) {
       const s = mortar.pos;
       const e = target.pos;
 
-      // oh no, vector maths!
-      let bearing = Math.atan2(e.lng - s.lng, e.lat - s.lat) * 180 / Math.PI;
-
-      const a = s.lat - e.lat;
-      const b = s.lng - e.lng;
-
-      const dist = Math.sqrt(a * a + b * b);
-
-      // rotate so 0° is towards North, round to 1 decimal, mod 360 so that 360° = 0°
-      bearing = (Math.round((180 - bearing) * 10) / 10) % 360;
+      const bearing = this.calcBearingBetween2Pos(s, e);
+      const dist = this.calcDistBetween2Pos(s, e);
 
       // now we get the height and calculate the difference
       const mortarHeight = this.squadMap.hasHeightmap ? this.squadMap.getHeightmapHolder().getHeight(s.lng, s.lat) : 0;
@@ -1102,15 +1126,24 @@ export default {
         this.calcSubTargets();
       }
     },
-    getCoordsBoundaries() {
-      const s = this.target.pos;
-      const e = this.secondaryTarget.pos;
-      return {
-        minLat: s.lat <= e.lat ? s.lat : e.lat,
-        maxLat: s.lat > e.lat ? s.lat : e.lat,
-        minLng: s.lng <= e.lng ? s.lng : e.lng,
-        maxLng: s.lng > e.lng ? s.lng : e.lng,
+
+    // Return min and max lat and lng from 2 position
+    // Return the A B C D points of the shape formed by the boundaries :
+    // A --- B
+    // |     |
+    // D --- C
+    getCoordsBoundaries(posA, posB) {
+      const boundaries = {
+        minLat: posA.lat <= posB.lat ? posA.lat : posB.lat,
+        maxLat: posA.lat > posB.lat ? posA.lat : posB.lat,
+        minLng: posA.lng <= posB.lng ? posA.lng : posB.lng,
+        maxLng: posA.lng > posB.lng ? posA.lng : posB.lng,
       };
+      boundaries.posA = new LatLng(boundaries.minLat, boundaries.minLng);
+      boundaries.posB = new LatLng(boundaries.maxLat, boundaries.minLng);
+      boundaries.posC = new LatLng(boundaries.maxLat, boundaries.maxLng);
+      boundaries.posD = new LatLng(boundaries.minLat, boundaries.maxLng);
+      return boundaries;
     },
     removeSubTargets() {
       this.aSubTargets.forEach((subtarget) => {
@@ -1120,6 +1153,7 @@ export default {
       });
       this.aSubTargets = [];
       this.currentSubTarget = 0;
+      this.warningTooMuchSubTargets = false;
     },
     addSubtarget(coords) {
       const subTargetIndex = this.aSubTargets.length;
@@ -1157,11 +1191,17 @@ export default {
     },
     calcSubTargets() {
       this.removeSubTargets();
-      if (this.tTypeIndex === TARGET_TYPE.LINE) {
-        const interval = this.secondaryShots - 2;
-        const latVariation = (this.secondaryTarget.pos.lat - this.target.pos.lat) / (interval + 1);
-        const lngVariation = (this.secondaryTarget.pos.lng - this.target.pos.lng) / (interval + 1);
+      if (this.tTypeIndex === TARGET_TYPE.LINE && this.target && this.secondaryTarget) {
+        const distBetween2Rounds = SUBTARGET_ROUND_SPACING[this.secondaryRoundsSpacing];
+        const distBetweenTargets = this.calcDistBetween2Pos(this.target.pos, this.secondaryTarget.pos);
+        const interval = distBetweenTargets / distBetween2Rounds;
+        const latVariation = (this.secondaryTarget.pos.lat - this.target.pos.lat) / interval;
+        const lngVariation = (this.secondaryTarget.pos.lng - this.target.pos.lng) / interval;
 
+        if (interval + 2 > MAX_SUBTARGETS_COUNT) {
+          this.warningTooMuchSubTargets = true;
+          return;
+        }
         this.addSubtarget({
           lat: this.target.pos.lat,
           lng: this.target.pos.lng,
@@ -1190,161 +1230,35 @@ export default {
         });// Last shot is fixed
         console.log("calcSubTargets", this.aSubTargets);
       }
-      if (this.tTypeIndex === TARGET_TYPE.AREA) {
-        const interval = 3;
-        const boundaries = this.getCoordsBoundaries();
-        const latVariation = (boundaries.maxLat - boundaries.minLat) / (interval + 1);
-        const lngVariation = (boundaries.maxLng - boundaries.minLng) / (interval + 1);
-
-        const latitudes = [];
-        const longitudes = [];
-        for (let i = 1; i <= interval; i++) {
-          latitudes.push(boundaries.minLat + (latVariation * i));
-          longitudes.push(boundaries.minLng + (lngVariation * i));
-        }
-        const coords = [];
+      if (this.tTypeIndex === TARGET_TYPE.AREA && this.target && this.secondaryTarget) {
+        const distBetween2Rounds = SUBTARGET_ROUND_SPACING[this.secondaryRoundsSpacing];
+        const boundaries = this.getCoordsBoundaries(this.target.pos, this.secondaryTarget.pos);
+        const latDist = this.calcDistBetween2Pos(boundaries.posA, boundaries.posB);
+        const lngDist = this.calcDistBetween2Pos(boundaries.posA, boundaries.posD);
+        const latInterval = latDist / distBetween2Rounds;
+        const lngInterval = lngDist / distBetween2Rounds;
+        const latVariation = (boundaries.posB.lat - boundaries.posA.lat) / latInterval;
+        const lngVariation = (boundaries.posD.lng - boundaries.posA.lng) / lngInterval;
+        const nbSubTargetApprx = latInterval * lngInterval;
         const point = {};
         let coord;
-        for (let i = 0; i < interval; i++) {
-          for (let j = 0; j < interval; j++) {
-            point.pos = new LatLng(latitudes[i], longitudes[j]);
+        if (nbSubTargetApprx > MAX_SUBTARGETS_COUNT) {
+          this.warningTooMuchSubTargets = true;
+          return;
+        }
+        for (let i = boundaries.posA.lat; i <= boundaries.posB.lat; i += latVariation) {
+          for (let j = boundaries.posA.lng; j <= boundaries.posD.lng; j += lngVariation) {
+            point.pos = new LatLng(i, j);
             coord = this.coordMortar(this.mortar, point);
-            if (coords[i] === undefined) {
-              coords[i] = [];
-            }
-            coords[i][j] = {
+            this.addSubtarget({
               lat: point.pos.lat,
               lng: point.pos.lng,
               bearing: coord.bearing,
               elevation: coord.elevation,
-            };
+            });
           }
         }
-        const random = Math.floor(Math.random() * Math.floor(100));// get random value between 0-100
-        // will choose a random pattern on the 9 points available depends of the numbers of points wanted
-        switch (this.secondaryShots) {
-          case 3:
-            if (random <= 25) {
-              this.addSubtarget(coords[0][0]);
-              this.addSubtarget(coords[1][1]);
-              this.addSubtarget(coords[2][2]);
-            } else if (random <= 50) {
-              this.addSubtarget(coords[0][2]);
-              this.addSubtarget(coords[1][1]);
-              this.addSubtarget(coords[2][0]);
-            } else if (random <= 75) {
-              this.addSubtarget(coords[1][0]);
-              this.addSubtarget(coords[1][1]);
-              this.addSubtarget(coords[1][2]);
-            } else if (random <= 100) {
-              this.addSubtarget(coords[0][1]);
-              this.addSubtarget(coords[1][1]);
-              this.addSubtarget(coords[2][1]);
-            }
-            break;
-          case 4:
-            if (random <= 50) {
-              this.addSubtarget(coords[0][0]);
-              this.addSubtarget(coords[2][0]);
-              this.addSubtarget(coords[0][2]);
-              this.addSubtarget(coords[2][2]);
-            } else if (random <= 100) {
-              this.addSubtarget(coords[1][0]);
-              this.addSubtarget(coords[0][1]);
-              this.addSubtarget(coords[2][1]);
-              this.addSubtarget(coords[1][2]);
-            }
-            break;
-          default:
-          case 5:
-            if (random <= 50) {
-              this.addSubtarget(coords[0][0]);
-              this.addSubtarget(coords[2][0]);
-              this.addSubtarget(coords[0][2]);
-              this.addSubtarget(coords[2][2]);
-              this.addSubtarget(coords[1][1]);
-            } else if (random <= 100) {
-              this.addSubtarget(coords[1][0]);
-              this.addSubtarget(coords[0][1]);
-              this.addSubtarget(coords[2][1]);
-              this.addSubtarget(coords[1][2]);
-              this.addSubtarget(coords[1][1]);
-            }
-            break;
-          case 6:
-            if (random <= 50) {
-              this.addSubtarget(coords[0][0]);
-              this.addSubtarget(coords[1][0]);
-              this.addSubtarget(coords[2][0]);
-              this.addSubtarget(coords[0][2]);
-              this.addSubtarget(coords[1][2]);
-              this.addSubtarget(coords[2][2]);
-            } else if (random <= 100) {
-              this.addSubtarget(coords[0][0]);
-              this.addSubtarget(coords[0][1]);
-              this.addSubtarget(coords[0][2]);
-              this.addSubtarget(coords[2][0]);
-              this.addSubtarget(coords[2][1]);
-              this.addSubtarget(coords[2][2]);
-            }
-            break;
-          case 7:
-            if (random <= 25) {
-              this.addSubtarget(coords[0][0]);
-              this.addSubtarget(coords[1][0]);
-              this.addSubtarget(coords[2][0]);
-              this.addSubtarget(coords[0][2]);
-              this.addSubtarget(coords[1][2]);
-              this.addSubtarget(coords[2][2]);
-              this.addSubtarget(coords[1][1]);
-            } else if (random <= 50) {
-              this.addSubtarget(coords[0][0]);
-              this.addSubtarget(coords[0][1]);
-              this.addSubtarget(coords[0][2]);
-              this.addSubtarget(coords[2][0]);
-              this.addSubtarget(coords[2][1]);
-              this.addSubtarget(coords[2][2]);
-              this.addSubtarget(coords[1][1]);
-            } else if (random <= 75) {
-              this.addSubtarget(coords[0][0]);
-              this.addSubtarget(coords[1][0]);
-              this.addSubtarget(coords[0][1]);
-              this.addSubtarget(coords[1][1]);
-              this.addSubtarget(coords[2][1]);
-              this.addSubtarget(coords[1][2]);
-              this.addSubtarget(coords[2][2]);
-            } else if (random <= 100) {
-              this.addSubtarget(coords[2][0]);
-              this.addSubtarget(coords[1][0]);
-              this.addSubtarget(coords[0][1]);
-              this.addSubtarget(coords[1][1]);
-              this.addSubtarget(coords[2][1]);
-              this.addSubtarget(coords[1][2]);
-              this.addSubtarget(coords[0][2]);
-            }
-            break;
-          case 8:
-            this.addSubtarget(coords[0][0]);
-            this.addSubtarget(coords[0][1]);
-            this.addSubtarget(coords[0][2]);
-            this.addSubtarget(coords[1][0]);
-            this.addSubtarget(coords[1][2]);
-            this.addSubtarget(coords[2][0]);
-            this.addSubtarget(coords[2][1]);
-            this.addSubtarget(coords[2][2]);
-            break;
-          case 9:
-            this.addSubtarget(coords[0][0]);
-            this.addSubtarget(coords[0][1]);
-            this.addSubtarget(coords[0][2]);
-            this.addSubtarget(coords[1][0]);
-            this.addSubtarget(coords[1][1]);
-            this.addSubtarget(coords[1][2]);
-            this.addSubtarget(coords[2][0]);
-            this.addSubtarget(coords[2][1]);
-            this.addSubtarget(coords[2][2]);
-            break;
-        }
+        console.log("calcSubTargets", this.aSubTargets);
       }
     },
     /**
@@ -1459,11 +1373,16 @@ export default {
     openGitHub() {
       window.open("https://github.com/Endebert/squadmc", "_blank");
     },
+
     clearSecondaryLines() {
       if (this.secondaryLine !== undefined) {
         this.map.removeLayer(this.secondaryLine);
         this.secondaryLine = undefined;
       }
+    },
+
+    getRoundsSpacing(index) {
+      return this.secondaryRoundsSpacing[index];
     },
 
     /**
@@ -1626,6 +1545,14 @@ export default {
         this.clearSecondaryLines();
       }
     },
+    warningTooMuchSubTargets(b) {
+      console.log("warningTooMuchSubTargets", b);
+      if (this.secondaryLine) {
+        this.secondaryLine.setStyle({
+          color: b ? "#ff3333" : "#3333ff",
+        });
+      }
+    },
     /**
      * let new active mortar know that it is active now (in order to show min and max range circles)
      * @param {PinHolder} newM - new active mortar
@@ -1642,8 +1569,8 @@ export default {
         newM.setActive(true, this.map);
       }
     },
-    secondaryShots(i) {
-      this.toStorage("secondaryShots", i);
+    secondaryRoundsSpacing(i) {
+      this.toStorage("secondaryRoundsSpacing", i);
       if (this.advancedMode && this.target && this.secondaryTarget && this.tTypeIndex > TARGET_TYPE.POINT) {
         this.calcSubTargets();
       }
