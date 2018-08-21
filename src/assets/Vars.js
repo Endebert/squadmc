@@ -16,6 +16,7 @@ export const PS_4INCH_MAX_DISTANCE = 2601;
 export const PS_3INCH_MAX_DISTANCE = 1466;
 export const GRAVITY = 9.8;
 export const MIL_TO_DEG_FACTOR = 360 / 6400;
+export const MAX_SUBTARGETS_COUNT = 50;
 export const PIN_TYPE = Object.freeze({
   MORTAR: 0,
   TARGET: 1,
@@ -26,12 +27,19 @@ export const TARGET_TYPE = Object.freeze({
   LINE: 1,
   AREA: 2,
 });
-export const SUBTARGET_RADIUS = [
-  100,
-  80,
+export const SUBTARGET_ROUND_SPACING = [
+  5,
+  10,
+  20,
+  30,
   50,
-  35,
+];
+export const SUBTARGET_RADIUS = [
   12,
+  12,
+  12,
+  10,
+  7,
   5,
   3,
 ];
