@@ -1652,8 +1652,14 @@ export default {
           this.secondaryTarget = marker;
         }
       });
-      this.drawSecondaryLine();
-      this.calcSubTargets();
+      if (newIndex === TARGET_TYPE.POINT) {
+        this.removeSubTargets();
+        this.clearSecondaryLines();
+        this.secondaryTarget = undefined;
+      } else {
+        this.drawSecondaryLine();
+        this.calcSubTargets();
+      }
     },
 
     currentSubTarget(index) {
