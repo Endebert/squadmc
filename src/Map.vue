@@ -1030,7 +1030,7 @@ export default {
     },
     calcBearingBetween2Pos(posA, posB) {
       // oh no, vector maths!
-      let bearing = Math.atan2(posA.lng - posB.lng, posA.lat - posB.lat) * 180 / Math.PI;
+      let bearing = Math.atan2(posB.lng - posA.lng, posB.lat - posA.lat) * 180 / Math.PI;
       bearing = (Math.round((180 - bearing) * 10) / 10) % 360;
 
       return bearing;
