@@ -62,11 +62,15 @@
         </v-list-tile-action>
         <v-list-tile-content>
           <v-list-tile-title>Advanced Mode</v-list-tile-title>
-          <v-list-tile-sub-title>place multiple markers</v-list-tile-sub-title>
         </v-list-tile-content>
         <v-list-tile-avatar>
           <v-icon>fast_forward</v-icon>
         </v-list-tile-avatar>
+      </v-list-tile>
+      <v-list-tile>
+        <v-list-tile-content style="opacity: 0.7">
+          Place FOBs, multiple markers & targets and create LINE and AREA fire
+        </v-list-tile-content>
       </v-list-tile>
     </v-list>
     <v-divider></v-divider>
