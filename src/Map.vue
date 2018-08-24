@@ -337,149 +337,107 @@
           </v-dialog>
         </div>
       </div>
-      <div id="my-footer" v-if="mortar && target && secondaryTarget == undefined" style="background-color: #212121;">
-        <v-speed-dial>
-          <v-btn fab small slot="activator" class="secondary" style="width: 32px; height: 32px;">
-            <img :src="mortar.sUrl" style="width: 48px;">
-          </v-btn>
-          <v-btn icon
-                 v-for="(aMortar, index) in placedMortars"
-                 :key="index"
-                 @click="mortar = placedMortars[index]"
-          >
-            <img :src="aMortar.sUrl" style="width: 48px;">
-          </v-btn>
-        </v-speed-dial>
-        <v-icon>arrow_forward</v-icon>
-        <v-speed-dial v-if="target">
-          <v-btn fab small slot="activator" class="secondary" style="width: 32px; height: 32px;">
-            <img :src="target.sUrl" style="width: 48px;">
-          </v-btn>
-          <v-btn icon
-                 v-for="(aTarget, index) in placedTargets"
-                 :key="index"
-                 v-if="secondaryTarget !== undefined && aTarget.sUrl != secondaryTarget.sUrl"
-                 @click="target = placedTargets[index]">
-            <img :src="aTarget.sUrl" style="width: 48px;">
-          </v-btn>
-        </v-speed-dial>
-        <div class="font-mono flex column">
-          <div class="flex" style="width: 100%;">
-            <div class="px-1" style="flex: 1 0 auto; text-align: center; font-size: large">
-            {{DOMbearing}}
-            </div>
-            <div class="px-1" style="flex: 1 0 auto; text-align: center; font-size: large">
-            {{DOMelevation}}
-            </div>
-          </div>
-          <div class="flex" style="width: 100%;">
-            <div class="px-1 body-1" style="flex: 1 0 auto; text-align: center; font-size: small; color: #9e9e9e"
-            >{{DOMdist}}</div>
-            <div class="px-1 body-1" style="flex: 1 0 auto; text-align: center; font-size: small; color: #9e9e9e"
-            >{{DOMhDelta}}</div>
-          </div>
+      <div id="my-footer" v-if="mortar && target" style="background-color: #212121;">
+        <div class="flex row" v-if="!secondaryTarget || tTypeIndex === TARGET_TYPE.POINT">
+          <v-speed-dial>
+            <v-btn icon slot="activator" class="secondary">
+              <img :src="mortar.sUrl" style="width: 48px;">
+            </v-btn>
+            <v-btn icon
+                   v-for="(aMortar, index) in placedMortars"
+                   :key="index"
+                   @click="mortar = placedMortars[index]"
+            >
+              <img :src="aMortar.sUrl" style="width: 48px;">
+            </v-btn>
+          </v-speed-dial>
+          <v-icon small>arrow_forward</v-icon>
+          <v-speed-dial v-if="target">
+            <v-btn icon slot="activator" class="secondary">
+              <img :src="target.sUrl" style="width: 48px;">
+            </v-btn>
+            <v-btn icon
+                   v-for="(aTarget, index) in placedTargets"
+                   :key="index"
+                   v-if="secondaryTarget && aTarget.sUrl !== secondaryTarget.sUrl"
+                   @click="target = placedTargets[index]">
+              <img :src="aTarget.sUrl" style="width: 48px;">
+            </v-btn>
+          </v-speed-dial>
+          <table class="font-mono">
+            <tr style="font-size: small; opacity: 0.7" >
+              <td class="px-1" align="right">{{DOMdist}}</td>
+              <td class="px-1" align="left">{{DOMhDelta}}</td>
+            </tr>
+            <tr style="font-size: large">
+              <td class="px-1" align="right">{{DOMbearing}}</td>
+              <td class="px-1" align="left">{{DOMelevation}}</td>
+            </tr>
+          </table>
         </div>
-      </div>
-      <div id="my-footer"
-        v-if="mortar && target && tTypeIndex > TARGET_TYPE.POINT && secondaryTarget"
-        style="background-color: #212121;">
-        <v-speed-dial>
-          <v-btn fab small slot="activator" class="secondary"
-            style="width: 32px; height: 32px; margin-left: 4px; margin-right: 4px;">
-            <img :src="mortar.sUrl" style="width: 48px;">
-          </v-btn>
-          <v-btn icon
-                 v-for="(aMortar, index) in placedMortars"
-                 :key="index"
-                 @click="mortar = placedMortars[index]"
-          >
-            <img :src="aMortar.sUrl" style="width: 48px;">
-          </v-btn>
-        </v-speed-dial>
-        <v-icon style="font-size: 16px;">arrow_forward</v-icon>
-        <v-speed-dial v-if="target">
-          <v-btn fab small slot="activator" class="secondary"
-            style="width: 32px; height: 32px; margin-left: 4px; margin-right: 4px;">
-            <img :src="target.sUrl" style="width: 48px;">
-          </v-btn>
-          <v-btn icon
-                 v-for="(aTarget, index) in placedTargets"
-                 :key="index"
-                 v-if="secondaryTarget !== undefined && aTarget.sUrl != secondaryTarget.sUrl"
-                 @click="target = placedTargets[index]">
-            <img :src="aTarget.sUrl" style="width: 48px;">
-          </v-btn>
-        </v-speed-dial>
-        <v-speed-dial v-if="tTypeIndex > TARGET_TYPE.POINT && secondaryTarget">
-          <v-btn fab small slot="activator" class="secondary"
-            style="width: 32px; height: 32px; margin-left: 4px; margin-right: 4px;">
-            <img :src="secondaryTarget.sUrl" style="width: 48px;">
-          </v-btn>
-          <v-btn icon
-                 v-for="(aTarget, index) in placedTargets"
-                 :key="index"
-                 v-if="aTarget.sUrl != target.sUrl"
-                 @click="secondaryTarget = placedTargets[index]">
-            <img :src="aTarget.sUrl" style="width: 48px;">
-          </v-btn>
-        </v-speed-dial>
-        <div class="font-mono flex column">
-          <div class="flex" style="width: 100%;">
-            <div class="px-1" style="flex: 1 0 auto; font-size: small; padding-left: 0!important;">
-            {{DOMminbearing}}
+        <div v-else class="flex row">
+          <div class="flex column">
+            <div class="flex row">
+              <!--<div class="font-mono" style="font-size: large">▼</div>-->
+              <v-speed-dial>
+                <v-btn icon slot="activator" class="secondary mb-0">
+                  <img :src="mortar.sUrl" style="width: 48px;">
+                </v-btn>
+                <v-btn icon
+                       v-for="(aMortar, index) in placedMortars"
+                       :key="index"
+                       @click="mortar = placedMortars[index]"
+                >
+                  <img :src="aMortar.sUrl" style="width: 48px;">
+                </v-btn>
+              </v-speed-dial>
             </div>
-            <v-icon style="font-size: small">arrow_forward</v-icon>
-            <div class="px-1" style="flex: 1 0 auto; font-size: small; padding-left: 0!important;">
-            {{DOMmaxbearing}}
+            <div class="flex row">
+              <v-speed-dial v-if="target">
+                <v-btn icon slot="activator" class="secondary mt-0 mr-1">
+                  <img :src="target.sUrl" style="width: 48px;">
+                </v-btn>
+                <v-btn icon
+                       v-for="(aTarget, index) in placedTargets"
+                       :key="index"
+                       v-if="secondaryTarget !== undefined && aTarget.sUrl !== secondaryTarget.sUrl"
+                       @click="target = placedTargets[index]">
+                  <img :src="aTarget.sUrl" style="width: 48px;">
+                </v-btn>
+              </v-speed-dial>
+              <div class="font-mono mx-1" style="font-size: large; align-self: flex-start">⊥</div>
+              <v-speed-dial v-if="tTypeIndex > TARGET_TYPE.POINT && secondaryTarget">
+                <v-btn icon slot="activator" class="secondary mt-0 ml-1">
+                  <img :src="secondaryTarget.sUrl" style="width: 48px;">
+                </v-btn>
+                <v-btn icon
+                       v-for="(aTarget, index) in placedTargets"
+                       :key="index"
+                       v-if="aTarget.sUrl != target.sUrl"
+                       @click="secondaryTarget = placedTargets[index]">
+                  <img :src="aTarget.sUrl" style="width: 48px;">
+                </v-btn>
+              </v-speed-dial>
             </div>
           </div>
-          <div class="flex" style="width: 100%;">
-            <div class="px-1" style="flex: 1 0 auto; font-size: small; padding-left: 0!important;">
-            {{DOMminelevation}}
-            </div>
-            <v-icon style="font-size: small">arrow_forward</v-icon>
-            <div class="px-1" style="flex: 1 0 auto; font-size: small; padding-left: 0!important;">
-            {{DOMmaxelevation}}
-            </div>
-          </div>
-        </div>
-      </div>
-      <div id="my-subtargets" class="flex" style="flex;background-color: #212121; align-items: center;"
-        v-if="aSubTargets.length > 0" v-touch="{
-          left: () => onSwipe('Left'),
-          right: () => onSwipe('Right')
-        }">
-        <div class="flex" v-if="currentSubTarget > 0">
-          <v-icon @click="currentSubTarget--">keyboard_arrow_left</v-icon>
-        </div>
-        <div class="font-mono flex column" style="flex-grow: 1;">
-          <div class="flex">
-            <div class="px-1" style="flex: 1 0 auto; text-align: center; font-size: small">
-                Round {{ currentSubTarget + 1 }} / {{ aSubTargets.length }}
-          </div>
-          </div>
-          <div class="flex">
-            <div class="px-1" style="flex: 1 0 auto; text-align: center; font-size: small">
-                {{ aSubTargets[currentSubTarget].coords.DOMBearing }}
-            </div>
-          </div>
-          <div class="flex">
-            <div class="px-1" style="flex: 1 0 auto; text-align: center; font-size: small">
-                {{ aSubTargets[currentSubTarget].coords.DOMElevation }}
-            </div>
-          </div>
-        </div>
-        <div class="flex" v-if="currentSubTarget < aSubTargets.length - 1">
-          <v-icon @click="currentSubTarget++">keyboard_arrow_right</v-icon>
-        </div>
-      </div>
-      <div id="my-subtargets"  class="flex" style="flex;background-color: #212121; text-align: center;"
-        v-if="warningTooMuchSubTargets === true">
-        <div class="flex" v-if="tTypeIndex === TARGET_TYPE.LINE">
-          Your line is too long and will generate too many targets (max: {{ MAX_SUBTARGETS_COUNT }})
-        </div>
-        <div class="flex" v-if="tTypeIndex === TARGET_TYPE.AREA">
-          Your area is too wide and will generate too many targets (max: {{ MAX_SUBTARGETS_COUNT }})
+          <table class="font-mono">
+            <tr align="center" style="font-size: small; color: #9e9e9e">
+              <td colspan="2">
+                <div class="flex row">
+                  <v-btn icon small class="flex my-1 secondary" :disabled="currentSubTarget <= 0">
+                    <v-icon @click="currentSubTarget--">keyboard_arrow_left</v-icon>
+                  </v-btn>
+                  Round {{pad(currentSubTarget + 1, 2)}} / {{pad(aSubTargets.length, 2)}}
+                  <v-btn icon small class="flex my-1 secondary" :disabled="currentSubTarget >= aSubTargets.length - 1">
+                    <v-icon @click="currentSubTarget++">keyboard_arrow_right</v-icon>
+                  </v-btn>
+                </div>
+              </td>
+            </tr>
+            <tr >
+              <td align="center" style="font-size: large">{{ aSubTargets[currentSubTarget].coords.DOMBearing }} {{ aSubTargets[currentSubTarget].coords.DOMElevation }}</td>
+            </tr>
+          </table>
         </div>
       </div>
     </div>
@@ -490,7 +448,6 @@
         <v-btn icon style="pointer-events: all" v-if="mortar" class="secondary" @click="removeMortar(0)">
           <v-badge color="red" right overlap>
             <v-icon slot="badge">clear</v-icon>
-            <!--<v-icon large>mail</v-icon>-->
             <img :src="mortar.sUrl" style="width: 36px;">
           </v-badge>
         </v-btn>
@@ -1313,12 +1270,12 @@ export default {
     },
     formatDOMElevation(elevation) {
       if (Number.isNaN(elevation) || elevation > 1580 || elevation < 800) {
-        return "∠XXXX.Xmil";
+        return "XXXX.Xmil";
       }
-      return `∠${pad((Math.round(elevation * 10) / 10).toFixed(1), 6)}mil`;
+      return `${pad((Math.round(elevation * 10) / 10).toFixed(1), 6)}mil`;
     },
     formatDOMBearing(bearing) {
-      return `✵${pad((Math.round(bearing * 10) / 10).toFixed(1), 5)}°`;
+      return `${pad((Math.round(bearing * 10) / 10).toFixed(1), 5)}°`;
     },
     /**
      * Remove an already placed fob, specified by its index in placedFobs
@@ -1859,6 +1816,7 @@ body::-webkit-scrollbar {
 .flex {
   display: flex;
   flex: 0 0 auto;
+  align-items: center;
 }
 
 .column {
