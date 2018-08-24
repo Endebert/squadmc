@@ -535,7 +535,6 @@
     <v-card>
       <v-card-text>
         <Changelog/>
-        <Changelog/>
       </v-card-text>
       <v-card-actions>
         <v-btn @click.native="changelogDialog = false">Close</v-btn>
