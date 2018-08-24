@@ -31,6 +31,7 @@
       :touchless="!drawer"
       disable-resize-watcher
       disable-route-watcher
+
   >
     <v-toolbar dense>
       <v-toolbar-title>
@@ -74,43 +75,56 @@
       </v-list-tile>
     </v-list>
     <v-divider></v-divider>
-    <v-list class="pa-0" two-line v-if="postScriptum">
-      <v-list-tile>
-        <v-list-tile-content>
-          <v-list-tile-title>Set mortar type</v-list-tile-title>
-          <v-list-tile-sub-title>
-            <v-btn-toggle v-model="mTypeIndex" mandatory style="display: flex">
-              <v-btn flat v-for="(mType, i) in mortarTypes" :key="i"
-                     style="flex: 1 0 0; border: none">{{mType[0]}}</v-btn>
-            </v-btn-toggle></v-list-tile-sub-title>
-        </v-list-tile-content>
-      </v-list-tile>
-    </v-list>
-    <v-divider></v-divider>
+    <template v-if="postScriptum">
+      <v-list class="pa-0" two-line>
+        <v-list-tile>
+          <v-list-tile-content>
+            <v-list-tile-title>Set mortar type</v-list-tile-title>
+            <v-list-tile-sub-title>
+              <v-btn-toggle v-model="mTypeIndex" mandatory style="display: flex">
+                <v-btn flat v-for="(mType, i) in mortarTypes" :key="i"
+                       style="flex: 1 0 0; border: none">{{mType.name}}</v-btn>
+              </v-btn-toggle></v-list-tile-sub-title>
+          </v-list-tile-content>
+        </v-list-tile>
+      </v-list>
+      <v-divider></v-divider>
+    </template>
     <v-list class="pa-0" two-line v-if="advancedMode">
       <v-list-tile>
         <v-list-tile-content>
           <v-list-tile-title>Set target type</v-list-tile-title>
           <v-list-tile-sub-title>
-            <v-btn-toggle v-model="tTypeIndex" mandatory style="display: flex">
-              <v-btn flat v-for="(tType, i) in targetTypes" :key="i"
-                     style="flex: 1 0 0; border: none">{{tType}}</v-btn>
+            <v-btn-toggle v-model="targetType" mandatory style="display: flex">
+              <v-btn flat v-for="(val, key) in TARGET_TYPE" :key="val"
+                     style="flex: 1 0 0; border: none">{{key}}</v-btn>
             </v-btn-toggle></v-list-tile-sub-title>
         </v-list-tile-content>
       </v-list-tile>
-       <v-list-tile v-if="tTypeIndex > TARGET_TYPE.POINT">
-         <v-list-tile-content>
-          <v-list-tile-title>Distance between rounds</v-list-tile-title>
-          <v-list-tile-sub-title>
-            <v-slider v-model="secondaryRoundsSpacing" hide-details class="pa-0 pr-3"
-              always-dirty style="padding-left: 10px!important;"
-                    step="1" min="0" max="4" :thumb-size="24" ticks :tick-labels="SUBTARGET_ROUND_SPACING">
-            </v-slider>
-          </v-list-tile-sub-title>
-          </v-list-tile-content>
-        </v-list-tile>
     </v-list>
-    <v-divider v-if="postScriptum"></v-divider>
+    <template v-if="targetType !== TARGET_TYPE.POINT">
+      <v-list class="pa-0">
+        <v-list-tile>
+          Round Spacing
+          <v-slider v-model="subTargetSpacing" hide-details thumb-label class="pa-0 pr-3"
+                    step="5" min="5" max="50" ticks></v-slider>
+        </v-list-tile>
+        <!--<v-list-tile>-->
+          <!--<v-list-tile-content>-->
+          <!--<v-list-tile-title>Distance between rounds</v-list-tile-title>-->
+          <!--<v-list-tile-sub-title>-->
+          <!--<v-slider v-model="subTargetSpacing" hide-details class="pa-0 pr-3"-->
+          <!--thumb-label style="padding-left: 10px!important;"-->
+          <!--step="5" min="0" max="50" :thumb-size="24" ticks>-->
+          <!--</v-slider>-->
+          <!--</v-list-tile-sub-title>-->
+          <!--</v-list-tile-content>-->
+          <!--<div class="pr-3">Subtarget Spacing</div>-->
+
+        <!--</v-list-tile>-->
+      </v-list>
+      <v-divider></v-divider>
+    </template>
     <v-list class="pa-0">
       <v-list-group>
         <v-list-tile slot="activator">
@@ -237,7 +251,7 @@
             <v-layout>
               <v-btn icon style="margin: 2px 2px 2px 2px"
                      v-for="(aMortar, i) in placedMortars" :key="i" @click="removeMortar(i)">
-                <img :src="aMortar.sUrl" width="48px">
+                <img :src="aMortar.symbolUrl" width="48px">
               </v-btn>
             </v-layout>
           </v-list-tile-content>
@@ -247,7 +261,7 @@
             <v-layout>
               <v-btn icon style="margin: 2px 2px 2px 2px"
                      v-for="(aTarget, i) in placedTargets" :key="i" @click="removeTarget(i)">
-                <img :src="aTarget.sUrl" width="48px">
+                <img :src="aTarget.symbolUrl" width="48px">
               </v-btn>
             </v-layout>
           </v-list-tile-content>
@@ -257,7 +271,7 @@
             <v-layout>
               <v-btn icon style="margin: 2px 2px 2px 2px"
                      v-for="(aFob, i) in placedFobs" :key="i" @click="removeFob(i)">
-                <img :src="aFob.sUrl" width="48px">
+                <img :src="aFob.symbolUrl" width="48px">
               </v-btn>
             </v-layout>
           </v-list-tile-content>
@@ -338,30 +352,30 @@
         </div>
       </div>
       <div id="my-footer" v-if="mortar && target" style="background-color: #212121;">
-        <div class="flex row" v-if="!secondaryTarget || tTypeIndex === TARGET_TYPE.POINT">
+        <div class="flex row" v-if="!secondaryTarget || targetType === TARGET_TYPE.POINT">
           <v-speed-dial>
             <v-btn icon slot="activator" class="secondary">
-              <img :src="mortar.sUrl" style="width: 48px;">
+              <img :src="mortar.symbolUrl" style="width: 48px;">
             </v-btn>
             <v-btn icon
                    v-for="(aMortar, index) in placedMortars"
                    :key="index"
                    @click="mortar = placedMortars[index]"
             >
-              <img :src="aMortar.sUrl" style="width: 48px;">
+              <img :src="aMortar.symbolUrl" style="width: 48px;">
             </v-btn>
           </v-speed-dial>
           <v-icon small>arrow_forward</v-icon>
           <v-speed-dial v-if="target">
             <v-btn icon slot="activator" class="secondary">
-              <img :src="target.sUrl" style="width: 48px;">
+              <img :src="target.symbolUrl" style="width: 48px;">
             </v-btn>
             <v-btn icon
                    v-for="(aTarget, index) in placedTargets"
                    :key="index"
-                   v-if="secondaryTarget && aTarget.sUrl !== secondaryTarget.sUrl"
+                   v-if="secondaryTarget && aTarget.symbolUrl !== secondaryTarget.symbolUrl"
                    @click="target = placedTargets[index]">
-              <img :src="aTarget.sUrl" style="width: 48px;">
+              <img :src="aTarget.symbolUrl" style="width: 48px;">
             </v-btn>
           </v-speed-dial>
           <table class="font-mono">
@@ -381,41 +395,41 @@
               <!--<div class="font-mono" style="font-size: large">▼</div>-->
               <v-speed-dial>
                 <v-btn icon slot="activator" class="secondary mb-0">
-                  <img :src="mortar.sUrl" style="width: 48px;">
+                  <img :src="mortar.symbolUrl" style="width: 48px;">
                 </v-btn>
                 <v-btn icon
                        v-for="(aMortar, index) in placedMortars"
                        :key="index"
                        @click="mortar = placedMortars[index]"
                 >
-                  <img :src="aMortar.sUrl" style="width: 48px;">
+                  <img :src="aMortar.symbolUrl" style="width: 48px;">
                 </v-btn>
               </v-speed-dial>
             </div>
             <div class="flex row">
               <v-speed-dial v-if="target">
                 <v-btn icon slot="activator" class="secondary mt-0 mr-1">
-                  <img :src="target.sUrl" style="width: 48px;">
+                  <img :src="secondaryTarget.symbolUrl" style="width: 48px;">
                 </v-btn>
                 <v-btn icon
                        v-for="(aTarget, index) in placedTargets"
                        :key="index"
-                       v-if="secondaryTarget !== undefined && aTarget.sUrl !== secondaryTarget.sUrl"
-                       @click="target = placedTargets[index]">
-                  <img :src="aTarget.sUrl" style="width: 48px;">
+                       v-if="aTarget !== target"
+                       @click="secondaryTarget = placedTargets[index]">
+                  <img :src="aTarget.symbolUrl" style="width: 48px;">
                 </v-btn>
               </v-speed-dial>
               <div class="font-mono mx-1" style="font-size: large; align-self: flex-start">⊥</div>
-              <v-speed-dial v-if="tTypeIndex > TARGET_TYPE.POINT && secondaryTarget">
+              <v-speed-dial v-if="targetType !== TARGET_TYPE.POINT && secondaryTarget">
                 <v-btn icon slot="activator" class="secondary mt-0 ml-1">
-                  <img :src="secondaryTarget.sUrl" style="width: 48px;">
+                  <img :src="target.symbolUrl" style="width: 48px;">
                 </v-btn>
                 <v-btn icon
                        v-for="(aTarget, index) in placedTargets"
                        :key="index"
-                       v-if="aTarget.sUrl != target.sUrl"
-                       @click="secondaryTarget = placedTargets[index]">
-                  <img :src="aTarget.sUrl" style="width: 48px;">
+                       v-if="aTarget !== secondaryTarget"
+                       @click="target = placedTargets[index]">
+                  <img :src="aTarget.symbolUrl" style="width: 48px;">
                 </v-btn>
               </v-speed-dial>
             </div>
@@ -427,15 +441,17 @@
                   <v-btn icon small class="flex my-1 secondary" :disabled="currentSubTarget <= 0">
                     <v-icon @click="currentSubTarget--">keyboard_arrow_left</v-icon>
                   </v-btn>
-                  Round {{pad(currentSubTarget + 1, 2)}} / {{pad(aSubTargets.length, 2)}}
-                  <v-btn icon small class="flex my-1 secondary" :disabled="currentSubTarget >= aSubTargets.length - 1">
+                  Round {{pad(currentSubTarget + 1, 3)}} / {{pad(subTargetsHolder.targets.length, 3)}}
+                  <v-btn icon small class="flex my-1 secondary"
+                         :disabled="currentSubTarget >= subTargetsHolder.targets.length - 1">
                     <v-icon @click="currentSubTarget++">keyboard_arrow_right</v-icon>
                   </v-btn>
                 </div>
               </td>
             </tr>
             <tr >
-              <td align="center" style="font-size: large">{{ aSubTargets[currentSubTarget].coords.DOMBearing }} {{ aSubTargets[currentSubTarget].coords.DOMElevation }}</td>
+              <td align="center" style="font-size: large"
+              >{{DOMbearing}} {{DOMelevation}}</td>
             </tr>
           </table>
         </div>
@@ -448,13 +464,13 @@
         <v-btn icon style="pointer-events: all" v-if="mortar" class="secondary" @click="removeMortar(0)">
           <v-badge color="red" right overlap>
             <v-icon slot="badge">clear</v-icon>
-            <img :src="mortar.sUrl" style="width: 36px;">
+            <img :src="mortar.symbolUrl" style="width: 36px;">
           </v-badge>
         </v-btn>
         <v-btn icon style="pointer-events: all" v-if="target" class="secondary" @click="removeTarget(0)">
           <v-badge color="red" right overlap>
             <v-icon slot="badge">clear</v-icon>
-            <img :src="target.sUrl" style="width: 36px;">
+            <img :src="target.symbolUrl" style="width: 36px;">
           </v-badge>
         </v-btn>
       </div>
@@ -511,32 +527,25 @@ import Vue from "vue";
 import Vuetify from "vuetify";
 import "vuetify/dist/vuetify.min.css";
 
-import { CRS, LatLng, Map, Point, Polyline, Transformation, Rectangle, Circle } from "leaflet";
+import { CRS, LatLng, LatLngBounds, Map, Point, Polyline, Rectangle, Transformation } from "leaflet";
 
 import SquadGrid from "./assets/Leaflet_extensions/SquadGrid";
 import LocationLayer from "./assets/Leaflet_extensions/LocationLayer";
-import {
-  calcMortarAngle,
-  formatKeyPad,
-  getKP,
-  getPos,
-  pad,
-  pinUrls,
-  symbolUrls,
-} from "./assets/Utils";
+import * as Utils from "./assets/Utils";
 import {
   ICON_SIZE,
-  PIN_TYPE, TARGET_TYPE, PS_3INCH_MAX_DISTANCE, PS_3INCH_VELOCITY,
-  PS_4INCH_MAX_DISTANCE,
-  PS_4INCH_VELOCITY,
-  PS_8CM_MAX_DISTANCE,
-  PS_8CM_VELOCITY, SQUAD_MAX_DISTANCE, SQUAD_VELOCITY, SUBTARGET_RADIUS,
-  SUBTARGET_ROUND_SPACING, MAX_SUBTARGETS_COUNT,
+  MAX_SUBTARGETS_COUNT,
+  PIN_TYPE,
+  TARGET_TYPE,
 } from "./assets/Vars";
-import PinHolder from "./assets/PinHolder";
 import MapData from "./assets/MapData";
 
 import { version as pkgVersion } from "../package.json";
+import SubtargetsHolder from "./assets/SubtargetsHolder";
+import PinHolder from "./assets/marker/pin/PinHolder";
+import MortarPin from "./assets/marker/pin/MortarPin";
+import TargetPin from "./assets/marker/pin/TargetPin";
+import FobPin from "./assets/marker/pin/FobPin";
 
 Vue.use(Vuetify, {});
 
@@ -560,6 +569,8 @@ export default {
     return {
       showMenu: false, // menu when clicking on map
       drawer: undefined, // left navigation drawer
+
+      /** @type {Map} */
       map: undefined, // leaflet map object
       maps: this.mapData.getMapNames(), // map names for top selector
       grid: new SquadGrid(), // keypad grid
@@ -573,30 +584,38 @@ export default {
       mouseKeypad: undefined, // keypad shown in bottom left corner
       showKeypadTimeout: undefined, // value of timeout, set when mouse is moved, set undefined after 1 sec
       calcTimeout: undefined, // value of timeout for delayed calculations set, see calcMortar()
+
+      /** @type {MortarPin} */
       mortar: undefined, // active mortar (for line drawing)
+
+      /** @type {TargetPin} */
       target: undefined, // active target (for line drawing)
+
+      /** @type {TargetPin} */
       secondaryTarget: undefined, // secondary target (for line and area target type)
-      secondaryRoundsSpacing: Number.parseInt(this.fromStorage("secondaryRoundsSpacing", "0"), 10),
-      distLine: undefined, // the line
-      secondaryLine: undefined, // The secondary line
+      subTargetSpacing: Number.parseInt(this.fromStorage("secondaryRoundsSpacing", "0"), 10),
+      primaryLine: undefined, // line to primary target
+      fireLine: undefined, // line to secondary target
+      fireArea: undefined, // line to secondary target
+      subTargetLine: undefined, // line to subTarget
       aSubTargets: [], // list of precomputed subtargets (for line and area target)
-      currentSubTarget: Number.parseInt(this.fromStorage("currentSubTarget", "0"), 10), // currently selected subtarget
       subtargetsPoints: [], // drawing subtargets on map
       warningTooMuchSubTargets: false,
       // available colors
       colors: {
         pin: {
-          mortar: pinUrls(PIN_TYPE.MORTAR),
-          target: pinUrls(PIN_TYPE.TARGET),
-          fob: pinUrls(PIN_TYPE.FOB),
+          mortar: Utils.getPinUrls(PIN_TYPE.MORTAR),
+          target: Utils.getPinUrls(PIN_TYPE.TARGET),
+          fob: Utils.getPinUrls(PIN_TYPE.FOB),
         },
         symbol: {
-          mortar: symbolUrls(PIN_TYPE.MORTAR),
-          target: symbolUrls(PIN_TYPE.TARGET),
-          fob: symbolUrls(PIN_TYPE.FOB),
+          mortar: Utils.getSymbolUrls(PIN_TYPE.MORTAR),
+          target: Utils.getSymbolUrls(PIN_TYPE.TARGET),
+          fob: Utils.getSymbolUrls(PIN_TYPE.FOB),
         },
       },
 
+      /** @type {MortarPin[]} */
       placedMortars: [], // mortars currently on map
       placedTargets: [], // targets currently on map
       placedFobs: [], // fobs currently on map
@@ -607,28 +626,28 @@ export default {
       loading: true,
 
       // values for mortar settings, distance, etc.
-      c: {
+      mortarSettings: {
         bearing: undefined,
         elevation: undefined,
         dist: undefined,
-        hDelta: undefined,
+
+        /** @type {number} */
+        dHeight: undefined,
       },
       // secondaries values for mortar settings, distance, etc.
       c2: {
         bearing: undefined,
         elevation: undefined,
         dist: undefined,
-        hDelta: undefined,
+        dHeight: undefined,
       },
       MAX_SUBTARGETS_COUNT, // max amount of subtargets to avoid perfs issues
-      SUBTARGET_ROUND_SPACING, // round spacing available values
-      SUBTARGET_RADIUS, // subtarget radius for map zoom
       TARGET_TYPE, // reference to target types
       PIN_TYPE, // reference to pin types
-      pad, // reference to padding function used for formatting distance, heightDiff, etc.
+      pad: Utils.pad, // reference to padding function used for formatting distance, heightDiff, etc.
 
       advancedMode: this.fromStorage("advancedMode", "false") === "true",
-      pinSize: Number.parseInt(this.fromStorage("pinSize", `${ICON_SIZE}`), 10),
+      pinSize: Number.parseInt(this.fromStorage("pinSize", ICON_SIZE), 10),
       showAllRanges: this.fromStorage("showAllRanges", "false") === "true",
       errorString: localStorage === undefined ? "No localStorage!" : undefined,
       errorStringSub: "Your settings won't be saved",
@@ -645,20 +664,14 @@ export default {
         tError: false,
       },
 
-      targetTypes: [
-        "POINT",
-        "LINE",
-        "AREA",
-      ],
-      tTypeIndex: Number.parseInt(this.fromStorage("tTypeIndex", "0"), 10),
+      /** @type {MortarType[]} */
+      mortarTypes: this.postScriptum ? Utils.getPSMortarTypes() : Utils.getSquadMortarTypes(),
 
-      /* PostScriptum exclusive */
-      mortarTypes: [
-        ["GER 8cm", PS_8CM_VELOCITY, PS_8CM_MAX_DISTANCE],
-        ["BRIT 4″", PS_4INCH_VELOCITY, PS_4INCH_MAX_DISTANCE],
-        ["BRIT 3″", PS_3INCH_VELOCITY, PS_3INCH_MAX_DISTANCE],
-      ],
-      mTypeIndex: Number.parseInt(this.fromStorage("mTypeIndex", "0"), 10),
+      mTypeIndex: 0,
+      /** @type {SubtargetsHolder} */
+      subTargetsHolder: undefined,
+      currentSubTarget: 0,
+      targetType: Number.parseInt(this.fromStorage("targetType", TARGET_TYPE.POINT), 10),
     };
   },
   mounted() {
@@ -670,6 +683,11 @@ export default {
     };
 
     this.setupMap();
+    this.subTargetsHolder = new SubtargetsHolder(this.map);
+    this.subTargetsHolder.addOnTargetClickListener((i) => {
+      this.currentSubTarget = i;
+      this.showMenu = false;
+    });
 
     // set selected map, defined already if loaded from localStorage
     if (!this.selectedMap || this.maps.indexOf(this.selectedMap) === -1) {
@@ -709,9 +727,8 @@ export default {
         // zoomSnap: 0, // not needed for new scaling with tile layers
       });
 
-      this.map.on("mousemove", this.onMouseMove, this);
+      // this.map.on("mousemove", this.onMouseMove, this);
       this.map.on("click", this.onMapClick, this);
-      this.map.on("zoomend", this.onZoomEnd, this);
     },
 
     /**
@@ -730,7 +747,6 @@ export default {
       // clear map related objects
       this.mortar = undefined;
       this.target = undefined;
-      this.targetSecondary = undefined;
       this.placedTargets = [];
       this.placedMortars = [];
       this.placedFobs = [];
@@ -791,54 +807,33 @@ export default {
 
       this.squadMap = squadMap;
     },
-    onSwipe(direction) {
-      console.debug("onSwipe", direction);
-      switch (direction) {
-        case ("Right"):
-          this.currentSubTarget =
-            this.currentSubTarget > 0 ? this.currentSubTarget - 1 : this.currentSubTarget;
-          break;
-        case ("Left"):
-          this.currentSubTarget =
-            this.currentSubTarget < this.aSubTargets.length ? this.currentSubTarget + 1 : this.currentSubTarget;
-          break;
-        default:
-          break;
-      }
-    },
-    onZoomEnd() {
-      this.aSubTargets.forEach((subTarget) => {
-        subTarget.mapLayer.setRadius(SUBTARGET_RADIUS[this.map.getZoom()]);
-      });
-      console.log("onZoomEnd:", this.map.getZoom());
-    },
-    /**
-     * Handles "mousemove" events on leaflet map
-     * @param e "mousemove" event
-     */
-    onMouseMove(e) {
-      console.debug("onMouseMove:", e);
-
-      // we don't want to show the indicator if any of the markers are being dragged
-      // so we clear showKeypadTimeout (so that the indicator is not shown) and return early
-      if (this.dragging) {
-        this.showKeypadTimeout = undefined;
-        return;
-      }
-
-
-      // format position as keypad for bottom left corner
-      this.mouseKeypad = getKP(e.latlng.lat, e.latlng.lng);
-
-      // black magic to only have bottom left keypad indicator shown for 1 second
-      if (this.showKeypadTimeout) {
-        clearTimeout(this.showKeypadTimeout);
-      }
-      this.showKeypadTimeout = setTimeout(() => {
-        console.log("clearing showKeypadTimeout MOVE", this.showKeypadTimeout);
-        this.showKeypadTimeout = undefined;
-      }, 1000);
-    },
+    // /**
+    //  * Handles "mousemove" events on leaflet map
+    //  * @param e "mousemove" event
+    //  */
+    // onMouseMove(e) {
+    //   console.debug("onMouseMove:", e);
+    //
+    //   // we don't want to show the indicator if any of the markers are being dragged
+    //   // so we clear showKeypadTimeout (so that the indicator is not shown) and return early
+    //   if (this.dragging) {
+    //     this.showKeypadTimeout = undefined;
+    //     return;
+    //   }
+    //
+    //
+    //   // format position as keypad for bottom left corner
+    //   this.mouseKeypad = Utils.getKP(e.latlng.lat, e.latlng.lng);
+    //
+    //   // black magic to only have bottom left keypad indicator shown for 1 second
+    //   if (this.showKeypadTimeout) {
+    //     clearTimeout(this.showKeypadTimeout);
+    //   }
+    //   this.showKeypadTimeout = setTimeout(() => {
+    //     console.log("clearing showKeypadTimeout MOVE", this.showKeypadTimeout);
+    //     this.showKeypadTimeout = undefined;
+    //   }, 1000);
+    // },
     /**
      * Handles "click" events on leaflet map
      * @param e "click" event
@@ -886,7 +881,7 @@ export default {
       // string -> keypad string e.g. A03-1-1 -> convert to LatLng
       // Array -> "raw" LatLng -> convert to LatLng
       if (typeof pos === "string") {
-        pos = getPos(pos);
+        pos = Utils.getPos(pos);
       } else if (Array.isArray(pos)) {
         pos = new LatLng(pos);
       }
@@ -896,337 +891,455 @@ export default {
         case PIN_TYPE.MORTAR:
           // check placed pins. if pin exists already, just move it
           for (let i = 0; i < this.placedMortars.length; i += 1) {
-            if (this.colors.pin.mortar[urlIndex] === this.placedMortars[i].pUrl) {
+            if (this.colors.pin.mortar[urlIndex] === this.placedMortars[i].pinUrl) {
               this.placedMortars[i].pos = pos;
+
+              // automatically put it as main mortar for calculations
               this.mortar = this.placedMortars[i];
               return;
             }
           }
-          pin = new PinHolder(
-            type, this.colors.pin.mortar[urlIndex], this.pinSize,
-            this.postScriptum ? this.currentMType[2] : SQUAD_MAX_DISTANCE, // use max distance of current mortar for PS
+          // no pin was found, so we create it
+          pin = new MortarPin(
+            this.map, pos, PinHolder.createIcon(this.colors.pin.mortar[urlIndex], this.pinSize),
+            true, this.mortarType.maxDistance,
           );
           this.placedMortars.push(pin);
           this.mortar = pin;
           break;
         case PIN_TYPE.TARGET:
+          // check placed pins. if pin exists already, just move it
           for (let i = 0; i < this.placedTargets.length; i += 1) {
-            if (this.colors.pin.target[urlIndex] === this.placedTargets[i].pUrl) {
+            if (this.colors.pin.target[urlIndex] === this.placedTargets[i].pinUrl) {
               this.placedTargets[i].pos = pos;
-              if (this.secondaryTarget !== undefined && this.placedTargets[i].pUrl === this.secondaryTarget.pUrl) {
-                this.secondaryTarget = this.placedTargets[i];
-              } else {
+
+              // we found a matching target and moved it
+              // if this target is neither the current primary or secondary target,
+              // we set the current primary target as secondary, and this one as the new primary target
+              if (this.placedTargets[i] !== this.target && this.placedTargets[i] !== this.secondaryTarget) {
+                this.secondaryTarget = this.target;
                 this.target = this.placedTargets[i];
               }
               return;
             }
           }
-          pin = new PinHolder(type, this.colors.pin.target[urlIndex], this.pinSize);
+          // no pin was found, so we create it
+          pin = new TargetPin(this.map, pos, PinHolder.createIcon(this.colors.pin.target[urlIndex], this.pinSize));
           this.placedTargets.push(pin);
-          if (this.tTypeIndex > TARGET_TYPE.POINT && this.target !== undefined) {
-            this.secondaryTarget = pin;
-          } else {
-            this.target = pin;
+
+          // if there currently is a primary target, we set is as secondary,
+          // and the new pin becomes the primary target.
+          if (this.target) {
+            this.secondaryTarget = this.target;
           }
+          this.target = pin;
           break;
         case PIN_TYPE.FOB:
+          // check placed pins. if pin exists already, just move it
           for (let i = 0; i < this.placedFobs.length; i += 1) {
-            if (this.colors.pin.fob[urlIndex] === this.placedFobs[i].pUrl) {
+            if (this.colors.pin.fob[urlIndex] === this.placedFobs[i].pinUrl) {
               this.placedFobs[i].pos = pos;
               return;
             }
           }
-          pin = new PinHolder(type, this.colors.pin.fob[urlIndex], this.pinSize);
+          // no pin was found, so we create it
+          pin = new FobPin(this.map, pos, PinHolder.createIcon(this.colors.pin.fob[urlIndex], this.pinSize));
           this.placedFobs.push(pin);
           break;
         default:
           console.error(`Unrecognized pin type ${type}!`); // should never happen
       }
 
-      // no a few things we do on all types of pin
+      // now a few things we do on all types of pin
       if (pin) {
         pin.addOnDragStartListener(this.onDragStartListener);
         pin.addOnDragEndListener(this.onDragEndListener);
         console.log("setting new pin at position:", pos);
-        pin.pos = pos;
-        pin.addTo(this.map);
+        // pin.pos = pos;
+        // pin.addTo(this.map);
+        pin.show();
       }
-    },
-    drawSecondaryLine() {
-      console.log("drawSecondaryLines()");
-      this.clearSecondaryLines();
-      if (this.advancedMode && this.target && this.secondaryTarget) {
-        if (this.tTypeIndex === TARGET_TYPE.LINE) { // Line target type
-          const line = new Polyline([this.target.pos, this.secondaryTarget.pos], {
-            color: "#3333ff",
-            interactive: false,
-            clickable: false, // legacy support
-          });
-          if (!this.map.hasLayer(line)) {
-            this.secondaryLine = line;
-            this.map.addLayer(line);
-          }
-        }
-        if (this.tTypeIndex === TARGET_TYPE.AREA) { // Area target type
-          const rectangle = new Rectangle(
-            [
-              [this.target.pos.lat, this.target.pos.lng],
-              [this.secondaryTarget.pos.lat, this.secondaryTarget.pos.lng],
-            ],
-            { color: "#3333ff", weight: 1 },
-          );
-          if (!this.map.hasLayer(rectangle)) {
-            this.secondaryLine = rectangle;
-            this.map.addLayer(rectangle);
-          }
-        }
-      }
-    },
-    calcDistBetween2Pos(posA, posB) {
-      const a = posA.lat - posB.lat;
-      const b = posA.lng - posB.lng;
-
-      return Math.sqrt(a * a + b * b);
-    },
-    calcBearingBetween2Pos(posA, posB) {
-      // oh no, vector maths!
-      let bearing = Math.atan2(posB.lng - posA.lng, posB.lat - posA.lat) * 180 / Math.PI;
-      bearing = (Math.round((180 - bearing) * 10) / 10) % 360;
-
-      return bearing;
-    },
-    coordMortar(mortar, target) {
-      const s = mortar.pos;
-      const e = target.pos;
-
-      const bearing = this.calcBearingBetween2Pos(s, e);
-      const dist = this.calcDistBetween2Pos(s, e);
-
-      // now we get the height and calculate the difference
-      const mortarHeight = this.squadMap.hasHeightmap ? this.squadMap.getHeightmapHolder().getHeight(s.lng, s.lat) : 0;
-      const targetHeight = this.squadMap.hasHeightmap ? this.squadMap.getHeightmapHolder().getHeight(e.lng, e.lat) : 0;
-
-      const hDelta = targetHeight - mortarHeight;
-      const mVelocity = this.postScriptum ? this.currentMType[1] : SQUAD_VELOCITY;
-      const elevation = calcMortarAngle(dist, hDelta, mVelocity);
-
-      const newC = {
-        bearing,
-        elevation,
-        dist,
-        hDelta,
-      };
-
-      return newC;
     },
     /**
-     * Calculates mortar settings.
+     * Draws or move the primary line from start (s) to end (e).
      *
-     * @param {PinHolder} mortar - mortar pin
-     * @param {PinHolder} target - target pin
-     * @param {Boolean} delayUpdate - whether or not to delay updating values for DOM
+     * @param {LatLng} s - starting position
+     * @param {LatLng} e - ending position
      */
-    calcMortar(mortar, target, delayUpdate = true) {
-      console.log("calcMortar", [mortar, target]);
-
-      const s = mortar.pos;
-      const e = target.pos;
-
-      // create or move the line
-      if (!this.distLine) {
-        this.distLine = new Polyline([s, e], {
+    drawPrimaryLine(s, e) {
+      console.log("drawPrimaryLine:", s.toString(), e.toString());
+      if (!this.primaryLine) {
+        this.primaryLine = new Polyline([s, e], {
           color: "#4caf50",
           interactive: false,
           clickable: false, // legacy support
         });
       } else {
-        this.distLine.setLatLngs([s, e]);
+        this.primaryLine.setLatLngs([s, e]);
       }
-
-      // new this.c object before setting it
-      const newC = this.coordMortar(mortar, target);
 
       // isNaN is used as elevation might be NaN
-      this.distLine.setStyle({
-        color: Number.isNaN(newC.elevation) || newC.elevation > 1580 || newC.elevation < 800 ? "#f44336" : "#4caf50",
+      const ele = this.mortarSettings.elevation;
+      this.primaryLine.setStyle({
+        color: Number.isNaN(ele) || ele > 1580 || ele < 800 ? "#f44336" : "#4caf50",
       });
 
-      // add to map if it isn't shown yet
-      if (!this.map.hasLayer(this.distLine)) {
-        this.map.addLayer(this.distLine);
-      }
-
-      if (this.calcTimeout) { clearTimeout(this.calcTimeout); }
-
-      // if we want to delay the calc update, we set a timer that will set this.c
-      if (delayUpdate) {
-        this.calcTimeout = setTimeout(() => {
-          this.c = newC;
-        }, 250);
-      } else {
-        this.c = newC;
+      if (!this.map.hasLayer(this.primaryLine)) {
+        this.map.addLayer(this.primaryLine);
       }
     },
-    calcMortarSecondary(mortar, target, delayUpdate = true) {
-      console.log("calcMortarSecondary", [mortar, target]);
+    /**
+     * Draws or move the secondary line from start (s) to end (e).
+     *
+     * @param {LatLng} s - starting position
+     * @param {LatLng} e - ending position
+     */
+    drawFireLine(s = this.secondaryTarget.pos, e = this.target.pos) {
+      console.log("drawFireLine:", s.toString(), e.toString());
 
-      const newC = this.coordMortar(mortar, target);
-
-      this.drawSecondaryLine();
-      if (this.calcTimeout) { clearTimeout(this.calcTimeout); }
-
-      // if we want to delay the calc update, we set a timer that will set this.c
-      if (delayUpdate) {
-        this.calcTimeout = setTimeout(() => {
-          this.c2 = newC;
-          this.calcSubTargets();
-        }, 250);
+      if (!this.fireLine) {
+        this.fireLine = new Polyline([s, e], {
+          color: "#4caf50",
+          interactive: false,
+          clickable: false, // legacy support
+        });
       } else {
-        this.c2 = newC;
-        this.calcSubTargets();
+        this.fireLine.setLatLngs([s, e]);
+      }
+
+      // isNaN is used as elevation might be NaN
+      // const ele = this.mortarSettings.elevation;
+      // this.fireLine.setStyle({
+      //   color: Number.isNaN(ele) || ele > 1580 || ele < 800 ? "#f44336" : "#4caf50",
+      // });
+
+      if (!this.map.hasLayer(this.fireLine)) {
+        this.map.addLayer(this.fireLine);
       }
     },
+
+    drawFireArea(s = this.secondaryTarget.pos, e = this.target.pos) {
+      console.log("drawFireArea:", s.toString(), e.toString());
+
+      if (!this.fireArea) {
+        this.fireArea = new Rectangle(new LatLngBounds(s, e), {
+          // color: "#4caf50",
+          interactive: false,
+          clickable: false, // legacy support
+        });
+      } else {
+        this.fireArea.setBounds(new LatLngBounds(s, e));
+      }
+
+      // isNaN is used as elevation might be NaN
+      // const ele = this.mortarSettings.elevation;
+      // this.fireLine.setStyle({
+      //   color: Number.isNaN(ele) || ele > 1580 || ele < 800 ? "#f44336" : "#4caf50",
+      // });
+
+      if (!this.map.hasLayer(this.fireArea)) {
+        this.map.addLayer(this.fireArea);
+      }
+    },
+
+    /**
+     * Draws or move the secondary line from start (s) to end (e).
+     *
+     * @param {LatLng} s - starting position
+     * @param {LatLng} e - ending position
+     */
+    drawSubTargetLine(s = this.mortar.pos, e = this.subTargetsHolder.targets[this.currentSubTarget].pos) {
+      console.log("drawSubTargetLine()");
+      if (!this.subTargetLine) {
+        this.subTargetLine = new Polyline([s, e], {
+          color: "#4caf50",
+          interactive: false,
+          clickable: false, // legacy support
+        });
+      } else {
+        this.subTargetLine.setLatLngs([s, e]);
+      }
+
+      // isNaN is used as elevation might be NaN
+      const ele = this.mortarSettings.elevation;
+      this.subTargetLine.setStyle({
+        color: Number.isNaN(ele) || ele > 1580 || ele < 800 ? "#f44336" : "#4caf50",
+      });
+
+      if (!this.map.hasLayer(this.subTargetLine)) {
+        this.map.addLayer(this.subTargetLine);
+      }
+    },
+    calcMortarSettings(mPos, tPos) {
+      const mHeight =
+        this.squadMap.hasHeightmap ? this.squadMap.getHeightmapHolder().getHeight(mPos.lng, mPos.lat) : 0;
+      const tHeight =
+        this.squadMap.hasHeightmap ? this.squadMap.getHeightmapHolder().getHeight(tPos.lng, tPos.lat) : 0;
+
+      const dHeight = tHeight - mHeight;
+      const mVel = this.mortarType.velocity;
+      this.mortarSettings = Utils.getMortarSettings(mPos, tPos, mVel, dHeight);
+    },
+
+    // coordMortar(mortar, target) {
+    //   const s = mortar.pos;
+    //   const e = target.pos;
+    //
+    //   const bearing = this.calcBearingBetween2Pos(s, e);
+    //   const dist = this.calcDistBetween2Pos(s, e);
+    //
+    //   // now we get the height and calculate the difference
+    //   const mortarHeight =
+    // this.squadMap.hasHeightmap ? this.squadMap.getHeightmapHolder().getHeight(s.lng, s.lat) : 0;
+    //   const targetHeight =
+    // this.squadMap.hasHeightmap ? this.squadMap.getHeightmapHolder().getHeight(e.lng, e.lat) : 0;
+    //
+    //   const hDelta = targetHeight - mortarHeight;
+    //   const mVelocity = this.postScriptum ? this.currentMType[1] : SQUAD_VELOCITY;
+    //   const elevation = calcMortarAngle(dist, hDelta, mVelocity);
+    //
+    //   const newC = {
+    //     bearing,
+    //     elevation,
+    //     dist,
+    //     hDelta,
+    //   };
+    //
+    //   return newC;
+    // },
+    // /**
+    //  * Calculates mortar settings.
+    //  *
+    //  * @param {__PinHolder} mortar - mortar pin
+    //  * @param {__PinHolder} target - target pin
+    //  * @param {Boolean} delayUpdate - whether or not to delay updating values for DOM
+    //  */
+    // calcMortar(mortar, target, delayUpdate = true) {
+    //   console.log("calcMortar", [mortar, target]);
+    //
+    //   const mPos = mortar.pos;
+    //   const tPos = target.pos;
+    //
+    //   // create or move the line
+    //   // if (!this.distLine) {
+    //   //   this.distLine = new Polyline([s, e], {
+    //   //     color: "#4caf50",
+    //   //     interactive: false,
+    //   //     clickable: false, // legacy support
+    //   //   });
+    //   // } else {
+    //   //   this.distLine.setLatLngs([s, e]);
+    //   // }
+    //
+    //   // // new this.c object before setting it
+    //   // const newC = this.coordMortar(mortar, target);
+    //
+    //   const mHeight =
+    //     this.squadMap.hasHeightmap ? this.squadMap.getHeightmapHolder().getHeight(mPos.lng, mPos.lat) : 0;
+    //   const tHeight =
+    //     this.squadMap.hasHeightmap ? this.squadMap.getHeightmapHolder().getHeight(tPos.lng, tPos.lat) : 0;
+    //
+    //   const dHeight = tHeight - mHeight;
+    //   const mVel = this.postScriptum ? this.currentMType[1] : SQUAD_VELOCITY;
+    //   const settings = Utils.getMortarSettings(mPos, tPos, mVel, dHeight);
+    //
+    //   // isNaN is used as elevation might be NaN
+    //   // this.distLine.setStyle({
+    //   //     color: Number.isNaN(newC.elevation) || newC.elevation > 1580 || newC.elevation < 800
+    //   //       ? "#f44336" : "#4caf50",
+    //   // });
+    //
+    //   // add to map if it isn't shown yet
+    //   // if (!this.map.hasLayer(this.distLine)) {
+    //   //   this.map.addLayer(this.distLine);
+    //   // }
+    //
+    //   if (this.calcTimeout) { clearTimeout(this.calcTimeout); }
+    //
+    //   // if we want to delay the calc update, we set a timer that will set this.c
+    //   if (delayUpdate) {
+    //     this.calcTimeout = setTimeout(() => {
+    //       this.mortarSettings = settings;
+    //     }, 250);
+    //   } else {
+    //     this.mortarSettings = settings;
+    //   }
+    // },
+    // calcMortarSecondary(mortar, target, delayUpdate = true) {
+    //   console.log("calcMortarSecondary", [mortar, target]);
+    //
+    //   const mPos = mortar.pos;
+    //   const tPos = target.pos;
+    //
+    //   const mHeight =
+    // this.squadMap.hasHeightmap ? this.squadMap.getHeightmapHolder().getHeight(mPos.lng, mPos.lat) : 0;
+    //   const tHeight =
+    // this.squadMap.hasHeightmap ? this.squadMap.getHeightmapHolder().getHeight(tPos.lng, tPos.lat) : 0;
+    //
+    //   const dHeight = tHeight - mHeight;
+    //
+    //   const mVel = this.postScriptum ? this.currentMType[1] : SQUAD_VELOCITY;
+    //   const settings = Utils.getMortarSettings(mPos, tPos, mVel, dHeight);
+    //
+    //   this.drawSecondaryLine();
+    //   if (this.calcTimeout) { clearTimeout(this.calcTimeout); }
+    //
+    //   // if we want to delay the calc update, we set a timer that will set this.c
+    //   if (delayUpdate) {
+    //     this.calcTimeout = setTimeout(() => {
+    //       this.c2 = settings;
+    //       this.calcSubTargets();
+    //     }, 250);
+    //   } else {
+    //     this.c2 = settings;
+    //     this.calcSubTargets();
+    //   }
+    // },
 
     // Return min and max lat and lng from 2 position
     // Return the A B C D points of the shape formed by the boundaries :
     // A --- B
     // |     |
     // D --- C
-    getCoordsBoundaries(posA, posB) {
-      const boundaries = {
-        minLat: posA.lat <= posB.lat ? posA.lat : posB.lat,
-        maxLat: posA.lat > posB.lat ? posA.lat : posB.lat,
-        minLng: posA.lng <= posB.lng ? posA.lng : posB.lng,
-        maxLng: posA.lng > posB.lng ? posA.lng : posB.lng,
-      };
-      boundaries.posA = new LatLng(boundaries.minLat, boundaries.minLng);
-      boundaries.posB = new LatLng(boundaries.maxLat, boundaries.minLng);
-      boundaries.posC = new LatLng(boundaries.maxLat, boundaries.maxLng);
-      boundaries.posD = new LatLng(boundaries.minLat, boundaries.maxLng);
-      return boundaries;
-    },
-    removeSubTargets() {
-      this.aSubTargets.forEach((subtarget) => {
-        if (this.map.hasLayer(subtarget.mapLayer)) {
-          this.map.removeLayer(subtarget.mapLayer);
-        }
-      });
-      this.aSubTargets = [];
-      this.currentSubTarget = 0;
-      this.warningTooMuchSubTargets = false;
-    },
-    addSubtarget(coords) {
-      const subTargetIndex = this.aSubTargets.length;
-      const pos = new LatLng(coords.lat, coords.lng);
-      const color = Number.isNaN(coords.elevation)
-       || coords.elevation > 1580 || coords.elevation < 800 ? "#f44336" : "#4caf50";
-      const subTarget = {
-        pos,
-        coords: {
-          bearing: coords.bearing,
-          elevation: coords.elevation,
-          DOMBearing: this.formatDOMBearing(coords.bearing),
-          DOMElevation: this.formatDOMElevation(coords.elevation),
-        },
-        mapLayer: new Circle(pos, {
-          color: subTargetIndex === this.currentSubTarget ? "#3333ff" : color,
-          fillColor: color,
-          weight: 3,
-          fillOpacity: 1,
-          radius: SUBTARGET_RADIUS[this.map.getZoom()],
-          bubblingMouseEvents: false,
-          subTargetIndex, // additionnal options in order to handle easily click event
-          app: this, // additionnal options in order to handle easily click event
-        }),
-      };
-      if (!this.map.hasLayer(subTarget.mapLayer)) {
-        subTarget.mapLayer.on("click", this.clickOnSubTargetLayer);
-        this.map.addLayer(subTarget.mapLayer);
-      }
-      this.aSubTargets.push(subTarget);
-    },
-    clickOnSubTargetLayer(e) {
-      console.log("click on subTarget", e.target.options.subTargetIndex);
-      e.target.options.app.currentSubTarget = e.target.options.subTargetIndex;
-    },
-    calcSubTargets() {
-      this.removeSubTargets();
-      if (this.tTypeIndex === TARGET_TYPE.LINE && this.target && this.secondaryTarget) {
-        const distBetween2Rounds = SUBTARGET_ROUND_SPACING[this.secondaryRoundsSpacing];
-        const distBetweenTargets = this.calcDistBetween2Pos(this.target.pos, this.secondaryTarget.pos);
-        const interval = distBetweenTargets / distBetween2Rounds;
-        const latVariation = (this.secondaryTarget.pos.lat - this.target.pos.lat) / interval;
-        const lngVariation = (this.secondaryTarget.pos.lng - this.target.pos.lng) / interval;
-
-        if (interval + 2 > MAX_SUBTARGETS_COUNT) {
-          this.warningTooMuchSubTargets = true;
-          return;
-        }
-        this.addSubtarget({
-          lat: this.target.pos.lat,
-          lng: this.target.pos.lng,
-          bearing: this.c.bearing,
-          elevation: this.c.elevation,
-        });// First shot is fixed
-
-        const point = {};
-        let coord;
-        for (let i = 1; i <= interval; i++) { // Interval shots are computed
-          point.pos = new LatLng(this.target.pos.lat + (latVariation * i), this.target.pos.lng + (lngVariation * i));
-          coord = this.coordMortar(this.mortar, point);
-          this.addSubtarget({
-            lat: point.pos.lat,
-            lng: point.pos.lng,
-            bearing: coord.bearing,
-            elevation: coord.elevation,
-          });
-        }
-
-        this.addSubtarget({
-          lat: this.secondaryTarget.pos.lat,
-          lng: this.secondaryTarget.pos.lng,
-          bearing: this.c2.bearing,
-          elevation: this.c2.elevation,
-        });// Last shot is fixed
-        console.log("calcSubTargets", this.aSubTargets);
-      }
-      if (this.tTypeIndex === TARGET_TYPE.AREA && this.target && this.secondaryTarget) {
-        const distBetween2Rounds = SUBTARGET_ROUND_SPACING[this.secondaryRoundsSpacing];
-        const boundaries = this.getCoordsBoundaries(this.target.pos, this.secondaryTarget.pos);
-        const latDist = this.calcDistBetween2Pos(boundaries.posA, boundaries.posB);
-        const lngDist = this.calcDistBetween2Pos(boundaries.posA, boundaries.posD);
-        const latInterval = latDist / distBetween2Rounds;
-        const lngInterval = lngDist / distBetween2Rounds;
-        const latVariation = (boundaries.posB.lat - boundaries.posA.lat) / latInterval;
-        const lngVariation = (boundaries.posD.lng - boundaries.posA.lng) / lngInterval;
-        const nbSubTargetApprx = latInterval * lngInterval;
-        const point = {};
-        let coord;
-        if (nbSubTargetApprx > MAX_SUBTARGETS_COUNT) {
-          this.warningTooMuchSubTargets = true;
-          return;
-        }
-        for (let i = boundaries.posA.lat; i <= boundaries.posB.lat; i += latVariation) {
-          for (let j = boundaries.posA.lng; j <= boundaries.posD.lng; j += lngVariation) {
-            point.pos = new LatLng(i, j);
-            coord = this.coordMortar(this.mortar, point);
-            this.addSubtarget({
-              lat: point.pos.lat,
-              lng: point.pos.lng,
-              bearing: coord.bearing,
-              elevation: coord.elevation,
-            });
-          }
-        }
-        console.log("calcSubTargets", this.aSubTargets);
-      }
-    },
+    // getCoordsBoundaries(posA, posB) {
+    //   const boundaries = {
+    //     minLat: posA.lat <= posB.lat ? posA.lat : posB.lat,
+    //     maxLat: posA.lat > posB.lat ? posA.lat : posB.lat,
+    //     minLng: posA.lng <= posB.lng ? posA.lng : posB.lng,
+    //     maxLng: posA.lng > posB.lng ? posA.lng : posB.lng,
+    //   };
+    //   boundaries.posA = new LatLng(boundaries.minLat, boundaries.minLng);
+    //   boundaries.posB = new LatLng(boundaries.maxLat, boundaries.minLng);
+    //   boundaries.posC = new LatLng(boundaries.maxLat, boundaries.maxLng);
+    //   boundaries.posD = new LatLng(boundaries.minLat, boundaries.maxLng);
+    //   return boundaries;
+    // },
+    // removeSubTargets() {
+    //   this.aSubTargets.forEach((subtarget) => {
+    //     if (this.map.hasLayer(subtarget.mapLayer)) {
+    //       this.map.removeLayer(subtarget.mapLayer);
+    //     }
+    //   });
+    //   this.aSubTargets = [];
+    //   this.currentSubTarget = 0;
+    //   this.warningTooMuchSubTargets = false;
+    // },
+    // addSubtarget(coords) {
+    //   const subTargetIndex = this.aSubTargets.length;
+    //   const pos = new LatLng(coords.lat, coords.lng);
+    //   const color = Number.isNaN(coords.elevation)
+    //    || coords.elevation > 1580 || coords.elevation < 800 ? "#f44336" : "#4caf50";
+    //   const subTarget = {
+    //     pos,
+    //     coords: {
+    //       bearing: coords.bearing,
+    //       elevation: coords.elevation,
+    //       DOMBearing: this.formatDOMBearing(coords.bearing),
+    //       DOMElevation: this.formatDOMElevation(coords.elevation),
+    //     },
+    //     mapLayer: new Circle(pos, {
+    //       color: subTargetIndex === this.currentSubTarget ? "#3333ff" : color,
+    //       fillColor: color,
+    //       weight: 3,
+    //       fillOpacity: 1,
+    //       radius: SUBTARGET_RADIUS[this.map.getZoom()],
+    //       bubblingMouseEvents: false,
+    //       subTargetIndex, // additionnal options in order to handle easily click event
+    //       app: this, // additionnal options in order to handle easily click event
+    //     }),
+    //   };
+    //   if (!this.map.hasLayer(subTarget.mapLayer)) {
+    //     subTarget.mapLayer.on("click", this.clickOnSubTargetLayer);
+    //     this.map.addLayer(subTarget.mapLayer);
+    //   }
+    //   this.aSubTargets.push(subTarget);
+    // },
+    // clickOnSubTargetLayer(e) {
+    //   console.log("click on subTarget", e.target.options.subTargetIndex);
+    //   e.target.options.app.currentSubTarget = e.target.options.subTargetIndex;
+    // },
+    // calcSubTargets() {
+    //   this.removeSubTargets();
+    //   if (this.tTypeIndex === TARGET_TYPE.LINE && this.target && this.secondaryTarget) {
+    //     const distBetween2Rounds = SUBTARGET_ROUND_SPACING[this.secondaryRoundsSpacing];
+    //     const distBetweenTargets = this.calcDistBetween2Pos(this.target.pos, this.secondaryTarget.pos);
+    //     const interval = distBetweenTargets / distBetween2Rounds;
+    //     const latVariation = (this.secondaryTarget.pos.lat - this.target.pos.lat) / interval;
+    //     const lngVariation = (this.secondaryTarget.pos.lng - this.target.pos.lng) / interval;
+    //
+    //     if (interval + 2 > MAX_SUBTARGETS_COUNT) {
+    //       this.warningTooMuchSubTargets = true;
+    //       return;
+    //     }
+    //     this.addSubtarget({
+    //       lat: this.target.pos.lat,
+    //       lng: this.target.pos.lng,
+    //       bearing: this.mortarSettings.bearing,
+    //       elevation: this.mortarSettings.elevation,
+    //     });// First shot is fixed
+    //
+    //     const point = {};
+    //     let coord;
+    //     for (let i = 1; i <= interval; i++) { // Interval shots are computed
+    //       point.pos = new LatLng(this.target.pos.lat + (latVariation * i), this.target.pos.lng + (lngVariation * i));
+    //       coord = this.coordMortar(this.mortar, point);
+    //       this.addSubtarget({
+    //         lat: point.pos.lat,
+    //         lng: point.pos.lng,
+    //         bearing: coord.bearing,
+    //         elevation: coord.elevation,
+    //       });
+    //     }
+    //
+    //     this.addSubtarget({
+    //       lat: this.secondaryTarget.pos.lat,
+    //       lng: this.secondaryTarget.pos.lng,
+    //       bearing: this.c2.bearing,
+    //       elevation: this.c2.elevation,
+    //     });// Last shot is fixed
+    //     console.log("calcSubTargets", this.aSubTargets);
+    //   }
+    //   if (this.tTypeIndex === TARGET_TYPE.AREA && this.target && this.secondaryTarget) {
+    //     const distBetween2Rounds = SUBTARGET_ROUND_SPACING[this.secondaryRoundsSpacing];
+    //     const boundaries = this.getCoordsBoundaries(this.target.pos, this.secondaryTarget.pos);
+    //     const latDist = this.calcDistBetween2Pos(boundaries.posA, boundaries.posB);
+    //     const lngDist = this.calcDistBetween2Pos(boundaries.posA, boundaries.posD);
+    //     const latInterval = latDist / distBetween2Rounds;
+    //     const lngInterval = lngDist / distBetween2Rounds;
+    //     const latVariation = (boundaries.posB.lat - boundaries.posA.lat) / latInterval;
+    //     const lngVariation = (boundaries.posD.lng - boundaries.posA.lng) / lngInterval;
+    //     const nbSubTargetApprx = latInterval * lngInterval;
+    //     const point = {};
+    //     let coord;
+    //     if (nbSubTargetApprx > MAX_SUBTARGETS_COUNT) {
+    //       this.warningTooMuchSubTargets = true;
+    //       return;
+    //     }
+    //     for (let i = boundaries.posA.lat; i <= boundaries.posB.lat; i += latVariation) {
+    //       for (let j = boundaries.posA.lng; j <= boundaries.posD.lng; j += lngVariation) {
+    //         point.pos = new LatLng(i, j);
+    //         coord = this.coordMortar(this.mortar, point);
+    //         this.addSubtarget({
+    //           lat: point.pos.lat,
+    //           lng: point.pos.lng,
+    //           bearing: coord.bearing,
+    //           elevation: coord.elevation,
+    //         });
+    //       }
+    //     }
+    //     console.log("calcSubTargets", this.aSubTargets);
+    //   }
+    // },
     /**
      * Remove an already placed mortar, specified by its index in placedMortars
-     * @param {Number} i - index of mortar in placedMortars
+     * @param {Number|MortarPin} i - index of mortar in placedMortars, or MortarPin object
      */
     removeMortar(i) {
       console.log("removeMortar:", i);
+      // if i is the pin object, we change it to the index
+      if (i instanceof MortarPin) {
+        i = this.placedMortars.indexOf(i);
+      }
       const tMortar = this.placedMortars[i];
       this.placedMortars.splice(i, 1);
       if (tMortar === this.mortar) {
@@ -1237,14 +1350,18 @@ export default {
         }
       }
 
-      tMortar.removeFrom(this.map);
+      tMortar.hide();
     },
     /**
      * Remove an already placed target, specified by its index in placedTargets
-     * @param {Number} i - index of target in placedTargets
+     * @param {Number|TargetPin} i - index of target in placedTargets, or TargetPin object
      */
     removeTarget(i) {
       console.log("removeTarget:", i);
+      // if i is the pin object, we change it to the index
+      if (i instanceof TargetPin) {
+        i = this.placedTargets.indexOf(i);
+      }
       const tTarget = this.placedTargets[i];
       this.placedTargets.splice(i, 1);
       if (tTarget === this.target) {
@@ -1252,30 +1369,30 @@ export default {
           this.target = this.placedTargets[i === 0 ? 0 : i - 1];
           if (this.target.pUrl === this.secondaryTarget.pUrl) {
             this.secondaryTarget = undefined;
-            this.removeSubTargets();
-            this.drawSecondaryLine();
+            // this.removeSubTargets();
+            // this.drawSecondaryLine();
           }
         } else {
           this.target = undefined;
           this.secondaryTarget = undefined;
-          this.removeSubTargets();
-          this.drawSecondaryLine();
+          // this.removeSubTargets();
+          // this.drawSecondaryLine();
         }
       } else if (tTarget === this.secondaryTarget) {
         this.secondaryTarget = undefined;
-        this.removeSubTargets();
-        this.drawSecondaryLine();
+        // this.removeSubTargets();
+        // this.drawSecondaryLine();
       }
-      tTarget.removeFrom(this.map);
+      tTarget.hide();
     },
     formatDOMElevation(elevation) {
       if (Number.isNaN(elevation) || elevation > 1580 || elevation < 800) {
         return "XXXX.Xmil";
       }
-      return `${pad((Math.round(elevation * 10) / 10).toFixed(1), 6)}mil`;
+      return `${Utils.pad((Math.round(elevation * 10) / 10).toFixed(1), 6)}mil`;
     },
     formatDOMBearing(bearing) {
-      return `${pad((Math.round(bearing * 10) / 10).toFixed(1), 5)}°`;
+      return `${Utils.pad((Math.round(bearing * 10) / 10).toFixed(1), 5)}°`;
     },
     /**
      * Remove an already placed fob, specified by its index in placedFobs
@@ -1334,15 +1451,28 @@ export default {
       window.open("https://github.com/Endebert/squadmc", "_blank");
     },
 
-    clearSecondaryLines() {
-      if (this.secondaryLine !== undefined) {
-        this.map.removeLayer(this.secondaryLine);
-        this.secondaryLine = undefined;
+    clearPrimaryLine() {
+      if (this.primaryLine && this.map.hasLayer(this.primaryLine)) {
+        this.map.removeLayer(this.primaryLine);
       }
     },
 
-    getRoundsSpacing(index) {
-      return this.secondaryRoundsSpacing[index];
+    clearFireLine() {
+      if (this.fireLine && this.map.hasLayer(this.fireLine)) {
+        this.map.removeLayer(this.fireLine);
+      }
+    },
+
+    clearFireArea() {
+      if (this.fireArea && this.map.hasLayer(this.fireArea)) {
+        this.map.removeLayer(this.fireArea);
+      }
+    },
+
+    clearSubTargetLine() {
+      if (this.subTargetLine && this.map.hasLayer(this.subTargetLine)) {
+        this.map.removeLayer(this.subTargetLine);
+      }
     },
 
     /**
@@ -1371,11 +1501,74 @@ export default {
     },
     onDragEndListener() {
       this.dragging = false;
+      this.calcAndUpdate();
+      // if (this.mortar && this.target) {
+      //   // this.calcMortar(this.mortar, this.target, false);
+      //   // if (this.secondaryTarget) {
+      //   //   this.calcMortarSecondary(this.mortar, this.secondaryTarget, false);
+      //   // }
+      // }
+    },
+    calcAndUpdate() {
+      console.log("calcAndUpdate", this.mortar, this.target, this.secondaryTarget);
       if (this.mortar && this.target) {
-        this.calcMortar(this.mortar, this.target, false);
-        if (this.secondaryTarget) {
-          this.calcMortarSecondary(this.mortar, this.secondaryTarget, false);
+        // handle line/area fire
+        if (this.targetType !== TARGET_TYPE.POINT && this.secondaryTarget) {
+          this.clearPrimaryLine();
+          // this.subTargetsHolder.genLineFire(this.secondaryTarget.pos, this.target.pos, this.subTargetSpacing);
+          // this.subTargetsHolder.showAll();
+          console.log("subTargets:", this.subTargetsHolder.targets.length, this.subTargetsHolder.targets);
+          console.log("currentSubTarget:", this.currentSubTarget);
+          const cSubTargetPos = this.subTargetsHolder.targets[this.currentSubTarget].pos;
+          this.calcMortarSettings(this.mortar.pos, cSubTargetPos);
+
+          // draw lines
+          // this.drawPrimaryLine(this.mortar.pos, this.target.pos);
+          // this.drawSecondaryLine(this.mortar.pos, this.secondaryTarget.pos);
+          console.log("this.subTargetsHolder.targets[0]:", cSubTargetPos);
+          if (this.targetType === TARGET_TYPE.LINE) {
+            this.clearFireArea();
+            this.drawFireLine();
+          } else {
+            this.clearFireLine();
+            this.drawFireArea();
+          }
+          this.drawSubTargetLine(this.mortar.pos, cSubTargetPos);
+        } else {
+          this.clearFireLine();
+          this.clearFireArea();
+          this.clearSubTargetLine();
+          this.subTargetsHolder.hideAll();
+          this.calcMortarSettings(this.mortar.pos, this.target.pos);
+          this.drawPrimaryLine(this.mortar.pos, this.target.pos);
         }
+      } else {
+        this.clearPrimaryLine();
+        this.clearFireLine();
+        this.clearFireArea();
+        this.clearSubTargetLine();
+        this.subTargetsHolder.hideAll();
+      }
+    },
+    updateSubTargets() {
+      if (this.mortar && this.target && this.secondaryTarget && this.targetType !== TARGET_TYPE.POINT) {
+        // this.removeSubTargets();
+        // this.calcMortarSecondary(this.mortar, this.secondaryTarget, this.delayCalcUpdate);
+        switch (this.targetType) {
+          case TARGET_TYPE.LINE:
+            this.subTargetsHolder.genLineFire(this.secondaryTarget.pos, this.target.pos, this.subTargetSpacing);
+            break;
+          case TARGET_TYPE.AREA:
+            this.subTargetsHolder.genAreaFire(this.secondaryTarget.pos, this.target.pos, this.subTargetSpacing);
+            break;
+          default:
+            console.log("Trying invoke subTargetsHolder for target type:", this.targetType);
+            break;
+        }
+        this.currentSubTarget = Math.min(this.currentSubTarget, this.subTargetsHolder.targets.length - 1);
+        this.subTargetsHolder.showAll();
+      } else {
+        // this.clearSecondaryLines();
       }
     },
 
@@ -1390,7 +1583,7 @@ export default {
       let gotError = false;
       try {
         // fails when keypad is invalid
-        getPos(kp);
+        Utils.getPos(kp);
       } catch (e) {
         // keypad is invalid, set error state of textField based on type
         gotError = true;
@@ -1404,7 +1597,7 @@ export default {
 
       // formatKeyPad() should never fail, so we return it
       try {
-        return formatKeyPad(kp);
+        return Utils.formatKeyPad(kp);
       } catch (e) {
         // but just in case, we return initial value on error
         return kp;
@@ -1475,48 +1668,34 @@ export default {
      */
     "mortar.pos": function mortarPosWatcher() {
       console.log("mortarPosWatcher");
-      if (this.mortar && this.target) {
-        this.calcMortar(this.mortar, this.target, this.delayCalcUpdate);
-        this.removeSubTargets();
-        this.calcMortarSecondary(this.mortar, this.secondaryTarget, this.delayCalcUpdate);
-      } else if (this.map.hasLayer(this.distLine)) {
-        this.map.removeLayer(this.distLine);
-      }
+      this.updateSubTargets();
+      this.calcAndUpdate();
     },
     /**
      * Triggers calculation on position change of active target
      */
     "target.pos": function targetPosWatcher() {
       console.log("targetPosWatcher");
-      if (this.mortar && this.target) {
-        this.calcMortar(this.mortar, this.target, this.delayCalcUpdate);
-        this.removeSubTargets();
-        this.drawSecondaryLine();
-      } else if (this.map.hasLayer(this.distLine)) {
-        this.map.removeLayer(this.distLine);
-      }
+      this.updateSubTargets();
+      this.calcAndUpdate();
     },
     "secondaryTarget.pos": function secondaryTargetPosWatcher() {
       console.log("secondaryTargetPosWatcher");
-      if (this.mortar && this.target && this.secondaryTarget) {
-        this.removeSubTargets();
-        this.calcMortarSecondary(this.mortar, this.secondaryTarget, this.delayCalcUpdate);
-      } else {
-        this.clearSecondaryLines();
-      }
+      this.updateSubTargets();
+      this.calcAndUpdate();
     },
     warningTooMuchSubTargets(b) {
       console.log("warningTooMuchSubTargets", b);
-      if (this.secondaryLine) {
-        this.secondaryLine.setStyle({
+      if (this.fireLine) {
+        this.fireLine.setStyle({
           color: b ? "#ff3333" : "#3333ff",
         });
       }
     },
     /**
      * let new active mortar know that it is active now (in order to show min and max range circles)
-     * @param {PinHolder} newM - new active mortar
-     * @param {PinHolder} oldM - old active mortar
+     * @param {__PinHolder} newM - new active mortar
+     * @param {__PinHolder} oldM - old active mortar
      */
     mortar(newM, oldM) {
       console.log("mortar:", [newM, oldM]);
@@ -1529,11 +1708,13 @@ export default {
         newM.setActive(true, this.map);
       }
     },
-    secondaryRoundsSpacing(i) {
+    subTargetSpacing(i) {
       this.toStorage("secondaryRoundsSpacing", i);
-      if (this.advancedMode && this.target && this.secondaryTarget && this.tTypeIndex > TARGET_TYPE.POINT) {
-        this.calcSubTargets();
-      }
+      this.updateSubTargets();
+      this.calcAndUpdate();
+      // if (this.advancedMode && this.target && this.secondaryTarget && this.targetType !== TARGET_TYPE.POINT) {
+      //   this.calcSubTargets();
+      // }
     },
     /**
      * Resets map when advancedMode is disabled (fixes orphaned markers)
@@ -1550,7 +1731,7 @@ export default {
           this.removeTarget(0);
         }
         // set targetType to point
-        this.tTypeIndex = 0;
+        // this.targetType = TARGET_TYPE.POINT;
       }
       this.toStorage("advancedMode", b);
     },
@@ -1564,8 +1745,8 @@ export default {
       console.log("pinSize:", newSize);
       this.placedMortars.forEach((marker) => {
         marker.size = newSize;
-        marker.removeFrom(this.map);
-        marker.addTo(this.map);
+        // marker.removeFrom(this.map);
+        // marker.addTo(this.map);
       });
       this.placedTargets.forEach((marker) => {
         marker.size = newSize;
@@ -1605,37 +1786,46 @@ export default {
     hideLoadingBar(b) {
       this.toStorage("hideLoadingBar", b);
     },
-    tTypeIndex(newIndex) {
-      this.toStorage("tTypeIndex", newIndex);
-      this.placedTargets.forEach((marker) => {
-        if (marker.sUrl !== this.target.sUrl) {
-          this.secondaryTarget = marker;
-        }
+
+    /**
+     * Updates maxDistance of placed mortars.
+     *
+     * @param {MortarType} mType - mortar type
+     * */
+    mortarType(mType) {
+      this.placedMortars.forEach((m) => {
+        m.setMaxDistance(mType.maxDistance);
       });
-      if (newIndex === TARGET_TYPE.POINT) {
-        this.removeSubTargets();
-        this.clearSecondaryLines();
-        this.secondaryTarget = undefined;
-      } else {
-        this.drawSecondaryLine();
-        this.calcSubTargets();
-      }
     },
 
-    currentSubTarget(index) {
-      let color = NaN;
-      console.log("Selected subTarget", this.aSubTargets[index]);
-      for (let i = 0; i < this.aSubTargets.length; i++) { // reset all subtargets colors
-        color = Number.isNaN(this.aSubTargets[i].coords.elevation)
-          || this.aSubTargets[i].coords.elevation > 1580
-          || this.aSubTargets[i].coords.elevation < 800 ? "#f44336" : "#4caf50";
-        this.aSubTargets[i].mapLayer.setStyle({
-          color: i === index ? "#3333ff" : color, // except currently selected subtarget
-          fillColor: color,
-        });
-      }
+    /**
+     * @param {TARGET_TYPE} tType - target type, one of TARGET_TYPE enum
+     */
+    targetType(tType) {
+      this.updateSubTargets();
+      this.calcAndUpdate();
+      this.toStorage("targetType", tType);
+    },
+    // tTypeIndex(newIndex) {
+    //   this.toStorage("tTypeIndex", newIndex);
+    //   this.placedTargets.forEach((marker) => {
+    //     if (marker.sUrl !== this.target.sUrl) {
+    //       this.secondaryTarget = marker;
+    //     }
+    //   });
+    //   if (newIndex === TARGET_TYPE.POINT) {
+    //     this.removeSubTargets();
+    //     this.clearSecondaryLines();
+    //     this.secondaryTarget = undefined;
+    //   } else {
+    //     this.drawSecondaryLine();
+    //     this.calcSubTargets();
+    //   }
+    // },
 
-      this.toStorage("currentSubTarget", index);
+    currentSubTarget(index) {
+      console.log("currentSubTarget:", index);
+      this.calcAndUpdate();
     },
 
     /* PostScriptum exclusive */
@@ -1645,17 +1835,7 @@ export default {
      * and updates placed mortar markers to display correct the max distance.
      */
     mTypeIndex(newIndex) {
-      const newMaxDist = this.currentMType[2];
-      this.placedMortars.forEach((m) => {
-        m.setMaxDistance(newMaxDist);
-      });
-
-      if (this.mortar && this.target) {
-        this.calcMortar(this.mortar, this.target);
-        if (this.secondaryTarget) {
-          this.calcMortarSecondary(this.mortar, this.secondaryTarget);
-        }
-      }
+      this.calcAndUpdate();
       this.toStorage("mTypeIndex", newIndex);
     },
   },
@@ -1665,62 +1845,53 @@ export default {
      * @return {String} formatted string
      */
     DOMbearing() {
-      return this.formatDOMBearing(this.c.bearing);
+      return this.formatDOMBearing(this.mortarSettings.bearing);
     },
     /**
      * Returns formatted elevation string for DOM element
      * @return {String} formatted string
      */
     DOMelevation() {
-      return this.formatDOMElevation(this.c.elevation);
+      return this.formatDOMElevation(this.mortarSettings.elevation);
     },
     /**
      * Returns formatted dist string for DOM element
      * @return {String} formatted string
      */
     DOMdist() {
-      return `↔${pad(Math.round(this.c.dist), 4)}m`;
+      return `↔${Utils.pad(Math.round(this.mortarSettings.dist), 4)}m`;
     },
     /**
-     * Returns formatted hDelta string for DOM element
+     * Returns formatted dHeight string for DOM element
      * @return {String} formatted string
      */
     DOMhDelta() {
-      if (this.c.hDelta > 0) {
-        return `↕+${pad(Math.round(this.c.hDelta), 3)}m`;
+      if (this.mortarSettings.dHeight > 0) {
+        return `↕+${Utils.pad(Math.round(this.mortarSettings.dHeight), 3)}m`;
       }
-      return `↕-${pad(Math.round(-this.c.hDelta), 3)}m`;
-    },
-
-    DOMminbearing() {
-      const minBearing = this.c.bearing <= this.c2.bearing ? this.c.bearing : this.c2.bearing;
-      return this.formatDOMBearing(minBearing);
-    },
-
-    DOMmaxbearing() {
-      const maxBearing = this.c.bearing >= this.c2.bearing ? this.c.bearing : this.c2.bearing;
-      return this.formatDOMBearing(maxBearing);
-    },
-    DOMminelevation() {
-      const minElevation = this.c.elevation <= this.c2.elevation ? this.c.elevation : this.c2.elevation;
-      return this.formatDOMElevation(minElevation);
-    },
-    DOMmaxelevation() {
-      const maxElevation = this.c.elevation >= this.c2.elevation ? this.c.elevation : this.c2.elevation;
-      return this.formatDOMElevation(maxElevation);
+      return `↕-${Utils.pad(Math.round(-this.mortarSettings.dHeight), 3)}m`;
     },
 
     /* PostScriptum exclusive */
 
+    // /**
+    //  * Returns the current mortar Type array based on mTypeIndex.
+    //  * @returns {Array} 3-element array containing mortar name, velocity, and max distance
+    //  */
+    // currentMType() {
+    //   return this.mortarTypes[this.mTypeIndex];
+    // },
+    // currentTType() {
+    //   return this.targetTypes[this.tTypeIndex];
+    // },
+
     /**
-     * Returns the current mortar Type array based on mTypeIndex.
-     * @returns {Array} 3-element array containing mortar name, velocity, and max distance
+     * Returns current mortar type as MortarType instance.
+     *
+     * @return {MortarType}
      */
-    currentMType() {
+    mortarType() {
       return this.mortarTypes[this.mTypeIndex];
-    },
-    currentTType() {
-      return this.targetTypes[this.tTypeIndex];
     },
   },
 };
