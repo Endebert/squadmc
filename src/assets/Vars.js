@@ -26,7 +26,7 @@ export const PS_4INCH_MAX_DISTANCE = 2601;
 
 export const GRAVITY = 9.8;
 export const MIL_TO_DEG_FACTOR = 360 / 6400;
-export const MAX_SUBTARGETS_COUNT = 50;
+export const MAX_SUBTARGETS_COUNT = 49;
 
 /**
  * @enum {number}
@@ -71,3 +71,12 @@ PIN_MAP[PIN_TYPE.FOB] = [
   ["/img/svg/fob_pin.svg", "/img/svg/fob_symbol.svg", "#212121"],
 ];
 export { PIN_MAP };
+
+export const COLORS = Object.freeze({
+  IN_RANGE: "#1B5E20",
+  OUT_OF_RANGE: "#B71C1C",
+  LINE_FIRE: "#F57F17",
+  AREA_FIRE: "#F57F17",
+  SUBTARGET: "#01579B",
+  SUBTARGET_SELECTED: "#F57F17",
+});

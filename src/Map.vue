@@ -1,44 +1,317 @@
 <template>
 <v-app dark>
-  <v-toolbar
-      app
-      dense
-      fixed
-      clipped-left
-  >
-    <v-toolbar-side-icon @click.stop="drawer = !drawer">
-      <v-icon>menu</v-icon>
-    </v-toolbar-side-icon>
-    <img src="/img/svg/icon.svg" width="40px">
-    <v-toolbar-title>
-      <v-select
-          :items="maps"
-          :loading="!hideLoadingBar && loading"
-          append-icon="map"
-          single-line
-          v-model="selectedMap"
-          item-value="text"
-          max-height="90%"
-          hide-details
-      ></v-select>
-    </v-toolbar-title>
-  </v-toolbar>
+  <!--CONTENT PLANE-->
+  <v-content class="absolute-layer">
+
+    <!--WRAPPER DIV-->
+    <div class="absolute-layer" style="display: flex; flex-direction: column;">
+
+      <!--MAP LAYERS-->
+      <div style="display: flex; flex: 1 0 auto; position: relative">
+
+
+        <div class="absolute-layer">
+          <!--this div is at the top of the content plane and contains the toolbar and the quickmode buttons.
+          it wrap the quickmode buttons below the toolbar, when there is not enough space.-->
+          <div class="mt-3" style="position: absolute; left: 0; right: 0; display: flex; flex: 1 0 auto; flex-wrap: wrap">
+
+            <!--FLOATING TOOLBAR-->
+            <div style="display: flex; flex: 0 1 auto; align-items: baseline">
+              <v-toolbar
+                  dense
+                  floating
+                  style="z-index: 1"
+              >
+                <v-toolbar-side-icon @click.stop="drawer = !drawer">
+                  <v-icon>menu</v-icon>
+                </v-toolbar-side-icon>
+                <img src="/img/svg/icon.svg" width="40px">
+                <v-toolbar-title>
+                  <v-select
+                      :items="maps"
+                      :loading="!hideLoadingBar && loading"
+                      append-icon="map"
+                      single-line
+                      v-model="selectedMap"
+                      item-value="text"
+                      max-height="90%"
+                      hide-details
+                  ></v-select>
+                </v-toolbar-title>
+              </v-toolbar>
+            </div>
+
+
+            <!-- QUICK MODE MORTAR/TARGET REMOVE BUTTONS (TOP RIGHT) -->
+            <div v-if="!advancedMode"
+                 class="mr-3" style="display: flex; flex-direction: column; flex: 1 0 auto; align-items: flex-end; z-index: 1">
+              <v-btn icon
+                     style="pointer-events: all" v-if="mortar" class="mt-2" color="grey darken-4" @click="removeMortar(0)">
+                <v-badge color="red" right overlap>
+                  <v-icon slot="badge">clear</v-icon>
+                  <img :src="mortar.symbolUrl" style="width: 36px;">
+                </v-badge>
+              </v-btn>
+              <v-btn icon
+                     style="pointer-events: all" v-if="target" class="mt-2" color="grey darken-4" @click="removeTarget(0)">
+                <v-badge color="red" right overlap>
+                  <v-icon slot="badge">clear</v-icon>
+                  <img :src="target.symbolUrl" style="width: 36px;">
+                </v-badge>
+              </v-btn>
+            </div>
+          </div>
+
+          <!--BOTTOM RIGHT FLOATING ACTION BUTTON-->
+          <v-dialog v-model="placePinVars.dialog" max-width="250" style="position: absolute; right: 0; bottom: 0">
+            <v-btn fab slot="activator" color="primary" style="z-index: 1" class="ma-3">
+              <v-icon style="width: 24px; height: 24px">add</v-icon>
+            </v-btn>
+            <v-card>
+              <v-card-title style="background-color: #212121">Add Mortar/Target</v-card-title>
+              <v-divider></v-divider>
+              <v-card-text class="px-0">
+                <div><p align="center">Press icon buttons to cycle through marker colors</p></div>
+                <v-form>
+                  <v-container>
+                    <v-layout column wrap>
+                      <v-flex>
+                        <v-btn icon color="grey darken-4"
+                               @click="placePinVars.mIndex = (placePinVars.mIndex + 1) % 4"
+                        >
+                          <img :src="colors.symbol.mortar[placePinVars.mIndex]" style="width: 48px;">
+                        </v-btn>
+                        <v-text-field
+                            v-model="placePinVars.mText" :error="placePinVars.mError"
+                            label="Mortar pos" placeholder="A01-3-3-7"
+                            @input="placePinVars.mText = formatKP(placePinVars.mText, PIN_TYPE.MORTAR)"
+                            style="width: min-content; font-family: monospace">
+                        </v-text-field>
+                        <v-btn
+                            icon color="grey darken-4" :disabled="placePinVars.mError || !placePinVars.mText"
+                            @click="placePin(placePinVars.mText, placePinVars.mIndex, PIN_TYPE.MORTAR)"
+                            @click.stop="placePinVars.mText = undefined">
+                          <v-icon>add</v-icon>
+                        </v-btn>
+                      </v-flex>
+                      <v-flex>
+                        <v-btn
+                            icon color="grey darken-4"
+                            @click="placePinVars.tIndex = (placePinVars.tIndex + 1) % 4">
+                          <img :src="colors.symbol.target[placePinVars.tIndex]" style="width: 48px;">
+                        </v-btn>
+                        <v-text-field
+                            v-model="placePinVars.tText" :error="placePinVars.tError"
+                            label="Target pos" placeholder="B13-3-7"
+                            @input="placePinVars.tText = formatKP(placePinVars.tText, PIN_TYPE.TARGET)"
+                            style="width: min-content; font-family: monospace">
+                        </v-text-field>
+                        <v-btn
+                            icon color="grey darken-4"
+                            :disabled="placePinVars.tError || !placePinVars.tText"
+                            @click="placePin(placePinVars.tText, placePinVars.tIndex, PIN_TYPE.TARGET)"
+                            @click.stop="placePinVars.tText = undefined">
+                          <v-icon>add</v-icon>
+                        </v-btn>
+                      </v-flex>
+                    </v-layout>
+                  </v-container>
+                </v-form>
+              </v-card-text>
+              <v-divider></v-divider>
+              <v-card-actions>
+                <v-btn @click.native="placePinVars.dialog = false">Close</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+
+          <!--MORTAR/TARGET/FOB SELECTION POPUP MENU-->
+          <v-menu v-model="showMenu" absolute :open-on-click="false" :position-x="menuPos.x" :position-y="menuPos.y">
+            <v-card style="border: none">
+              <v-content class="pa-0">
+                <v-layout row>
+                  <v-layout column style="border-right: 2px #212121 solid">
+                    <v-btn
+                        icon large v-for="(mUrl, i) in colors.symbol.mortar" :key="i"
+                        @click="placePin(menuLatlng, i, PIN_TYPE.MORTAR)"
+                        style="margin: 2px 2px 2px 2px">
+                      <img :src="mUrl" width="48px">
+                    </v-btn>
+                  </v-layout>
+                  <v-layout column>
+                    <v-btn
+                        icon large v-for="(mUrl, i) in colors.symbol.target" :key="i"
+                        @click="placePin(menuLatlng, i, PIN_TYPE.TARGET)"
+                        style="margin: 2px 2px 2px 2px">
+                      <img :src="mUrl" width="48px">
+                    </v-btn>
+                  </v-layout>
+                  <v-layout column style="border-left: 2px #212121 solid">
+                    <v-btn
+                        icon large v-for="(mUrl, i) in colors.symbol.fob" :key="i"
+                        @click="placePin(menuLatlng, i, PIN_TYPE.FOB)"
+                        style="margin: 2px 2px 2px 2px">
+                      <img :src="mUrl" width="48px">
+                    </v-btn>
+                  </v-layout>
+                </v-layout>
+              </v-content>
+            </v-card>
+          </v-menu>
+
+          <!--CHANGELOG DIALOG-->
+          <v-dialog v-model="changelogDialog" max-width="600px">
+            <v-card>
+              <v-card-text>
+                <Changelog/>
+              </v-card-text>
+              <v-card-actions>
+                <v-btn @click.native="changelogDialog = false">Close</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+        </div>
+
+        <div id="map" class="absolute-layer"  style="z-index: 0"></div>
+      </div>
+
+
+      <!--FOOTER WITH MORTAR SETTINGS-->
+      <v-footer height="auto" v-if="mortar && target" style="display: flex; flex: 0 0 auto">
+        <!--POINT FIRE LAYOUT-->
+        <div class="flex row" v-if="!secondaryTarget || targetType === TARGET_TYPE.POINT">
+          <v-speed-dial>
+            <v-btn icon slot="activator" color="grey darken-3">
+              <img :src="mortar.symbolUrl" style="width: 48px;">
+            </v-btn>
+            <v-btn icon
+                   v-for="(aMortar, index) in placedMortars"
+                   :key="index"
+                   @click="mortar = placedMortars[index]"
+            >
+              <img :src="aMortar.symbolUrl" style="width: 48px;">
+            </v-btn>
+          </v-speed-dial>
+          <v-icon small>arrow_forward</v-icon>
+          <v-speed-dial v-if="target">
+            <v-btn icon slot="activator" color="grey darken-3">
+              <img :src="target.symbolUrl" style="width: 48px;">
+            </v-btn>
+            <v-btn icon
+                   v-for="(aTarget, index) in placedTargets"
+                   :key="index"
+                   v-if="secondaryTarget && aTarget.symbolUrl !== secondaryTarget.symbolUrl"
+                   @click="target = placedTargets[index]">
+              <img :src="aTarget.symbolUrl" style="width: 48px;">
+            </v-btn>
+          </v-speed-dial>
+          <table class="font-mono">
+            <tr style="font-size: small; opacity: 0.7" >
+              <td class="px-1" align="right">{{DOMdist}}</td>
+              <td class="px-1" align="left">{{DOMhDelta}}</td>
+            </tr>
+            <tr style="font-size: large">
+              <td class="px-1" align="right">{{DOMbearing}}</td>
+              <td class="px-1" align="left">{{DOMelevation}}</td>
+            </tr>
+          </table>
+        </div>
+
+        <!--LINE/AREA FIRE LAYOUT-->
+        <div v-else class="flex row">
+          <div class="flex column">
+            <div class="flex row">
+              <v-speed-dial>
+                <v-btn icon slot="activator" class="mb-0" color="grey darken-3">
+                  <img :src="mortar.symbolUrl" style="width: 48px;">
+                </v-btn>
+                <v-btn icon
+                       v-for="(aMortar, index) in placedMortars"
+                       :key="index"
+                       @click="mortar = placedMortars[index]"
+                >
+                  <img :src="aMortar.symbolUrl" style="width: 48px;">
+                </v-btn>
+              </v-speed-dial>
+            </div>
+            <div class="flex row">
+              <v-speed-dial v-if="target">
+                <v-btn icon slot="activator" class="mt-0 mr-1" color="grey darken-3">
+                  <img :src="secondaryTarget.symbolUrl" style="width: 48px;">
+                </v-btn>
+                <v-btn icon
+                       v-for="(aTarget, index) in placedTargets"
+                       :key="index"
+                       v-if="aTarget !== target"
+                       @click="secondaryTarget = placedTargets[index]">
+                  <img :src="aTarget.symbolUrl" style="width: 48px;">
+                </v-btn>
+              </v-speed-dial>
+              <div class="font-mono mx-1" style="font-size: large; align-self: flex-start">⊥</div>
+              <v-speed-dial v-if="targetType !== TARGET_TYPE.POINT && secondaryTarget">
+                <v-btn icon slot="activator" class="mt-0 ml-1" color="grey darken-3">
+                  <img :src="target.symbolUrl" style="width: 48px;">
+                </v-btn>
+                <v-btn icon
+                       v-for="(aTarget, index) in placedTargets"
+                       :key="index"
+                       v-if="aTarget !== secondaryTarget"
+                       @click="target = placedTargets[index]">
+                  <img :src="aTarget.symbolUrl" style="width: 48px;">
+                </v-btn>
+              </v-speed-dial>
+            </div>
+          </div>
+          <table class="font-mono">
+            <tr align="center" style="font-size: small; color: #9e9e9e">
+              <td colspan="2">
+                <div class="flex row">
+                  <v-btn icon small class="flex my-1" color="grey darken-3" :disabled="currentSubTarget <= 0">
+                    <v-icon @click="currentSubTarget--">keyboard_arrow_left</v-icon>
+                  </v-btn>
+                  Round {{pad(currentSubTarget + 1, 3)}} / {{pad(subTargetsHolder.targets.length, 3)}}
+                  <v-btn icon small class="flex my-1" color="grey darken-3"
+                         :disabled="currentSubTarget >= subTargetsHolder.targets.length - 1">
+                    <v-icon @click="currentSubTarget++">keyboard_arrow_right</v-icon>
+                  </v-btn>
+                </div>
+              </td>
+            </tr>
+            <tr >
+              <td align="center" style="font-size: large"
+              >{{DOMbearing}} {{DOMelevation}}</td>
+            </tr>
+          </table>
+        </div>
+      </v-footer>
+    </div>
+    <!--HEIGHTMAP CANVAS-->
+    <canvas id="heightmap"></canvas>
+  </v-content>
+
+  <!--FOOTER CONTAINING MORTAR SETTINGS-->
+
+
+  <!--NAVIGATION DRAWER WITH SETTINGS-->
   <v-navigation-drawer
       v-model="drawer"
       fixed
       app
-      clipped
       :touchless="!drawer"
       disable-resize-watcher
       disable-route-watcher
-
+      mobile-break-point="640"
+      style="max-height: 100%"
   >
+    <!--APP TITLE AND CHANGELOG BUTTON-->
     <v-toolbar dense>
       <v-toolbar-title>
         {{postScriptum ? "PostScriptumMC" : "SquadMC"}}
         <v-btn small color="primary" @click.stop="changelogDialog = true" style="min-width: 70px">{{appVersion}}</v-btn>
       </v-toolbar-title>
     </v-toolbar>
+
+    <!--LINK TO GITHUB-->
     <v-list class="pa-0" two-line>
       <v-list-tile @click="openGitHub()">
         <v-list-tile-content>
@@ -54,6 +327,8 @@
       </v-list-tile>
     </v-list>
     <v-divider></v-divider>
+
+    <!--ADVANCED MODE TOGGLE-->
     <v-list class="px-0">
       <v-list-tile>
         <v-list-tile-action>
@@ -75,6 +350,8 @@
       </v-list-tile>
     </v-list>
     <v-divider></v-divider>
+
+    <!--MORTAR TYPE SELECTION-->
     <template v-if="postScriptum">
       <v-list class="pa-0" two-line>
         <v-list-tile>
@@ -90,41 +367,36 @@
       </v-list>
       <v-divider></v-divider>
     </template>
-    <v-list class="pa-0" two-line v-if="advancedMode">
-      <v-list-tile>
-        <v-list-tile-content>
-          <v-list-tile-title>Set target type</v-list-tile-title>
-          <v-list-tile-sub-title>
-            <v-btn-toggle v-model="targetType" mandatory style="display: flex">
-              <v-btn flat v-for="(val, key) in TARGET_TYPE" :key="val"
-                     style="flex: 1 0 0; border: none">{{key}}</v-btn>
-            </v-btn-toggle></v-list-tile-sub-title>
-        </v-list-tile-content>
-      </v-list-tile>
-    </v-list>
-    <template v-if="targetType !== TARGET_TYPE.POINT">
-      <v-list class="pa-0">
-        <v-list-tile>
-          Round Spacing
-          <v-slider v-model="subTargetSpacing" hide-details thumb-label class="pa-0 pr-3"
-                    step="5" min="5" max="50" ticks></v-slider>
-        </v-list-tile>
-        <!--<v-list-tile>-->
-          <!--<v-list-tile-content>-->
-          <!--<v-list-tile-title>Distance between rounds</v-list-tile-title>-->
-          <!--<v-list-tile-sub-title>-->
-          <!--<v-slider v-model="subTargetSpacing" hide-details class="pa-0 pr-3"-->
-          <!--thumb-label style="padding-left: 10px!important;"-->
-          <!--step="5" min="0" max="50" :thumb-size="24" ticks>-->
-          <!--</v-slider>-->
-          <!--</v-list-tile-sub-title>-->
-          <!--</v-list-tile-content>-->
-          <!--<div class="pr-3">Subtarget Spacing</div>-->
 
-        <!--</v-list-tile>-->
+    <!--TARGET TYPE SELECTION-->
+    <template v-if="advancedMode">
+      <v-list class="pa-0" two-line >
+        <v-list-tile>
+          <v-list-tile-content>
+            <v-list-tile-title>Set target type</v-list-tile-title>
+            <v-list-tile-sub-title>
+              <v-btn-toggle v-model="targetType" mandatory style="display: flex">
+                <v-btn flat v-for="(val, key) in TARGET_TYPE" :key="val"
+                       style="flex: 1 0 0; border: none">{{key}}</v-btn>
+              </v-btn-toggle></v-list-tile-sub-title>
+          </v-list-tile-content>
+        </v-list-tile>
       </v-list>
-      <v-divider></v-divider>
+
+      <!--ROUND SPACING SLIDER-->
+      <template v-if="targetType !== TARGET_TYPE.POINT">
+        <v-list class="pa-0">
+          <v-list-tile>
+            Round Spacing
+            <v-slider v-model="subTargetSpacing" hide-details thumb-label class="pa-0 pr-3"
+                      step="5" min="5" max="50" ticks></v-slider>
+          </v-list-tile>
+        </v-list>
+        <v-divider></v-divider>
+      </template>
     </template>
+
+    <!--MAP SETTINGS-->
     <v-list class="pa-0">
       <v-list-group>
         <v-list-tile slot="activator">
@@ -202,6 +474,8 @@
         </v-list-tile>
       </v-list-group>
     </v-list>
+
+    <!--PERFORMANCE SETTINGS-->
     <v-list class="pa-0">
       <v-list-group>
         <v-list-tile slot="activator">
@@ -239,6 +513,8 @@
         </v-list-tile>
       </v-list-group>
     </v-list>
+
+    <!--'REMOVE PINS' SECTION-->
     <v-list>
       <v-list-group :disabled="placedMortars.length + placedFobs.length + placedTargets.length === 0">
         <v-list-tile slot="activator">
@@ -279,246 +555,6 @@
       </v-list-group>
     </v-list>
   </v-navigation-drawer>
-  <v-content class="fixedPos">
-    <div id="map" class="fixedPos"></div>
-  </v-content>
-  <v-content class="fixedPos" style="pointer-events: none;" >
-    <div class="bottom-bar front" style="pointer-events: none;">
-      <div style="display: flex; align-items: flex-end">
-        <div class="ma-2 px-1 secondary font-mono" style="width: fit-content; flex: 0 1 auto"
-             v-if="showKeypadTimeout">{{mouseKeypad}}</div>
-        <div style="display: flex; flex: 1 1 auto; justify-content: flex-end">
-          <v-dialog v-model="placePinVars.dialog" max-width="250">
-            <v-btn fab slot="activator" color="primary" style="pointer-events: all" class="ma-3">
-              <v-icon style="width: 24px; height: 24px">add</v-icon>
-            </v-btn>
-            <v-card>
-              <v-card-title style="background-color: #212121">Add Mortar/Target</v-card-title>
-              <v-divider></v-divider>
-              <v-card-text class="px-0">
-                <div><p align="center">Press icon buttons to cycle through marker colors</p></div>
-                <v-form>
-                  <v-container>
-                    <v-layout column wrap>
-                      <v-flex>
-                        <v-btn icon color="secondary darken-2"
-                               @click="placePinVars.mIndex = (placePinVars.mIndex + 1) % 4"
-                        >
-                          <img :src="colors.symbol.mortar[placePinVars.mIndex]" style="width: 48px;">
-                        </v-btn>
-                        <v-text-field
-                            v-model="placePinVars.mText" :error="placePinVars.mError"
-                            label="Mortar pos" placeholder="A01-3-3-7"
-                            @input="placePinVars.mText = formatKP(placePinVars.mText, PIN_TYPE.MORTAR)"
-                            style="width: min-content; font-family: monospace">
-                        </v-text-field>
-                        <v-btn
-                            icon color="secondary darken-2" :disabled="placePinVars.mError || !placePinVars.mText"
-                            @click="placePin(placePinVars.mText, placePinVars.mIndex, PIN_TYPE.MORTAR)"
-                            @click.stop="placePinVars.mText = undefined">
-                          <v-icon>add</v-icon>
-                        </v-btn>
-                      </v-flex>
-                      <v-flex>
-                        <v-btn
-                            icon color="secondary darken-2"
-                            @click="placePinVars.tIndex = (placePinVars.tIndex + 1) % 4">
-                          <img :src="colors.symbol.target[placePinVars.tIndex]" style="width: 48px;">
-                        </v-btn>
-                        <v-text-field
-                            v-model="placePinVars.tText" :error="placePinVars.tError"
-                            label="Target pos" placeholder="B13-3-7"
-                            @input="placePinVars.tText = formatKP(placePinVars.tText, PIN_TYPE.TARGET)"
-                            style="width: min-content; font-family: monospace">
-                        </v-text-field>
-                        <v-btn
-                            icon color="secondary darken-2"
-                            :disabled="placePinVars.tError || !placePinVars.tText"
-                            @click="placePin(placePinVars.tText, placePinVars.tIndex, PIN_TYPE.TARGET)"
-                            @click.stop="placePinVars.tText = undefined">
-                          <v-icon>add</v-icon>
-                        </v-btn>
-                      </v-flex>
-                    </v-layout>
-                  </v-container>
-                </v-form>
-              </v-card-text>
-              <v-divider></v-divider>
-              <v-card-actions>
-                <v-btn @click.native="placePinVars.dialog = false">Close</v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
-        </div>
-      </div>
-      <div id="my-footer" v-if="mortar && target" style="background-color: #212121;">
-        <div class="flex row" v-if="!secondaryTarget || targetType === TARGET_TYPE.POINT">
-          <v-speed-dial>
-            <v-btn icon slot="activator" class="secondary">
-              <img :src="mortar.symbolUrl" style="width: 48px;">
-            </v-btn>
-            <v-btn icon
-                   v-for="(aMortar, index) in placedMortars"
-                   :key="index"
-                   @click="mortar = placedMortars[index]"
-            >
-              <img :src="aMortar.symbolUrl" style="width: 48px;">
-            </v-btn>
-          </v-speed-dial>
-          <v-icon small>arrow_forward</v-icon>
-          <v-speed-dial v-if="target">
-            <v-btn icon slot="activator" class="secondary">
-              <img :src="target.symbolUrl" style="width: 48px;">
-            </v-btn>
-            <v-btn icon
-                   v-for="(aTarget, index) in placedTargets"
-                   :key="index"
-                   v-if="secondaryTarget && aTarget.symbolUrl !== secondaryTarget.symbolUrl"
-                   @click="target = placedTargets[index]">
-              <img :src="aTarget.symbolUrl" style="width: 48px;">
-            </v-btn>
-          </v-speed-dial>
-          <table class="font-mono">
-            <tr style="font-size: small; opacity: 0.7" >
-              <td class="px-1" align="right">{{DOMdist}}</td>
-              <td class="px-1" align="left">{{DOMhDelta}}</td>
-            </tr>
-            <tr style="font-size: large">
-              <td class="px-1" align="right">{{DOMbearing}}</td>
-              <td class="px-1" align="left">{{DOMelevation}}</td>
-            </tr>
-          </table>
-        </div>
-        <div v-else class="flex row">
-          <div class="flex column">
-            <div class="flex row">
-              <!--<div class="font-mono" style="font-size: large">▼</div>-->
-              <v-speed-dial>
-                <v-btn icon slot="activator" class="secondary mb-0">
-                  <img :src="mortar.symbolUrl" style="width: 48px;">
-                </v-btn>
-                <v-btn icon
-                       v-for="(aMortar, index) in placedMortars"
-                       :key="index"
-                       @click="mortar = placedMortars[index]"
-                >
-                  <img :src="aMortar.symbolUrl" style="width: 48px;">
-                </v-btn>
-              </v-speed-dial>
-            </div>
-            <div class="flex row">
-              <v-speed-dial v-if="target">
-                <v-btn icon slot="activator" class="secondary mt-0 mr-1">
-                  <img :src="secondaryTarget.symbolUrl" style="width: 48px;">
-                </v-btn>
-                <v-btn icon
-                       v-for="(aTarget, index) in placedTargets"
-                       :key="index"
-                       v-if="aTarget !== target"
-                       @click="secondaryTarget = placedTargets[index]">
-                  <img :src="aTarget.symbolUrl" style="width: 48px;">
-                </v-btn>
-              </v-speed-dial>
-              <div class="font-mono mx-1" style="font-size: large; align-self: flex-start">⊥</div>
-              <v-speed-dial v-if="targetType !== TARGET_TYPE.POINT && secondaryTarget">
-                <v-btn icon slot="activator" class="secondary mt-0 ml-1">
-                  <img :src="target.symbolUrl" style="width: 48px;">
-                </v-btn>
-                <v-btn icon
-                       v-for="(aTarget, index) in placedTargets"
-                       :key="index"
-                       v-if="aTarget !== secondaryTarget"
-                       @click="target = placedTargets[index]">
-                  <img :src="aTarget.symbolUrl" style="width: 48px;">
-                </v-btn>
-              </v-speed-dial>
-            </div>
-          </div>
-          <table class="font-mono">
-            <tr align="center" style="font-size: small; color: #9e9e9e">
-              <td colspan="2">
-                <div class="flex row">
-                  <v-btn icon small class="flex my-1 secondary" :disabled="currentSubTarget <= 0">
-                    <v-icon @click="currentSubTarget--">keyboard_arrow_left</v-icon>
-                  </v-btn>
-                  Round {{pad(currentSubTarget + 1, 3)}} / {{pad(subTargetsHolder.targets.length, 3)}}
-                  <v-btn icon small class="flex my-1 secondary"
-                         :disabled="currentSubTarget >= subTargetsHolder.targets.length - 1">
-                    <v-icon @click="currentSubTarget++">keyboard_arrow_right</v-icon>
-                  </v-btn>
-                </div>
-              </td>
-            </tr>
-            <tr >
-              <td align="center" style="font-size: large"
-              >{{DOMbearing}} {{DOMelevation}}</td>
-            </tr>
-          </table>
-        </div>
-      </div>
-    </div>
-  </v-content>
-  <v-content class="fixedPos" style="pointer-events: none" v-if="!advancedMode">
-    <div class="flex column" style="justify-content: flex-start; align-items: flex-start">
-      <div class="flex column pt-2">
-        <v-btn icon style="pointer-events: all" v-if="mortar" class="secondary" @click="removeMortar(0)">
-          <v-badge color="red" right overlap>
-            <v-icon slot="badge">clear</v-icon>
-            <img :src="mortar.symbolUrl" style="width: 36px;">
-          </v-badge>
-        </v-btn>
-        <v-btn icon style="pointer-events: all" v-if="target" class="secondary" @click="removeTarget(0)">
-          <v-badge color="red" right overlap>
-            <v-icon slot="badge">clear</v-icon>
-            <img :src="target.symbolUrl" style="width: 36px;">
-          </v-badge>
-        </v-btn>
-      </div>
-    </div>
-  </v-content>
-  <v-menu v-model="showMenu" absolute :open-on-click="false" :position-x="menuPos.x" :position-y="menuPos.y">
-    <v-card style="border: none">
-      <v-content class="pa-0">
-        <v-layout row>
-          <v-layout column style="border-right: 2px #212121 solid">
-            <v-btn
-                icon large v-for="(mUrl, i) in colors.symbol.mortar" :key="i"
-                @click="placePin(menuLatlng, i, PIN_TYPE.MORTAR)"
-                style="margin: 2px 2px 2px 2px">
-              <img :src="mUrl" width="48px">
-            </v-btn>
-          </v-layout>
-          <v-layout column>
-            <v-btn
-                icon large v-for="(mUrl, i) in colors.symbol.target" :key="i"
-                @click="placePin(menuLatlng, i, PIN_TYPE.TARGET)"
-                style="margin: 2px 2px 2px 2px">
-              <img :src="mUrl" width="48px">
-            </v-btn>
-          </v-layout>
-          <v-layout column style="border-left: 2px #212121 solid">
-            <v-btn
-                icon large v-for="(mUrl, i) in colors.symbol.fob" :key="i"
-                @click="placePin(menuLatlng, i, PIN_TYPE.FOB)"
-                style="margin: 2px 2px 2px 2px">
-              <img :src="mUrl" width="48px">
-            </v-btn>
-          </v-layout>
-        </v-layout>
-      </v-content>
-    </v-card>
-  </v-menu>
-  <v-dialog v-model="changelogDialog" max-width="600px">
-    <v-card>
-      <v-card-text>
-        <Changelog/>
-      </v-card-text>
-      <v-card-actions>
-        <v-btn @click.native="changelogDialog = false">Close</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
-  <canvas id="heightmap"></canvas>
 </v-app>
 </template>
 
@@ -533,6 +569,7 @@ import SquadGrid from "./assets/Leaflet_extensions/SquadGrid";
 import LocationLayer from "./assets/Leaflet_extensions/LocationLayer";
 import * as Utils from "./assets/Utils";
 import {
+  COLORS,
   ICON_SIZE,
   MAX_SUBTARGETS_COUNT,
   PIN_TYPE,
@@ -593,8 +630,10 @@ export default {
 
       /** @type {TargetPin} */
       secondaryTarget: undefined, // secondary target (for line and area target type)
-      subTargetSpacing: Number.parseInt(this.fromStorage("secondaryRoundsSpacing", "0"), 10),
+      subTargetSpacing: Number.parseInt(this.fromStorage("secondaryRoundsSpacing", "50"), 10),
       primaryLine: undefined, // line to primary target
+
+      /** @type {Polyline} */
       fireLine: undefined, // line to secondary target
       fireArea: undefined, // line to secondary target
       subTargetLine: undefined, // line to subTarget
@@ -705,7 +744,7 @@ export default {
       // on mobile safari, map doesn't show if not fixed
       // but if always fixed, persistent navbar is over map on desktop, which is clunky
       // so this is the compromise.
-      if (this.drawer) { document.getElementById("map").style.position = "relative"; }
+      // if (this.drawer) { document.getElementById("map").style.position = "relative"; }
       this.map.invalidateSize();
       if (executions === 0) { clearInterval(interval); }
     }, 250);
@@ -966,11 +1005,11 @@ export default {
      * @param {LatLng} s - starting position
      * @param {LatLng} e - ending position
      */
-    drawPrimaryLine(s, e) {
+    drawPrimaryLine(s, e, inRange = true) {
       console.log("drawPrimaryLine:", s.toString(), e.toString());
       if (!this.primaryLine) {
         this.primaryLine = new Polyline([s, e], {
-          color: "#4caf50",
+          // color: "#4caf50",
           interactive: false,
           clickable: false, // legacy support
         });
@@ -978,14 +1017,14 @@ export default {
         this.primaryLine.setLatLngs([s, e]);
       }
 
-      // isNaN is used as elevation might be NaN
-      const ele = this.mortarSettings.elevation;
       this.primaryLine.setStyle({
-        color: Number.isNaN(ele) || ele > 1580 || ele < 800 ? "#f44336" : "#4caf50",
+        color: inRange ? COLORS.IN_RANGE : COLORS.OUT_OF_RANGE,
       });
 
       if (!this.map.hasLayer(this.primaryLine)) {
         this.map.addLayer(this.primaryLine);
+      } else {
+        this.primaryLine.bringToFront();
       }
     },
     /**
@@ -995,11 +1034,11 @@ export default {
      * @param {LatLng} e - ending position
      */
     drawFireLine(s = this.secondaryTarget.pos, e = this.target.pos) {
-      console.log("drawFireLine:", s.toString(), e.toString());
+      console.log("drawFireLine:", s.toString(), e.toString(), this.fireLine);
 
       if (!this.fireLine) {
         this.fireLine = new Polyline([s, e], {
-          color: "#4caf50",
+          color: COLORS.LINE_FIRE,
           interactive: false,
           clickable: false, // legacy support
         });
@@ -1015,6 +1054,8 @@ export default {
 
       if (!this.map.hasLayer(this.fireLine)) {
         this.map.addLayer(this.fireLine);
+      } else {
+        this.fireLine.bringToFront();
       }
     },
 
@@ -1023,7 +1064,8 @@ export default {
 
       if (!this.fireArea) {
         this.fireArea = new Rectangle(new LatLngBounds(s, e), {
-          // color: "#4caf50",
+          color: COLORS.AREA_FIRE,
+          fill: false,
           interactive: false,
           clickable: false, // legacy support
         });
@@ -1039,6 +1081,8 @@ export default {
 
       if (!this.map.hasLayer(this.fireArea)) {
         this.map.addLayer(this.fireArea);
+      } else {
+        this.fireArea.bringToFront();
       }
     },
 
@@ -1047,12 +1091,17 @@ export default {
      *
      * @param {LatLng} s - starting position
      * @param {LatLng} e - ending position
+     * @param {boolean} inRange - specify if subtarget this line points to is in range or not.
+     *  Colors the line accordingly.
      */
-    drawSubTargetLine(s = this.mortar.pos, e = this.subTargetsHolder.targets[this.currentSubTarget].pos) {
+    drawSubTargetLine(
+      s = this.mortar.pos, e = this.subTargetsHolder.targets[this.currentSubTarget].pos,
+      inRange = true,
+    ) {
       console.log("drawSubTargetLine()");
       if (!this.subTargetLine) {
         this.subTargetLine = new Polyline([s, e], {
-          color: "#4caf50",
+          // color: inRange ? "#4caf50" : "#f44336",
           interactive: false,
           clickable: false, // legacy support
         });
@@ -1060,16 +1109,25 @@ export default {
         this.subTargetLine.setLatLngs([s, e]);
       }
 
-      // isNaN is used as elevation might be NaN
-      const ele = this.mortarSettings.elevation;
       this.subTargetLine.setStyle({
-        color: Number.isNaN(ele) || ele > 1580 || ele < 800 ? "#f44336" : "#4caf50",
+        color: inRange ? COLORS.IN_RANGE : COLORS.OUT_OF_RANGE,
       });
 
       if (!this.map.hasLayer(this.subTargetLine)) {
         this.map.addLayer(this.subTargetLine);
+      } else {
+        this.subTargetLine.bringToFront();
       }
     },
+
+    /**
+     * Calculates the mortar settings based on the given mortar & target positions.
+     *
+     * @param {LatLng} mPos - mortar position
+     * @param {LatLng} tPos - target position
+     * @returns {{bearing: number, elevation: (number|NaN), dist: number, dHeight: number}} - bearing and elevation
+     *  settings required to hit target. Elevation is NaN if target is out of range.
+     */
     calcMortarSettings(mPos, tPos) {
       const mHeight =
         this.squadMap.hasHeightmap ? this.squadMap.getHeightmapHolder().getHeight(mPos.lng, mPos.lat) : 0;
@@ -1078,7 +1136,19 @@ export default {
 
       const dHeight = tHeight - mHeight;
       const mVel = this.mortarType.velocity;
-      this.mortarSettings = Utils.getMortarSettings(mPos, tPos, mVel, dHeight);
+      return Utils.getMortarSettings(mPos, tPos, mVel, dHeight);
+    },
+    setMortarSettings(settings, delayed = this.delayCalcUpdate) {
+      if (delayed) {
+        if (this.delayUpdateTimeout) {
+          clearTimeout(this.delayUpdateTimeout);
+        }
+        this.delayUpdateTimeout = setTimeout(() => {
+          this.mortarSettings = settings;
+        }, 1000 / 4);
+      } else {
+        this.mortarSettings = settings;
+      }
     },
 
     // coordMortar(mortar, target) {
@@ -1501,7 +1571,8 @@ export default {
     },
     onDragEndListener() {
       this.dragging = false;
-      this.calcAndUpdate();
+      this.updateSubTargets(false);
+      this.calcAndUpdate(false);
       // if (this.mortar && this.target) {
       //   // this.calcMortar(this.mortar, this.target, false);
       //   // if (this.secondaryTarget) {
@@ -1509,7 +1580,7 @@ export default {
       //   // }
       // }
     },
-    calcAndUpdate() {
+    calcAndUpdate(delayUpdate = this.delayCalcUpdate) {
       console.log("calcAndUpdate", this.mortar, this.target, this.secondaryTarget);
       if (this.mortar && this.target) {
         // handle line/area fire
@@ -1520,12 +1591,13 @@ export default {
           console.log("subTargets:", this.subTargetsHolder.targets.length, this.subTargetsHolder.targets);
           console.log("currentSubTarget:", this.currentSubTarget);
           const cSubTargetPos = this.subTargetsHolder.targets[this.currentSubTarget].pos;
-          this.calcMortarSettings(this.mortar.pos, cSubTargetPos);
+          const settings = this.calcMortarSettings(this.mortar.pos, cSubTargetPos);
+          this.setMortarSettings(settings, delayUpdate);
 
-          // draw lines
-          // this.drawPrimaryLine(this.mortar.pos, this.target.pos);
-          // this.drawSecondaryLine(this.mortar.pos, this.secondaryTarget.pos);
-          console.log("this.subTargetsHolder.targets[0]:", cSubTargetPos);
+          const ele = settings.elevation;
+          const inRange = !Number.isNaN(ele) && ele <= 1580 && ele >= 800;
+          this.drawSubTargetLine(this.mortar.pos, cSubTargetPos, inRange);
+
           if (this.targetType === TARGET_TYPE.LINE) {
             this.clearFireArea();
             this.drawFireLine();
@@ -1533,14 +1605,17 @@ export default {
             this.clearFireLine();
             this.drawFireArea();
           }
-          this.drawSubTargetLine(this.mortar.pos, cSubTargetPos);
         } else {
           this.clearFireLine();
           this.clearFireArea();
           this.clearSubTargetLine();
           this.subTargetsHolder.hideAll();
-          this.calcMortarSettings(this.mortar.pos, this.target.pos);
-          this.drawPrimaryLine(this.mortar.pos, this.target.pos);
+          const settings = this.calcMortarSettings(this.mortar.pos, this.target.pos);
+          this.setMortarSettings(settings, delayUpdate);
+
+          const ele = settings.elevation;
+          const inRange = !Number.isNaN(ele) && ele <= 1580 && ele >= 800;
+          this.drawPrimaryLine(this.mortar.pos, this.target.pos, inRange);
         }
       } else {
         this.clearPrimaryLine();
@@ -1567,6 +1642,7 @@ export default {
         }
         this.currentSubTarget = Math.min(this.currentSubTarget, this.subTargetsHolder.targets.length - 1);
         this.subTargetsHolder.showAll();
+        this.subTargetsHolder.targets[this.currentSubTarget].setSelected(true);
       } else {
         // this.clearSecondaryLines();
       }
@@ -1711,7 +1787,7 @@ export default {
     subTargetSpacing(i) {
       this.toStorage("secondaryRoundsSpacing", i);
       this.updateSubTargets();
-      this.calcAndUpdate();
+      this.calcAndUpdate(false);
       // if (this.advancedMode && this.target && this.secondaryTarget && this.targetType !== TARGET_TYPE.POINT) {
       //   this.calcSubTargets();
       // }
@@ -1803,7 +1879,7 @@ export default {
      */
     targetType(tType) {
       this.updateSubTargets();
-      this.calcAndUpdate();
+      this.calcAndUpdate(false);
       this.toStorage("targetType", tType);
     },
     // tTypeIndex(newIndex) {
@@ -1823,9 +1899,15 @@ export default {
     //   }
     // },
 
-    currentSubTarget(index) {
-      console.log("currentSubTarget:", index);
-      this.calcAndUpdate();
+    currentSubTarget(newI, oldI) {
+      console.log("currentSubTarget:", [newI, oldI]);
+      try {
+        this.subTargetsHolder.targets[oldI].setSelected(false);
+      } catch (e) {
+        console.warn(`old current subtarget at ${oldI} does not exist anymore`);
+      }
+      this.subTargetsHolder.targets[newI].setSelected(true);
+      this.calcAndUpdate(false);
     },
 
     /* PostScriptum exclusive */
@@ -1835,7 +1917,7 @@ export default {
      * and updates placed mortar markers to display correct the max distance.
      */
     mTypeIndex(newIndex) {
-      this.calcAndUpdate();
+      this.calcAndUpdate(false);
       this.toStorage("mTypeIndex", newIndex);
     },
   },
@@ -1953,8 +2035,8 @@ body::-webkit-scrollbar {
 #map {
   cursor: crosshair;
   z-index: 0;
-  width: 100%;
-  height: 100%;
+  /*width: 100%;*/
+  /*height: 100%;*/
 }
 
 #heightmap {
@@ -1997,5 +2079,10 @@ body::-webkit-scrollbar {
 /* for bottom bar to work in safari 8*/
 .content--wrap {
   height: 100%!important;
+}
+
+.absolute-layer {
+  position: absolute;
+  top: 0; bottom: 0; left: 0; right: 0;
 }
 </style>
