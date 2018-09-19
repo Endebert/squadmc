@@ -786,6 +786,7 @@ export default {
       // clear map related objects
       this.mortar = undefined;
       this.target = undefined;
+      this.secondaryTarget = undefined;
       this.placedTargets = [];
       this.placedMortars = [];
       this.placedFobs = [];
