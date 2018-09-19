@@ -27,7 +27,7 @@
                 </v-toolbar-side-icon>
                 <!--<img src="/img/svg/icon.svg" width="40px">-->
                 <v-toolbar-title>
-                  <v-select
+                  <v-select class="pa-0"
                       :items="maps"
                       :loading="!hideLoadingBar && loading"
                       append-icon="map"
