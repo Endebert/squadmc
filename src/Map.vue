@@ -13,7 +13,8 @@
         <div class="absolute-layer">
           <!--this div is at the top of the content plane and contains the toolbar and the quickmode buttons.
           it wrap the quickmode buttons below the toolbar, when there is not enough space.-->
-          <div class="mt-3" style="position: absolute; left: 0; right: 0; display: flex; flex: 1 0 auto; flex-wrap: wrap">
+          <div class="mt-3"
+               style="position: absolute; left: 0; right: 0; display: flex; flex: 1 0 auto; flex-wrap: wrap">
 
             <!--FLOATING TOOLBAR-->
             <div style="display: flex; flex: 0 1 auto; align-items: baseline">
@@ -44,16 +45,19 @@
 
             <!-- QUICK MODE MORTAR/TARGET REMOVE BUTTONS (TOP RIGHT) -->
             <div v-if="!advancedMode"
-                 class="mr-2" style="display: flex; flex-direction: column; flex: 1 0 auto; align-items: flex-end; z-index: 1">
+                 class="mr-2"
+                 style="display: flex; flex-direction: column; flex: 1 0 auto; align-items: flex-end; z-index: 1">
               <v-btn icon
-                     style="pointer-events: all" v-if="mortar" class="mt-2" color="grey darken-4" @click="removeMortar(0)">
+                     @click="removeMortar(0)"
+                     style="pointer-events: all" v-if="mortar" class="mt-2" color="grey darken-4">
                 <v-badge color="red" right overlap>
                   <v-icon slot="badge">clear</v-icon>
                   <img :src="mortar.symbolUrl" style="width: 36px;">
                 </v-badge>
               </v-btn>
               <v-btn icon
-                     style="pointer-events: all" v-if="target" class="mt-2" color="grey darken-4" @click="removeTarget(0)">
+                     @click="removeTarget(0)"
+                     style="pointer-events: all" v-if="target" class="mt-2" color="grey darken-4">
                 <v-badge color="red" right overlap>
                   <v-icon slot="badge">clear</v-icon>
                   <img :src="target.symbolUrl" style="width: 36px;">
@@ -63,7 +67,8 @@
           </div>
 
           <!--BOTTOM LEFT MOUSE KEYPAD-->
-          <div class="ma-3 px-1 grey darken-4 font-mono elevation-1" style="z-index: 1; position: absolute; left: 0; bottom: 0" v-if="showKeypadTimeout">
+          <div class="ma-3 px-1 grey darken-4 font-mono elevation-1"
+               style="z-index: 1; position: absolute; left: 0; bottom: 0" v-if="showKeypadTimeout">
             {{mouseKeypad}}
           </div>
 
@@ -647,6 +652,7 @@ export default {
 
       /** @type {Polyline} */
       fireLine: undefined, // line to secondary target
+      /** @type {Rectangle} */
       fireArea: undefined, // line to secondary target
       subTargetLine: undefined, // line to subTarget
       aSubTargets: [], // list of precomputed subtargets (for line and area target)
@@ -668,28 +674,28 @@ export default {
 
       /** @type {MortarPin[]} */
       placedMortars: [], // mortars currently on map
+      /** @type {TargetPin[]} */
       placedTargets: [], // targets currently on map
+      /** @type {FobPin[]} */
       placedFobs: [], // fobs currently on map
 
+      /** @type {Point} */
       menuPos: new Point(500, 500), // x:y position set just before click menu is shown
+      /** @type {LatLng} */
       menuLatlng: undefined, // same position but in latlng
+      /** @type {SquadMap} */
       squadMap: undefined, // class that holds current map, see SquadMap class
       loading: true,
 
       // values for mortar settings, distance, etc.
       mortarSettings: {
-        bearing: undefined,
-        elevation: undefined,
-        dist: undefined,
-
         /** @type {number} */
-        dHeight: undefined,
-      },
-      // secondaries values for mortar settings, distance, etc.
-      c2: {
         bearing: undefined,
+        /** @type {number} */
         elevation: undefined,
+        /** @type {number} */
         dist: undefined,
+        /** @type {number} */
         dHeight: undefined,
       },
       MAX_SUBTARGETS_COUNT, // max amount of subtargets to avoid perfs issues
@@ -848,10 +854,8 @@ export default {
       }
 
       console.log("setting up map layer");
-
       this.map.addLayer(layer); // finally add the map
-
-      this.map.setView(squadMap.bounds.getCenter());
+      this.map.setView(squadMap.bounds.getCenter()); // center view
 
       // hack to properly align map and squadgrid
       // eslint-disable-next-line no-underscore-dangle
@@ -1017,6 +1021,7 @@ export default {
      *
      * @param {LatLng} s - starting position
      * @param {LatLng} e - ending position
+     * @param {boolean} [inRange] - whether or not target is in range (determines line color)
      */
     drawPrimaryLine(s, e, inRange = true) {
       console.log("drawPrimaryLine:", s.toString(), e.toString());
@@ -1041,10 +1046,10 @@ export default {
       }
     },
     /**
-     * Draws or move the secondary line from start (s) to end (e).
+     * Draws or moves the secondary line from start (s) to end (e).
      *
-     * @param {LatLng} s - starting position
-     * @param {LatLng} e - ending position
+     * @param {LatLng} [s] - starting position
+     * @param {LatLng} [e] - ending position
      */
     drawFireLine(s = this.secondaryTarget.pos, e = this.target.pos) {
       console.log("drawFireLine:", s.toString(), e.toString(), this.fireLine);
@@ -1071,7 +1076,12 @@ export default {
         this.fireLine.bringToFront();
       }
     },
-
+    /**
+     * Draws or moves a rectangle between start (s) and end (e).
+     *
+     * @param {LatLng} s - starting position
+     * @param {LatLng} e - ending position
+     */
     drawFireArea(s = this.secondaryTarget.pos, e = this.target.pos) {
       console.log("drawFireArea:", s.toString(), e.toString());
 
@@ -1100,12 +1110,11 @@ export default {
     },
 
     /**
-     * Draws or move the secondary line from start (s) to end (e).
+     * Draws or moves a line specifically for subTargets of Line/Area fire, from start (s) to end (e).
      *
-     * @param {LatLng} s - starting position
-     * @param {LatLng} e - ending position
-     * @param {boolean} inRange - specify if subtarget this line points to is in range or not.
-     *  Colors the line accordingly.
+     * @param {LatLng} [s] - starting position
+     * @param {LatLng} [e] - ending position
+     * @param {boolean} [inRange] - whether or not target is in range (determines line color)
      */
     drawSubTargetLine(
       s = this.mortar.pos, e = this.subTargetsHolder.targets[this.currentSubTarget].pos,
@@ -1164,255 +1173,6 @@ export default {
       }
     },
 
-    // coordMortar(mortar, target) {
-    //   const s = mortar.pos;
-    //   const e = target.pos;
-    //
-    //   const bearing = this.calcBearingBetween2Pos(s, e);
-    //   const dist = this.calcDistBetween2Pos(s, e);
-    //
-    //   // now we get the height and calculate the difference
-    //   const mortarHeight =
-    // this.squadMap.hasHeightmap ? this.squadMap.getHeightmapHolder().getHeight(s.lng, s.lat) : 0;
-    //   const targetHeight =
-    // this.squadMap.hasHeightmap ? this.squadMap.getHeightmapHolder().getHeight(e.lng, e.lat) : 0;
-    //
-    //   const hDelta = targetHeight - mortarHeight;
-    //   const mVelocity = this.postScriptum ? this.currentMType[1] : SQUAD_VELOCITY;
-    //   const elevation = calcMortarAngle(dist, hDelta, mVelocity);
-    //
-    //   const newC = {
-    //     bearing,
-    //     elevation,
-    //     dist,
-    //     hDelta,
-    //   };
-    //
-    //   return newC;
-    // },
-    // /**
-    //  * Calculates mortar settings.
-    //  *
-    //  * @param {__PinHolder} mortar - mortar pin
-    //  * @param {__PinHolder} target - target pin
-    //  * @param {Boolean} delayUpdate - whether or not to delay updating values for DOM
-    //  */
-    // calcMortar(mortar, target, delayUpdate = true) {
-    //   console.log("calcMortar", [mortar, target]);
-    //
-    //   const mPos = mortar.pos;
-    //   const tPos = target.pos;
-    //
-    //   // create or move the line
-    //   // if (!this.distLine) {
-    //   //   this.distLine = new Polyline([s, e], {
-    //   //     color: "#4caf50",
-    //   //     interactive: false,
-    //   //     clickable: false, // legacy support
-    //   //   });
-    //   // } else {
-    //   //   this.distLine.setLatLngs([s, e]);
-    //   // }
-    //
-    //   // // new this.c object before setting it
-    //   // const newC = this.coordMortar(mortar, target);
-    //
-    //   const mHeight =
-    //     this.squadMap.hasHeightmap ? this.squadMap.getHeightmapHolder().getHeight(mPos.lng, mPos.lat) : 0;
-    //   const tHeight =
-    //     this.squadMap.hasHeightmap ? this.squadMap.getHeightmapHolder().getHeight(tPos.lng, tPos.lat) : 0;
-    //
-    //   const dHeight = tHeight - mHeight;
-    //   const mVel = this.postScriptum ? this.currentMType[1] : SQUAD_VELOCITY;
-    //   const settings = Utils.getMortarSettings(mPos, tPos, mVel, dHeight);
-    //
-    //   // isNaN is used as elevation might be NaN
-    //   // this.distLine.setStyle({
-    //   //     color: Number.isNaN(newC.elevation) || newC.elevation > 1580 || newC.elevation < 800
-    //   //       ? "#f44336" : "#4caf50",
-    //   // });
-    //
-    //   // add to map if it isn't shown yet
-    //   // if (!this.map.hasLayer(this.distLine)) {
-    //   //   this.map.addLayer(this.distLine);
-    //   // }
-    //
-    //   if (this.calcTimeout) { clearTimeout(this.calcTimeout); }
-    //
-    //   // if we want to delay the calc update, we set a timer that will set this.c
-    //   if (delayUpdate) {
-    //     this.calcTimeout = setTimeout(() => {
-    //       this.mortarSettings = settings;
-    //     }, 250);
-    //   } else {
-    //     this.mortarSettings = settings;
-    //   }
-    // },
-    // calcMortarSecondary(mortar, target, delayUpdate = true) {
-    //   console.log("calcMortarSecondary", [mortar, target]);
-    //
-    //   const mPos = mortar.pos;
-    //   const tPos = target.pos;
-    //
-    //   const mHeight =
-    // this.squadMap.hasHeightmap ? this.squadMap.getHeightmapHolder().getHeight(mPos.lng, mPos.lat) : 0;
-    //   const tHeight =
-    // this.squadMap.hasHeightmap ? this.squadMap.getHeightmapHolder().getHeight(tPos.lng, tPos.lat) : 0;
-    //
-    //   const dHeight = tHeight - mHeight;
-    //
-    //   const mVel = this.postScriptum ? this.currentMType[1] : SQUAD_VELOCITY;
-    //   const settings = Utils.getMortarSettings(mPos, tPos, mVel, dHeight);
-    //
-    //   this.drawSecondaryLine();
-    //   if (this.calcTimeout) { clearTimeout(this.calcTimeout); }
-    //
-    //   // if we want to delay the calc update, we set a timer that will set this.c
-    //   if (delayUpdate) {
-    //     this.calcTimeout = setTimeout(() => {
-    //       this.c2 = settings;
-    //       this.calcSubTargets();
-    //     }, 250);
-    //   } else {
-    //     this.c2 = settings;
-    //     this.calcSubTargets();
-    //   }
-    // },
-
-    // Return min and max lat and lng from 2 position
-    // Return the A B C D points of the shape formed by the boundaries :
-    // A --- B
-    // |     |
-    // D --- C
-    // getCoordsBoundaries(posA, posB) {
-    //   const boundaries = {
-    //     minLat: posA.lat <= posB.lat ? posA.lat : posB.lat,
-    //     maxLat: posA.lat > posB.lat ? posA.lat : posB.lat,
-    //     minLng: posA.lng <= posB.lng ? posA.lng : posB.lng,
-    //     maxLng: posA.lng > posB.lng ? posA.lng : posB.lng,
-    //   };
-    //   boundaries.posA = new LatLng(boundaries.minLat, boundaries.minLng);
-    //   boundaries.posB = new LatLng(boundaries.maxLat, boundaries.minLng);
-    //   boundaries.posC = new LatLng(boundaries.maxLat, boundaries.maxLng);
-    //   boundaries.posD = new LatLng(boundaries.minLat, boundaries.maxLng);
-    //   return boundaries;
-    // },
-    // removeSubTargets() {
-    //   this.aSubTargets.forEach((subtarget) => {
-    //     if (this.map.hasLayer(subtarget.mapLayer)) {
-    //       this.map.removeLayer(subtarget.mapLayer);
-    //     }
-    //   });
-    //   this.aSubTargets = [];
-    //   this.currentSubTarget = 0;
-    //   this.warningTooMuchSubTargets = false;
-    // },
-    // addSubtarget(coords) {
-    //   const subTargetIndex = this.aSubTargets.length;
-    //   const pos = new LatLng(coords.lat, coords.lng);
-    //   const color = Number.isNaN(coords.elevation)
-    //    || coords.elevation > 1580 || coords.elevation < 800 ? "#f44336" : "#4caf50";
-    //   const subTarget = {
-    //     pos,
-    //     coords: {
-    //       bearing: coords.bearing,
-    //       elevation: coords.elevation,
-    //       DOMBearing: this.formatDOMBearing(coords.bearing),
-    //       DOMElevation: this.formatDOMElevation(coords.elevation),
-    //     },
-    //     mapLayer: new Circle(pos, {
-    //       color: subTargetIndex === this.currentSubTarget ? "#3333ff" : color,
-    //       fillColor: color,
-    //       weight: 3,
-    //       fillOpacity: 1,
-    //       radius: SUBTARGET_RADIUS[this.map.getZoom()],
-    //       bubblingMouseEvents: false,
-    //       subTargetIndex, // additionnal options in order to handle easily click event
-    //       app: this, // additionnal options in order to handle easily click event
-    //     }),
-    //   };
-    //   if (!this.map.hasLayer(subTarget.mapLayer)) {
-    //     subTarget.mapLayer.on("click", this.clickOnSubTargetLayer);
-    //     this.map.addLayer(subTarget.mapLayer);
-    //   }
-    //   this.aSubTargets.push(subTarget);
-    // },
-    // clickOnSubTargetLayer(e) {
-    //   console.log("click on subTarget", e.target.options.subTargetIndex);
-    //   e.target.options.app.currentSubTarget = e.target.options.subTargetIndex;
-    // },
-    // calcSubTargets() {
-    //   this.removeSubTargets();
-    //   if (this.tTypeIndex === TARGET_TYPE.LINE && this.target && this.secondaryTarget) {
-    //     const distBetween2Rounds = SUBTARGET_ROUND_SPACING[this.secondaryRoundsSpacing];
-    //     const distBetweenTargets = this.calcDistBetween2Pos(this.target.pos, this.secondaryTarget.pos);
-    //     const interval = distBetweenTargets / distBetween2Rounds;
-    //     const latVariation = (this.secondaryTarget.pos.lat - this.target.pos.lat) / interval;
-    //     const lngVariation = (this.secondaryTarget.pos.lng - this.target.pos.lng) / interval;
-    //
-    //     if (interval + 2 > MAX_SUBTARGETS_COUNT) {
-    //       this.warningTooMuchSubTargets = true;
-    //       return;
-    //     }
-    //     this.addSubtarget({
-    //       lat: this.target.pos.lat,
-    //       lng: this.target.pos.lng,
-    //       bearing: this.mortarSettings.bearing,
-    //       elevation: this.mortarSettings.elevation,
-    //     });// First shot is fixed
-    //
-    //     const point = {};
-    //     let coord;
-    //     for (let i = 1; i <= interval; i++) { // Interval shots are computed
-    //       point.pos = new LatLng(this.target.pos.lat + (latVariation * i), this.target.pos.lng + (lngVariation * i));
-    //       coord = this.coordMortar(this.mortar, point);
-    //       this.addSubtarget({
-    //         lat: point.pos.lat,
-    //         lng: point.pos.lng,
-    //         bearing: coord.bearing,
-    //         elevation: coord.elevation,
-    //       });
-    //     }
-    //
-    //     this.addSubtarget({
-    //       lat: this.secondaryTarget.pos.lat,
-    //       lng: this.secondaryTarget.pos.lng,
-    //       bearing: this.c2.bearing,
-    //       elevation: this.c2.elevation,
-    //     });// Last shot is fixed
-    //     console.log("calcSubTargets", this.aSubTargets);
-    //   }
-    //   if (this.tTypeIndex === TARGET_TYPE.AREA && this.target && this.secondaryTarget) {
-    //     const distBetween2Rounds = SUBTARGET_ROUND_SPACING[this.secondaryRoundsSpacing];
-    //     const boundaries = this.getCoordsBoundaries(this.target.pos, this.secondaryTarget.pos);
-    //     const latDist = this.calcDistBetween2Pos(boundaries.posA, boundaries.posB);
-    //     const lngDist = this.calcDistBetween2Pos(boundaries.posA, boundaries.posD);
-    //     const latInterval = latDist / distBetween2Rounds;
-    //     const lngInterval = lngDist / distBetween2Rounds;
-    //     const latVariation = (boundaries.posB.lat - boundaries.posA.lat) / latInterval;
-    //     const lngVariation = (boundaries.posD.lng - boundaries.posA.lng) / lngInterval;
-    //     const nbSubTargetApprx = latInterval * lngInterval;
-    //     const point = {};
-    //     let coord;
-    //     if (nbSubTargetApprx > MAX_SUBTARGETS_COUNT) {
-    //       this.warningTooMuchSubTargets = true;
-    //       return;
-    //     }
-    //     for (let i = boundaries.posA.lat; i <= boundaries.posB.lat; i += latVariation) {
-    //       for (let j = boundaries.posA.lng; j <= boundaries.posD.lng; j += lngVariation) {
-    //         point.pos = new LatLng(i, j);
-    //         coord = this.coordMortar(this.mortar, point);
-    //         this.addSubtarget({
-    //           lat: point.pos.lat,
-    //           lng: point.pos.lng,
-    //           bearing: coord.bearing,
-    //           elevation: coord.elevation,
-    //         });
-    //       }
-    //     }
-    //     console.log("calcSubTargets", this.aSubTargets);
-    //   }
-    // },
     /**
      * Remove an already placed mortar, specified by its index in placedMortars
      * @param {Number|MortarPin} i - index of mortar in placedMortars, or MortarPin object
@@ -1586,12 +1346,6 @@ export default {
       this.dragging = false;
       this.updateSubTargets(false);
       this.calcAndUpdate(false);
-      // if (this.mortar && this.target) {
-      //   // this.calcMortar(this.mortar, this.target, false);
-      //   // if (this.secondaryTarget) {
-      //   //   this.calcMortarSecondary(this.mortar, this.secondaryTarget, false);
-      //   // }
-      // }
     },
     calcAndUpdate(delayUpdate = this.delayCalcUpdate) {
       console.log("calcAndUpdate", this.mortar, this.target, this.secondaryTarget);
@@ -1880,7 +1634,7 @@ export default {
      * Updates maxDistance of placed mortars.
      *
      * @param {MortarType} mType - mortar type
-     * */
+     */
     mortarType(mType) {
       this.placedMortars.forEach((m) => {
         m.setMaxDistance(mType.maxDistance);
@@ -1895,23 +1649,9 @@ export default {
       this.calcAndUpdate(false);
       this.toStorage("targetType", tType);
     },
-    // tTypeIndex(newIndex) {
-    //   this.toStorage("tTypeIndex", newIndex);
-    //   this.placedTargets.forEach((marker) => {
-    //     if (marker.sUrl !== this.target.sUrl) {
-    //       this.secondaryTarget = marker;
-    //     }
-    //   });
-    //   if (newIndex === TARGET_TYPE.POINT) {
-    //     this.removeSubTargets();
-    //     this.clearSecondaryLines();
-    //     this.secondaryTarget = undefined;
-    //   } else {
-    //     this.drawSecondaryLine();
-    //     this.calcSubTargets();
-    //   }
-    // },
-
+    /**
+     * Keeps track fo the current subTarget and recalculates the mortar settings.
+     */
     currentSubTarget(newI, oldI) {
       console.log("currentSubTarget:", [newI, oldI]);
       try {
@@ -1922,9 +1662,6 @@ export default {
       this.subTargetsHolder.targets[newI].setSelected(true);
       this.calcAndUpdate(false);
     },
-
-    /* PostScriptum exclusive */
-
     /**
      * Saves the mortar type index in localStorage
      * and updates placed mortar markers to display correct the max distance.
@@ -1966,20 +1703,6 @@ export default {
       }
       return `↕-${Utils.pad(Math.round(-this.mortarSettings.dHeight), 3)}m`;
     },
-
-    /* PostScriptum exclusive */
-
-    // /**
-    //  * Returns the current mortar Type array based on mTypeIndex.
-    //  * @returns {Array} 3-element array containing mortar name, velocity, and max distance
-    //  */
-    // currentMType() {
-    //   return this.mortarTypes[this.mTypeIndex];
-    // },
-    // currentTType() {
-    //   return this.targetTypes[this.tTypeIndex];
-    // },
-
     /**
      * Returns current mortar type as MortarType instance.
      *
@@ -2005,18 +1728,6 @@ body {
 
 body::-webkit-scrollbar {
   display: none;
-}
-
-.fixedPos {
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-}
-
-.front {
-  z-index: 1;
 }
 
 .leaflet-container {
@@ -2055,24 +1766,6 @@ body::-webkit-scrollbar {
 #heightmap {
   visibility: hidden;
   position: absolute;
-}
-
-.keypadLabel {
-  padding: 0 0.5em;
-  font-family: monospace;
-}
-
-.bottom-bar {
-  /*position: fixed;*/
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  width: 100%;
-  height: 100%;
-}
-
-#my-footer, #my-subtargets {
-  display: flex; align-items: center; pointer-events: all
 }
 
 .font-mono {
