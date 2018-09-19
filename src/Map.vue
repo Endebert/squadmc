@@ -25,7 +25,7 @@
                 <v-toolbar-side-icon @click.stop="drawer = !drawer">
                   <v-icon>menu</v-icon>
                 </v-toolbar-side-icon>
-                <img src="/img/svg/icon.svg" width="40px">
+                <!--<img src="/img/svg/icon.svg" width="40px">-->
                 <v-toolbar-title>
                   <v-select
                       :items="maps"
