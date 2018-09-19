@@ -386,6 +386,13 @@
       <!--ROUND SPACING SLIDER-->
       <template v-if="targetType !== TARGET_TYPE.POINT">
         <v-list class="pa-0">
+          <v-list-tile v-if="!secondaryTarget" style="background-color: #01579B">
+            Two target markers required
+            <v-list-tile-content></v-list-tile-content>
+            <v-list-tile-avatar>
+              <v-icon>info</v-icon>
+            </v-list-tile-avatar>
+          </v-list-tile>
           <v-list-tile>
             Round Spacing
             <v-slider v-model="subTargetSpacing" hide-details thumb-label class="pa-0 pr-3"
