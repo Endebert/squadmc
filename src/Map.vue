@@ -44,7 +44,7 @@
 
             <!-- QUICK MODE MORTAR/TARGET REMOVE BUTTONS (TOP RIGHT) -->
             <div v-if="!advancedMode"
-                 class="mr-3" style="display: flex; flex-direction: column; flex: 1 0 auto; align-items: flex-end; z-index: 1">
+                 class="mr-2" style="display: flex; flex-direction: column; flex: 1 0 auto; align-items: flex-end; z-index: 1">
               <v-btn icon
                      style="pointer-events: all" v-if="mortar" class="mt-2" color="grey darken-4" @click="removeMortar(0)">
                 <v-badge color="red" right overlap>
