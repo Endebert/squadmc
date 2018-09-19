@@ -62,6 +62,11 @@
             </div>
           </div>
 
+          <!--BOTTOM LEFT MOUSE KEYPAD-->
+          <div class="ma-3 px-1 grey darken-4 font-mono elevation-1" style="z-index: 1; position: absolute; left: 0; bottom: 0" v-if="showKeypadTimeout">
+            {{mouseKeypad}}
+          </div>
+
           <!--BOTTOM RIGHT FLOATING ACTION BUTTON-->
           <v-dialog v-model="placePinVars.dialog" max-width="250" style="position: absolute; right: 0; bottom: 0">
             <v-btn fab slot="activator" color="primary" style="z-index: 1" class="ma-3">
@@ -625,7 +630,7 @@ export default {
       selectedMap: this.fromStorage("selectedMap", undefined), // selected map in top selector
       delayCalcUpdate: this.fromStorage("delayCalcUpdate", "true") === "true",
       hideLoadingBar: this.fromStorage("hideLoadingBar", "true") === "true",
-      mouseKeypad: undefined, // keypad shown in bottom left corner
+      mouseKeypad: "LOL", // keypad shown in bottom left corner
       showKeypadTimeout: undefined, // value of timeout, set when mouse is moved, set undefined after 1 sec
       calcTimeout: undefined, // value of timeout for delayed calculations set, see calcMortar()
 
@@ -773,7 +778,7 @@ export default {
         // zoomSnap: 0, // not needed for new scaling with tile layers
       });
 
-      // this.map.on("mousemove", this.onMouseMove, this);
+      this.map.on("mousemove", this.onMouseMove, this);
       this.map.on("click", this.onMapClick, this);
     },
 
@@ -854,33 +859,33 @@ export default {
 
       this.squadMap = squadMap;
     },
-    // /**
-    //  * Handles "mousemove" events on leaflet map
-    //  * @param e "mousemove" event
-    //  */
-    // onMouseMove(e) {
-    //   console.debug("onMouseMove:", e);
-    //
-    //   // we don't want to show the indicator if any of the markers are being dragged
-    //   // so we clear showKeypadTimeout (so that the indicator is not shown) and return early
-    //   if (this.dragging) {
-    //     this.showKeypadTimeout = undefined;
-    //     return;
-    //   }
-    //
-    //
-    //   // format position as keypad for bottom left corner
-    //   this.mouseKeypad = Utils.getKP(e.latlng.lat, e.latlng.lng);
-    //
-    //   // black magic to only have bottom left keypad indicator shown for 1 second
-    //   if (this.showKeypadTimeout) {
-    //     clearTimeout(this.showKeypadTimeout);
-    //   }
-    //   this.showKeypadTimeout = setTimeout(() => {
-    //     console.log("clearing showKeypadTimeout MOVE", this.showKeypadTimeout);
-    //     this.showKeypadTimeout = undefined;
-    //   }, 1000);
-    // },
+    /**
+     * Handles "mousemove" events on leaflet map
+     * @param e "mousemove" event
+     */
+    onMouseMove(e) {
+      console.debug("onMouseMove:", e);
+
+      // we don't want to show the indicator if any of the markers are being dragged
+      // so we clear showKeypadTimeout (so that the indicator is not shown) and return early
+      if (this.dragging) {
+        this.showKeypadTimeout = undefined;
+        return;
+      }
+
+
+      // format position as keypad for bottom left corner
+      this.mouseKeypad = Utils.getKP(e.latlng.lat, e.latlng.lng);
+
+      // black magic to only have bottom left keypad indicator shown for 1 second
+      if (this.showKeypadTimeout) {
+        clearTimeout(this.showKeypadTimeout);
+      }
+      this.showKeypadTimeout = setTimeout(() => {
+        console.log("clearing showKeypadTimeout MOVE", this.showKeypadTimeout);
+        this.showKeypadTimeout = undefined;
+      }, 1000);
+    },
     /**
      * Handles "click" events on leaflet map
      * @param e "click" event
