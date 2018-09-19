@@ -1,7 +1,7 @@
 <template>
 <v-app dark>
   <!--CONTENT PLANE-->
-  <v-content class="absolute-layer">
+  <v-content class="absolute-layer" style="position: fixed">
 
     <!--WRAPPER DIV-->
     <div class="absolute-layer" style="display: flex; flex-direction: column;">
