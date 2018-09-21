@@ -1,5 +1,21 @@
 import { LatLng } from "leaflet";
-import { MIL_TO_DEG_FACTOR, GRAVITY, PIN_MAP, SQUAD_VELOCITY } from "./Vars";
+import {
+  MIL_TO_DEG_FACTOR,
+  GRAVITY,
+  PIN_MAP,
+  SQUAD_VELOCITY,
+  SQUAD_NAME,
+  SQUAD_MAX_DISTANCE,
+  PS_8CM_NAME,
+  PS_8CM_VELOCITY,
+  PS_8CM_MAX_DISTANCE,
+  PS_4INCH_MAX_DISTANCE,
+  PS_4INCH_VELOCITY,
+  PS_4INCH_NAME,
+  PS_3INCH_MAX_DISTANCE,
+  PS_3INCH_VELOCITY, PS_3INCH_NAME,
+} from "./Vars";
+import MortarType from "./MortarType";
 
 /**
  * Utility file exporting helper functions and objects.
@@ -142,7 +158,7 @@ export function isMultiple(a, b) {
  * @param {number} [g] - gravity force
  * @returns {number || NaN} mil if target in range, NaN otherwise
  */
-export function calcMortarAngle(x, y = 0, v = SQUAD_VELOCITY, g = GRAVITY) {
+export function getElevation(x, y = 0, v = SQUAD_VELOCITY, g = GRAVITY) {
   const p1 = Math.sqrt(v ** 4 - g * (g * x ** 2 + 2 * y * v ** 2));
   const a1 = Math.atan((v ** 2 + p1) / (g * x));
   // const a2 = Math.atan((v ** 2 - p1) / (g * x));
@@ -235,8 +251,84 @@ export function getPos(kp) {
   return new LatLng(y, x);
 }
 
+/**
+ * Calculates the distance between two points.
+ *
+ * @param {LatLng} a - point A
+ * @param {LatLng} b - point B
+ * @returns {number} distance A and B
+ */
+export function getDist(a, b) {
+  const dLat = a.lat - b.lat;
+  const dLng = a.lng - b.lng;
+
+  return Math.sqrt(dLat * dLat + dLng * dLng);
+}
+
+/**
+ * Calculates the bearing required to see point B from point A.
+ *
+ * @param {LatLng} a - base point A
+ * @param {LatLng} b - target point B
+ * @returns {number} - bearing required to see B from A
+ */
+export function getBearing(a, b) {
+  // oh no, vector maths!
+  let bearing = Math.atan2(b.lng - a.lng, b.lat - a.lat) * 180 / Math.PI;
+
+  // point it north and do some rounding
+  bearing = (180 - bearing) % 360;
+
+  return bearing;
+}
+
+/**
+ * Calculates mortar settings for a mortar to hit a target.
+ *
+ * @param {LatLng} mPos - mortar position
+ * @param {LatLng} tPos - target position
+ * @param {number} mVel - mortar shell velocity
+ * @param {number} [dHeight] - height difference between mortar and target, defaults to 0
+ * @returns {{bearing: number, elevation: (number|NaN), dist: number, dHeight: number}} - bearing and elevation settings
+ *  required to hit target. Elevation is NaN if target is out of range.
+ */
+export function getMortarSettings(mPos, tPos, mVel, dHeight = 0) {
+  const bearing = getBearing(mPos, tPos);
+  const dist = getDist(mPos, tPos);
+  const elevation = getElevation(dist, dHeight, mVel);
+
+  return {
+    bearing,
+    elevation,
+    dist,
+    dHeight,
+  };
+}
+
+/**
+ * Get available mortar types for Squad
+ *
+ * @returns {MortarType[]} - list of mortar types
+ */
+export function getSquadMortarTypes() {
+  return [new MortarType(SQUAD_NAME, SQUAD_VELOCITY, SQUAD_MAX_DISTANCE)];
+}
+
+/**
+ * Get available mortar types for Post Scriptum
+ *
+ * @returns {MortarType[]} - list of mortar types
+ */
+export function getPSMortarTypes() {
+  return [
+    new MortarType(PS_8CM_NAME, PS_8CM_VELOCITY, PS_8CM_MAX_DISTANCE),
+    new MortarType(PS_3INCH_NAME, PS_3INCH_VELOCITY, PS_3INCH_MAX_DISTANCE),
+    new MortarType(PS_4INCH_NAME, PS_4INCH_VELOCITY, PS_4INCH_MAX_DISTANCE),
+  ];
+}
+
 export function pinToPSC(pinUrl) {
-  console.log("pinToPSC:", pinUrl);
+  // console.log("pinToPSC:", pinUrl);
   // pscss = [[[Pin, Symbol, Color]]]
   const pscss = Object.values(PIN_MAP);
   for (let i = 0; i < pscss.length; i++) {
@@ -256,14 +348,16 @@ export function pinToPSC(pinUrl) {
 }
 
 export function pinToSymbol(pinUrl) {
+  console.log("pinToSymbol:", pinUrl);
   return pinToPSC(pinUrl)[1];
 }
 
 export function pinToColor(pinUrl) {
+  console.log("pinToColor:", pinUrl);
   return pinToPSC(pinUrl)[2];
 }
 
-export function pinUrls(type) {
+export function getPinUrls(type) {
   const pins = [];
   PIN_MAP[type].forEach((psc) => {
     pins.push(psc[0]);
@@ -271,7 +365,7 @@ export function pinUrls(type) {
   return pins;
 }
 
-export function symbolUrls(type) {
+export function getSymbolUrls(type) {
   const symbols = [];
   PIN_MAP[type].forEach((psc) => {
     symbols.push(psc[1]);

@@ -23,6 +23,10 @@ export default class MapData {
     });
   }
 
+  /**
+   * Returns a list of available map names as an array.
+   * @return {Array} array of map names
+   */
   getMapNames() {
     const names = [];
     this.data.forEach((map) => {
@@ -32,6 +36,11 @@ export default class MapData {
     return names;
   }
 
+  /**
+   * Returns an instance of SquadMap for the given map, or throws an error.
+   * @param mapName - name of the map
+   * @return {SquadMap}
+   */
   getSquadMap(mapName) {
     console.log("getSquadMap:", mapName);
     for (let i = 0; i < this.data.length; i += 1) {

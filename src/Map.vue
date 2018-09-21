@@ -1,43 +1,327 @@
 <template>
 <v-app dark>
-  <v-toolbar
-      app
-      dense
-      fixed
-      clipped-left
-  >
-    <v-toolbar-side-icon @click.stop="drawer = !drawer">
-      <v-icon>menu</v-icon>
-    </v-toolbar-side-icon>
-    <img src="/img/svg/icon.svg" width="40px">
-    <v-toolbar-title>
-      <v-select
-          :items="maps"
-          :loading="!hideLoadingBar && loading"
-          append-icon="map"
-          single-line
-          v-model="selectedMap"
-          item-value="text"
-          max-height="90%"
-          hide-details
-      ></v-select>
-    </v-toolbar-title>
-  </v-toolbar>
+  <!--CONTENT PLANE-->
+  <v-content class="absolute-layer" style="position: fixed">
+
+    <!--WRAPPER DIV-->
+    <div class="absolute-layer" style="display: flex; flex-direction: column;">
+
+      <!--MAP LAYERS-->
+      <div style="display: flex; flex: 1 0 auto; position: relative">
+
+
+        <div class="absolute-layer">
+          <!--this div is at the top of the content plane and contains the toolbar and the quickmode buttons.
+          it wrap the quickmode buttons below the toolbar, when there is not enough space.-->
+          <div class="mt-3"
+               style="position: absolute; left: 0; right: 0; display: flex; flex: 1 0 auto; flex-wrap: wrap">
+
+            <!--FLOATING TOOLBAR-->
+            <div style="display: flex; flex: 0 1 auto; align-items: baseline">
+              <v-toolbar
+                  dense
+                  floating
+                  style="z-index: 1"
+              >
+                <v-toolbar-side-icon @click.stop="drawer = !drawer">
+                  <v-icon>menu</v-icon>
+                </v-toolbar-side-icon>
+                <!--<img src="/img/svg/icon.svg" width="40px">-->
+                <v-toolbar-title>
+                  <v-select class="pa-0"
+                      :items="maps"
+                      :loading="!hideLoadingBar && loading"
+                      append-icon="map"
+                      single-line
+                      v-model="selectedMap"
+                      item-value="text"
+                      max-height="90%"
+                      hide-details
+                  ></v-select>
+                </v-toolbar-title>
+              </v-toolbar>
+            </div>
+
+
+            <!-- QUICK MODE MORTAR/TARGET REMOVE BUTTONS (TOP RIGHT) -->
+            <div v-if="!advancedMode"
+                 class="mr-2"
+                 style="display: flex; flex-direction: column; flex: 1 0 auto; align-items: flex-end; z-index: 1">
+              <v-btn icon
+                     @click="removeMortar(0)"
+                     style="pointer-events: all" v-if="mortar" class="mt-2" color="grey darken-4">
+                <v-badge color="red" right overlap>
+                  <v-icon slot="badge">clear</v-icon>
+                  <img :src="mortar.symbolUrl" style="width: 36px;">
+                </v-badge>
+              </v-btn>
+              <v-btn icon
+                     @click="removeTarget(0)"
+                     style="pointer-events: all" v-if="target" class="mt-2" color="grey darken-4">
+                <v-badge color="red" right overlap>
+                  <v-icon slot="badge">clear</v-icon>
+                  <img :src="target.symbolUrl" style="width: 36px;">
+                </v-badge>
+              </v-btn>
+            </div>
+          </div>
+
+          <!--BOTTOM LEFT MOUSE KEYPAD-->
+          <div class="ma-3 px-1 grey darken-4 font-mono elevation-1"
+               style="z-index: 1; position: absolute; left: 0; bottom: 0" v-if="showKeypadTimeout">
+            {{mouseKeypad}}
+          </div>
+
+          <!--BOTTOM RIGHT FLOATING ACTION BUTTON-->
+          <v-dialog v-model="placePinVars.dialog" max-width="250" style="position: absolute; right: 0; bottom: 0">
+            <v-btn fab slot="activator" color="primary" style="z-index: 1" class="ma-3">
+              <v-icon style="width: 24px; height: 24px">add</v-icon>
+            </v-btn>
+            <v-card>
+              <v-card-title style="background-color: #212121">Add Mortar/Target</v-card-title>
+              <v-divider></v-divider>
+              <v-card-text class="px-0">
+                <div><p align="center">Press icon buttons to cycle through marker colors</p></div>
+                <v-form>
+                  <v-container>
+                    <v-layout column wrap>
+                      <v-flex>
+                        <v-btn icon color="grey darken-4"
+                               @click="placePinVars.mIndex = (placePinVars.mIndex + 1) % 4"
+                        >
+                          <img :src="colors.symbol.mortar[placePinVars.mIndex]" style="width: 48px;">
+                        </v-btn>
+                        <v-text-field
+                            v-model="placePinVars.mText" :error="placePinVars.mError"
+                            label="Mortar pos" placeholder="A01-3-3-7"
+                            @input="placePinVars.mText = formatKP(placePinVars.mText, PIN_TYPE.MORTAR)"
+                            style="width: min-content; font-family: monospace">
+                        </v-text-field>
+                        <v-btn
+                            icon color="grey darken-4" :disabled="placePinVars.mError || !placePinVars.mText"
+                            @click="placePin(placePinVars.mText, placePinVars.mIndex, PIN_TYPE.MORTAR)"
+                            @click.stop="placePinVars.mText = undefined">
+                          <v-icon>add</v-icon>
+                        </v-btn>
+                      </v-flex>
+                      <v-flex>
+                        <v-btn
+                            icon color="grey darken-4"
+                            @click="placePinVars.tIndex = (placePinVars.tIndex + 1) % 4">
+                          <img :src="colors.symbol.target[placePinVars.tIndex]" style="width: 48px;">
+                        </v-btn>
+                        <v-text-field
+                            v-model="placePinVars.tText" :error="placePinVars.tError"
+                            label="Target pos" placeholder="B13-3-7"
+                            @input="placePinVars.tText = formatKP(placePinVars.tText, PIN_TYPE.TARGET)"
+                            style="width: min-content; font-family: monospace">
+                        </v-text-field>
+                        <v-btn
+                            icon color="grey darken-4"
+                            :disabled="placePinVars.tError || !placePinVars.tText"
+                            @click="placePin(placePinVars.tText, placePinVars.tIndex, PIN_TYPE.TARGET)"
+                            @click.stop="placePinVars.tText = undefined">
+                          <v-icon>add</v-icon>
+                        </v-btn>
+                      </v-flex>
+                    </v-layout>
+                  </v-container>
+                </v-form>
+              </v-card-text>
+              <v-divider></v-divider>
+              <v-card-actions>
+                <v-btn @click.native="placePinVars.dialog = false">Close</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+
+          <!--MORTAR/TARGET/FOB SELECTION POPUP MENU-->
+          <v-menu v-model="showMenu" absolute :open-on-click="false" :position-x="menuPos.x" :position-y="menuPos.y">
+            <v-card style="border: none">
+              <v-content class="pa-0">
+                <v-layout row>
+                  <v-layout column style="border-right: 2px #212121 solid">
+                    <v-btn
+                        icon large v-for="(mUrl, i) in colors.symbol.mortar" :key="i"
+                        @click="placePin(menuLatlng, i, PIN_TYPE.MORTAR)"
+                        style="margin: 2px 2px 2px 2px">
+                      <img :src="mUrl" width="48px">
+                    </v-btn>
+                  </v-layout>
+                  <v-layout column>
+                    <v-btn
+                        icon large v-for="(mUrl, i) in colors.symbol.target" :key="i"
+                        @click="placePin(menuLatlng, i, PIN_TYPE.TARGET)"
+                        style="margin: 2px 2px 2px 2px">
+                      <img :src="mUrl" width="48px">
+                    </v-btn>
+                  </v-layout>
+                  <v-layout column style="border-left: 2px #212121 solid">
+                    <v-btn
+                        icon large v-for="(mUrl, i) in colors.symbol.fob" :key="i"
+                        @click="placePin(menuLatlng, i, PIN_TYPE.FOB)"
+                        style="margin: 2px 2px 2px 2px">
+                      <img :src="mUrl" width="48px">
+                    </v-btn>
+                  </v-layout>
+                </v-layout>
+              </v-content>
+            </v-card>
+          </v-menu>
+
+          <!--CHANGELOG DIALOG-->
+          <v-dialog v-model="changelogDialog" max-width="600px">
+            <v-card>
+              <v-card-text>
+                <Changelog/>
+              </v-card-text>
+              <v-card-actions>
+                <v-btn @click.native="changelogDialog = false">Close</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+        </div>
+
+        <div id="map" class="absolute-layer"  style="z-index: 0"></div>
+      </div>
+
+
+      <!--FOOTER WITH MORTAR SETTINGS-->
+      <v-footer height="auto" v-if="mortar && target" style="display: flex; flex: 0 0 auto">
+        <!--POINT FIRE LAYOUT-->
+        <div class="flex row" v-if="!secondaryTarget || targetType === TARGET_TYPE.POINT">
+          <v-speed-dial>
+            <v-btn icon slot="activator" color="grey darken-3">
+              <img :src="mortar.symbolUrl" style="width: 48px;">
+            </v-btn>
+            <v-btn icon
+                   v-for="(aMortar, index) in placedMortars"
+                   :key="index"
+                   @click="mortar = placedMortars[index]"
+            >
+              <img :src="aMortar.symbolUrl" style="width: 48px;">
+            </v-btn>
+          </v-speed-dial>
+          <v-icon small>arrow_forward</v-icon>
+          <v-speed-dial v-if="target">
+            <v-btn icon slot="activator" color="grey darken-3">
+              <img :src="target.symbolUrl" style="width: 48px;">
+            </v-btn>
+            <v-btn icon
+                   v-for="(aTarget, index) in placedTargets"
+                   :key="index"
+                   v-if="secondaryTarget && aTarget.symbolUrl !== secondaryTarget.symbolUrl"
+                   @click="target = placedTargets[index]">
+              <img :src="aTarget.symbolUrl" style="width: 48px;">
+            </v-btn>
+          </v-speed-dial>
+          <table class="font-mono">
+            <tr style="font-size: small; opacity: 0.7" >
+              <td class="px-1" align="right">{{DOMdist}}</td>
+              <td class="px-1" align="left">{{DOMhDelta}}</td>
+            </tr>
+            <tr style="font-size: large">
+              <td class="px-1" align="right">{{DOMbearing}}</td>
+              <td class="px-1" align="left">{{DOMelevation}}</td>
+            </tr>
+          </table>
+        </div>
+
+        <!--LINE/AREA FIRE LAYOUT-->
+        <div v-else class="flex row">
+          <div class="flex column">
+            <div class="flex row">
+              <v-speed-dial>
+                <v-btn icon slot="activator" class="mb-0" color="grey darken-3">
+                  <img :src="mortar.symbolUrl" style="width: 48px;">
+                </v-btn>
+                <v-btn icon
+                       v-for="(aMortar, index) in placedMortars"
+                       :key="index"
+                       @click="mortar = placedMortars[index]"
+                >
+                  <img :src="aMortar.symbolUrl" style="width: 48px;">
+                </v-btn>
+              </v-speed-dial>
+            </div>
+            <div class="flex row">
+              <v-speed-dial v-if="target">
+                <v-btn icon slot="activator" class="mt-0 mr-1" color="grey darken-3">
+                  <img :src="secondaryTarget.symbolUrl" style="width: 48px;">
+                </v-btn>
+                <v-btn icon
+                       v-for="(aTarget, index) in placedTargets"
+                       :key="index"
+                       v-if="aTarget !== target"
+                       @click="secondaryTarget = placedTargets[index]">
+                  <img :src="aTarget.symbolUrl" style="width: 48px;">
+                </v-btn>
+              </v-speed-dial>
+              <div class="font-mono mx-1" style="font-size: large; align-self: flex-start">⊥</div>
+              <v-speed-dial v-if="targetType !== TARGET_TYPE.POINT && secondaryTarget">
+                <v-btn icon slot="activator" class="mt-0 ml-1" color="grey darken-3">
+                  <img :src="target.symbolUrl" style="width: 48px;">
+                </v-btn>
+                <v-btn icon
+                       v-for="(aTarget, index) in placedTargets"
+                       :key="index"
+                       v-if="aTarget !== secondaryTarget"
+                       @click="target = placedTargets[index]">
+                  <img :src="aTarget.symbolUrl" style="width: 48px;">
+                </v-btn>
+              </v-speed-dial>
+            </div>
+          </div>
+          <table class="font-mono">
+            <tr align="center" style="font-size: small; color: #9e9e9e">
+              <td colspan="2">
+                <div class="flex row">
+                  <v-btn icon small class="flex my-1" color="grey darken-3" :disabled="currentSubTarget <= 0">
+                    <v-icon @click="currentSubTarget--">keyboard_arrow_left</v-icon>
+                  </v-btn>
+                  Round {{pad(currentSubTarget + 1, 3)}} / {{pad(subTargetsHolder.targets.length, 3)}}
+                  <v-btn icon small class="flex my-1" color="grey darken-3"
+                         :disabled="currentSubTarget >= subTargetsHolder.targets.length - 1">
+                    <v-icon @click="currentSubTarget++">keyboard_arrow_right</v-icon>
+                  </v-btn>
+                </div>
+              </td>
+            </tr>
+            <tr >
+              <td align="center" style="font-size: large"
+              >{{DOMbearing}} {{DOMelevation}}</td>
+            </tr>
+          </table>
+        </div>
+      </v-footer>
+    </div>
+    <!--HEIGHTMAP CANVAS-->
+    <canvas id="heightmap"></canvas>
+  </v-content>
+
+  <!--FOOTER CONTAINING MORTAR SETTINGS-->
+
+
+  <!--NAVIGATION DRAWER WITH SETTINGS-->
   <v-navigation-drawer
       v-model="drawer"
       fixed
       app
-      clipped
       :touchless="!drawer"
       disable-resize-watcher
       disable-route-watcher
+      mobile-break-point="640"
+      style="max-height: 100%"
   >
+    <!--APP TITLE AND CHANGELOG BUTTON-->
     <v-toolbar dense>
       <v-toolbar-title>
         {{postScriptum ? "PostScriptumMC" : "SquadMC"}}
         <v-btn small color="primary" @click.stop="changelogDialog = true" style="min-width: 70px">{{appVersion}}</v-btn>
       </v-toolbar-title>
     </v-toolbar>
+
+    <!--LINK TO GITHUB-->
     <v-list class="pa-0" two-line>
       <v-list-tile @click="openGitHub()">
         <v-list-tile-content>
@@ -53,6 +337,8 @@
       </v-list-tile>
     </v-list>
     <v-divider></v-divider>
+
+    <!--ADVANCED MODE TOGGLE-->
     <v-list class="px-0">
       <v-list-tile>
         <v-list-tile-action>
@@ -62,27 +348,75 @@
         </v-list-tile-action>
         <v-list-tile-content>
           <v-list-tile-title>Advanced Mode</v-list-tile-title>
-          <v-list-tile-sub-title>place multiple markers</v-list-tile-sub-title>
         </v-list-tile-content>
         <v-list-tile-avatar>
           <v-icon>fast_forward</v-icon>
         </v-list-tile-avatar>
       </v-list-tile>
-    </v-list>
-    <v-divider></v-divider>
-    <v-list class="pa-0" two-line v-if="postScriptum">
       <v-list-tile>
-        <v-list-tile-content>
-          <v-list-tile-title>Set mortar type</v-list-tile-title>
-          <v-list-tile-sub-title>
-            <v-btn-toggle v-model="mTypeIndex" mandatory style="display: flex">
-              <v-btn flat v-for="(mType, i) in mortarTypes" :key="i"
-                     style="flex: 1 0 0; border: none">{{mType[0]}}</v-btn>
-            </v-btn-toggle></v-list-tile-sub-title>
+        <v-list-tile-content style="opacity: 0.7">
+          Place FOBs, multiple markers & targets and create LINE and AREA fire
         </v-list-tile-content>
       </v-list-tile>
     </v-list>
-    <v-divider v-if="postScriptum"></v-divider>
+    <v-divider></v-divider>
+
+    <!--MORTAR TYPE SELECTION-->
+    <template v-if="postScriptum">
+      <v-list class="pa-0" two-line>
+        <v-list-tile>
+          <v-list-tile-content>
+            <v-list-tile-title>Set mortar type</v-list-tile-title>
+            <v-list-tile-sub-title>
+              <v-btn-toggle v-model="mTypeIndex" mandatory style="display: flex">
+                <v-btn flat v-for="(mType, i) in mortarTypes" :key="i"
+                       style="flex: 1 0 0; border: none">{{mType.name}}</v-btn>
+              </v-btn-toggle></v-list-tile-sub-title>
+          </v-list-tile-content>
+        </v-list-tile>
+      </v-list>
+      <v-divider></v-divider>
+    </template>
+
+    <!--TARGET TYPE SELECTION-->
+    <template v-if="advancedMode">
+      <v-list class="pa-0" two-line >
+        <v-list-tile>
+          <v-list-tile-content>
+            <v-list-tile-title style="display: flex">
+              Set target type
+              <div class="primary px-2 flex font-mono mx-2" style="border-radius: 2px; margin: 1px">BETA</div>
+            </v-list-tile-title>
+            <v-list-tile-sub-title>
+              <v-btn-toggle v-model="targetType" mandatory style="display: flex">
+                <v-btn flat v-for="(val, key) in TARGET_TYPE" :key="val"
+                       style="flex: 1 0 0; border: none">{{key}}</v-btn>
+              </v-btn-toggle></v-list-tile-sub-title>
+          </v-list-tile-content>
+        </v-list-tile>
+      </v-list>
+
+      <!--ROUND SPACING SLIDER-->
+      <template v-if="targetType !== TARGET_TYPE.POINT">
+        <v-list class="pa-0">
+          <v-list-tile v-if="!secondaryTarget" style="background-color: #01579B">
+            Two target markers required
+            <v-list-tile-content></v-list-tile-content>
+            <v-list-tile-avatar>
+              <v-icon>info</v-icon>
+            </v-list-tile-avatar>
+          </v-list-tile>
+          <v-list-tile>
+            Round Spacing
+            <v-slider v-model="subTargetSpacing" hide-details thumb-label class="pa-0 pr-3"
+                      step="5" min="5" max="50" ticks></v-slider>
+          </v-list-tile>
+        </v-list>
+        <v-divider></v-divider>
+      </template>
+    </template>
+
+    <!--MAP SETTINGS-->
     <v-list class="pa-0">
       <v-list-group>
         <v-list-tile slot="activator">
@@ -160,6 +494,8 @@
         </v-list-tile>
       </v-list-group>
     </v-list>
+
+    <!--PERFORMANCE SETTINGS-->
     <v-list class="pa-0">
       <v-list-group>
         <v-list-tile slot="activator">
@@ -197,7 +533,9 @@
         </v-list-tile>
       </v-list-group>
     </v-list>
-    <v-list>
+
+    <!--'REMOVE PINS' SECTION-->
+    <v-list class="pa-0">
       <v-list-group :disabled="placedMortars.length + placedFobs.length + placedTargets.length === 0">
         <v-list-tile slot="activator">
           <v-list-tile-content>
@@ -209,7 +547,7 @@
             <v-layout>
               <v-btn icon style="margin: 2px 2px 2px 2px"
                      v-for="(aMortar, i) in placedMortars" :key="i" @click="removeMortar(i)">
-                <img :src="aMortar.sUrl" width="48px">
+                <img :src="aMortar.symbolUrl" width="48px">
               </v-btn>
             </v-layout>
           </v-list-tile-content>
@@ -219,7 +557,7 @@
             <v-layout>
               <v-btn icon style="margin: 2px 2px 2px 2px"
                      v-for="(aTarget, i) in placedTargets" :key="i" @click="removeTarget(i)">
-                <img :src="aTarget.sUrl" width="48px">
+                <img :src="aTarget.symbolUrl" width="48px">
               </v-btn>
             </v-layout>
           </v-list-tile-content>
@@ -229,7 +567,7 @@
             <v-layout>
               <v-btn icon style="margin: 2px 2px 2px 2px"
                      v-for="(aFob, i) in placedFobs" :key="i" @click="removeFob(i)">
-                <img :src="aFob.sUrl" width="48px">
+                <img :src="aFob.symbolUrl" width="48px">
               </v-btn>
             </v-layout>
           </v-list-tile-content>
@@ -237,184 +575,6 @@
       </v-list-group>
     </v-list>
   </v-navigation-drawer>
-  <v-content class="fixedPos">
-    <div id="map" class="fixedPos"></div>
-  </v-content>
-  <v-content class="fixedPos" style="pointer-events: none" >
-    <div class="bottom-bar front" style="pointer-events: none;">
-      <div style="display: flex; align-items: flex-end">
-        <div class="ma-2 px-1 secondary font-mono" style="width: fit-content; flex: 0 1 auto"
-             v-if="showKeypadTimeout">{{mouseKeypad}}</div>
-        <div style="display: flex; flex: 1 1 auto; justify-content: flex-end">
-          <v-dialog v-model="placePinVars.dialog" max-width="250">
-            <v-btn fab slot="activator" color="primary" style="pointer-events: all" class="ma-3">
-              <v-icon style="width: 24px; height: 24px">add</v-icon>
-            </v-btn>
-            <v-card>
-              <v-card-title style="background-color: #212121">Add Mortar/Target</v-card-title>
-              <v-divider></v-divider>
-              <v-card-text class="px-0">
-                <div><p align="center">Press icon buttons to cycle through marker colors</p></div>
-                <v-form>
-                  <v-container>
-                    <v-layout column wrap>
-                      <v-flex>
-                        <v-btn icon color="secondary darken-2"
-                               @click="placePinVars.mIndex = (placePinVars.mIndex + 1) % 4"
-                        >
-                          <img :src="colors.symbol.mortar[placePinVars.mIndex]" style="width: 48px;">
-                        </v-btn>
-                        <v-text-field
-                            v-model="placePinVars.mText" :error="placePinVars.mError"
-                            label="Mortar pos" placeholder="A01-3-3-7"
-                            @input="placePinVars.mText = formatKP(placePinVars.mText, PIN_TYPE.MORTAR)"
-                            style="width: min-content; font-family: monospace">
-                        </v-text-field>
-                        <v-btn
-                            icon color="secondary darken-2" :disabled="placePinVars.mError || !placePinVars.mText"
-                            @click="placePin(placePinVars.mText, placePinVars.mIndex, PIN_TYPE.MORTAR)"
-                            @click.stop="placePinVars.mText = undefined">
-                          <v-icon>add</v-icon>
-                        </v-btn>
-                      </v-flex>
-                      <v-flex>
-                        <v-btn
-                            icon color="secondary darken-2"
-                            @click="placePinVars.tIndex = (placePinVars.tIndex + 1) % 4">
-                          <img :src="colors.symbol.target[placePinVars.tIndex]" style="width: 48px;">
-                        </v-btn>
-                        <v-text-field
-                            v-model="placePinVars.tText" :error="placePinVars.tError"
-                            label="Target pos" placeholder="B13-3-7"
-                            @input="placePinVars.tText = formatKP(placePinVars.tText, PIN_TYPE.TARGET)"
-                            style="width: min-content; font-family: monospace">
-                        </v-text-field>
-                        <v-btn
-                            icon color="secondary darken-2"
-                            :disabled="placePinVars.tError || !placePinVars.tText"
-                            @click="placePin(placePinVars.tText, placePinVars.tIndex, PIN_TYPE.TARGET)"
-                            @click.stop="placePinVars.tText = undefined">
-                          <v-icon>add</v-icon>
-                        </v-btn>
-                      </v-flex>
-                    </v-layout>
-                  </v-container>
-                </v-form>
-              </v-card-text>
-              <v-divider></v-divider>
-              <v-card-actions>
-                <v-btn @click.native="placePinVars.dialog = false">Close</v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
-        </div>
-      </div>
-      <div id="my-footer" v-if="mortar && target" style="background-color: #212121">
-        <v-speed-dial>
-          <v-btn fab small slot="activator" class="secondary" style="width: 32px; height: 32px;">
-            <img :src="mortar.sUrl" style="width: 48px;">
-          </v-btn>
-          <v-btn icon
-                 v-for="(aMortar, index) in placedMortars"
-                 :key="index"
-                 @click="mortar = placedMortars[index]"
-          >
-            <img :src="aMortar.sUrl" style="width: 48px;">
-          </v-btn>
-        </v-speed-dial>
-        <v-icon>arrow_forward</v-icon>
-        <v-speed-dial v-if="target">
-          <v-btn fab small slot="activator" class="secondary" style="width: 32px; height: 32px;">
-            <img :src="target.sUrl" style="width: 48px;">
-          </v-btn>
-          <v-btn icon
-                 v-for="(aTarget, index) in placedTargets"
-                 :key="index"
-                 @click="target = placedTargets[index]">
-            <img :src="aTarget.sUrl" style="width: 48px;">
-          </v-btn>
-        </v-speed-dial>
-        <div class="font-mono flex column" >
-          <div class="flex" style="width: 100%;">
-            <div class="px-1" style="flex: 1 0 auto; text-align: center; font-size: large"
-            >{{DOMbearing}}
-            </div>
-            <div class="px-1" style="flex: 1 0 auto; text-align: center; font-size: large"
-            >{{DOMelevation}}
-            </div>
-          </div>
-          <div class="flex" style="width: 100%;">
-            <div class="px-1 body-1" style="flex: 1 0 auto; text-align: center; font-size: small; color: #9e9e9e"
-            >{{DOMdist}}</div>
-            <div class="px-1 body-1" style="flex: 1 0 auto; text-align: center; font-size: small; color: #9e9e9e"
-            >{{DOMhDelta}}</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </v-content>
-  <v-content class="fixedPos" style="pointer-events: none" v-if="!advancedMode">
-    <div class="flex column" style="justify-content: flex-start; align-items: flex-start">
-      <div class="flex column pt-2">
-        <v-btn icon style="pointer-events: all" v-if="mortar" class="secondary" @click="removeMortar(0)">
-          <v-badge color="red" right overlap>
-            <v-icon slot="badge">clear</v-icon>
-            <!--<v-icon large>mail</v-icon>-->
-            <img :src="mortar.sUrl" style="width: 36px;">
-          </v-badge>
-        </v-btn>
-        <v-btn icon style="pointer-events: all" v-if="target" class="secondary" @click="removeTarget(0)">
-          <v-badge color="red" right overlap>
-            <v-icon slot="badge">clear</v-icon>
-            <img :src="target.sUrl" style="width: 36px;">
-          </v-badge>
-        </v-btn>
-      </div>
-    </div>
-  </v-content>
-  <v-menu v-model="showMenu" absolute :open-on-click="false" :position-x="menuPos.x" :position-y="menuPos.y">
-    <v-card style="border: none">
-      <v-content class="pa-0">
-        <v-layout row>
-          <v-layout column style="border-right: 2px #212121 solid">
-            <v-btn
-                icon large v-for="(mUrl, i) in colors.symbol.mortar" :key="i"
-                @click="placePin(menuLatlng, i, PIN_TYPE.MORTAR)"
-                style="margin: 2px 2px 2px 2px">
-              <img :src="mUrl" width="48px">
-            </v-btn>
-          </v-layout>
-          <v-layout column>
-            <v-btn
-                icon large v-for="(mUrl, i) in colors.symbol.target" :key="i"
-                @click="placePin(menuLatlng, i, PIN_TYPE.TARGET)"
-                style="margin: 2px 2px 2px 2px">
-              <img :src="mUrl" width="48px">
-            </v-btn>
-          </v-layout>
-          <v-layout column style="border-left: 2px #212121 solid">
-            <v-btn
-                icon large v-for="(mUrl, i) in colors.symbol.fob" :key="i"
-                @click="placePin(menuLatlng, i, PIN_TYPE.FOB)"
-                style="margin: 2px 2px 2px 2px">
-              <img :src="mUrl" width="48px">
-            </v-btn>
-          </v-layout>
-        </v-layout>
-      </v-content>
-    </v-card>
-  </v-menu>
-  <v-dialog v-model="changelogDialog" max-width="600px">
-    <v-card>
-      <v-card-text>
-        <Changelog/>
-      </v-card-text>
-      <v-card-actions>
-        <v-btn @click.native="changelogDialog = false">Close</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
-  <canvas id="heightmap"></canvas>
 </v-app>
 </template>
 
@@ -423,31 +583,26 @@ import Vue from "vue";
 import Vuetify from "vuetify";
 import "vuetify/dist/vuetify.min.css";
 
-import { CRS, LatLng, Map, Point, Polyline, Transformation } from "leaflet";
+import { CRS, LatLng, LatLngBounds, Map, Point, Polyline, Rectangle, Transformation } from "leaflet";
 
 import SquadGrid from "./assets/Leaflet_extensions/SquadGrid";
 import LocationLayer from "./assets/Leaflet_extensions/LocationLayer";
+import * as Utils from "./assets/Utils";
 import {
-  calcMortarAngle,
-  formatKeyPad,
-  getKP,
-  getPos,
-  pad,
-  pinUrls,
-  symbolUrls,
-} from "./assets/Utils";
-import {
+  COLORS,
   ICON_SIZE,
-  PIN_TYPE, PS_3INCH_MAX_DISTANCE, PS_3INCH_VELOCITY,
-  PS_4INCH_MAX_DISTANCE,
-  PS_4INCH_VELOCITY,
-  PS_8CM_MAX_DISTANCE,
-  PS_8CM_VELOCITY, SQUAD_MAX_DISTANCE, SQUAD_VELOCITY,
+  MAX_SUBTARGETS_COUNT,
+  PIN_TYPE,
+  TARGET_TYPE,
 } from "./assets/Vars";
-import PinHolder from "./assets/PinHolder";
 import MapData from "./assets/MapData";
 
 import { version as pkgVersion } from "../package.json";
+import SubtargetsHolder from "./assets/SubtargetsHolder";
+import PinHolder from "./assets/marker/pin/PinHolder";
+import MortarPin from "./assets/marker/pin/MortarPin";
+import TargetPin from "./assets/marker/pin/TargetPin";
+import FobPin from "./assets/marker/pin/FobPin";
 
 Vue.use(Vuetify, {});
 
@@ -471,6 +626,8 @@ export default {
     return {
       showMenu: false, // menu when clicking on map
       drawer: undefined, // left navigation drawer
+
+      /** @type {Map} */
       map: undefined, // leaflet map object
       maps: this.mapData.getMapNames(), // map names for top selector
       grid: new SquadGrid(), // keypad grid
@@ -481,48 +638,76 @@ export default {
       selectedMap: this.fromStorage("selectedMap", undefined), // selected map in top selector
       delayCalcUpdate: this.fromStorage("delayCalcUpdate", "true") === "true",
       hideLoadingBar: this.fromStorage("hideLoadingBar", "true") === "true",
-      mouseKeypad: undefined, // keypad shown in bottom left corner
+      mouseKeypad: "LOL", // keypad shown in bottom left corner
       showKeypadTimeout: undefined, // value of timeout, set when mouse is moved, set undefined after 1 sec
       calcTimeout: undefined, // value of timeout for delayed calculations set, see calcMortar()
+
+      /** @type {MortarPin} */
       mortar: undefined, // active mortar (for line drawing)
+
+      /** @type {TargetPin} */
       target: undefined, // active target (for line drawing)
-      distLine: undefined, // the line
+
+      /** @type {TargetPin} */
+      secondaryTarget: undefined, // secondary target (for line and area target type)
+      subTargetSpacing: Number.parseInt(this.fromStorage("secondaryRoundsSpacing", "50"), 10),
+      primaryLine: undefined, // line to primary target
+
+      /** @type {Polyline} */
+      fireLine: undefined, // line to secondary target
+      /** @type {Rectangle} */
+      fireArea: undefined, // line to secondary target
+      subTargetLine: undefined, // line to subTarget
+      aSubTargets: [], // list of precomputed subtargets (for line and area target)
+      subtargetsPoints: [], // drawing subtargets on map
+      warningTooMuchSubTargets: false,
       // available colors
       colors: {
         pin: {
-          mortar: pinUrls(PIN_TYPE.MORTAR),
-          target: pinUrls(PIN_TYPE.TARGET),
-          fob: pinUrls(PIN_TYPE.FOB),
+          mortar: Utils.getPinUrls(PIN_TYPE.MORTAR),
+          target: Utils.getPinUrls(PIN_TYPE.TARGET),
+          fob: Utils.getPinUrls(PIN_TYPE.FOB),
         },
         symbol: {
-          mortar: symbolUrls(PIN_TYPE.MORTAR),
-          target: symbolUrls(PIN_TYPE.TARGET),
-          fob: symbolUrls(PIN_TYPE.FOB),
+          mortar: Utils.getSymbolUrls(PIN_TYPE.MORTAR),
+          target: Utils.getSymbolUrls(PIN_TYPE.TARGET),
+          fob: Utils.getSymbolUrls(PIN_TYPE.FOB),
         },
       },
 
+      /** @type {MortarPin[]} */
       placedMortars: [], // mortars currently on map
+      /** @type {TargetPin[]} */
       placedTargets: [], // targets currently on map
+      /** @type {FobPin[]} */
       placedFobs: [], // fobs currently on map
 
+      /** @type {Point} */
       menuPos: new Point(500, 500), // x:y position set just before click menu is shown
+      /** @type {LatLng} */
       menuLatlng: undefined, // same position but in latlng
+      /** @type {SquadMap} */
       squadMap: undefined, // class that holds current map, see SquadMap class
       loading: true,
 
       // values for mortar settings, distance, etc.
-      c: {
+      mortarSettings: {
+        /** @type {number} */
         bearing: undefined,
+        /** @type {number} */
         elevation: undefined,
+        /** @type {number} */
         dist: undefined,
-        hDelta: undefined,
+        /** @type {number} */
+        dHeight: undefined,
       },
-
+      MAX_SUBTARGETS_COUNT, // max amount of subtargets to avoid perfs issues
+      TARGET_TYPE, // reference to target types
       PIN_TYPE, // reference to pin types
-      pad, // reference to padding function used for formatting distance, heightDiff, etc.
+      pad: Utils.pad, // reference to padding function used for formatting distance, heightDiff, etc.
 
       advancedMode: this.fromStorage("advancedMode", "false") === "true",
-      pinSize: Number.parseInt(this.fromStorage("pinSize", `${ICON_SIZE}`), 10),
+      pinSize: Number.parseInt(this.fromStorage("pinSize", ICON_SIZE), 10),
       showAllRanges: this.fromStorage("showAllRanges", "false") === "true",
       errorString: localStorage === undefined ? "No localStorage!" : undefined,
       errorStringSub: "Your settings won't be saved",
@@ -539,13 +724,14 @@ export default {
         tError: false,
       },
 
-      /* PostScriptum exclusive */
-      mortarTypes: [
-        ["GER 8cm", PS_8CM_VELOCITY, PS_8CM_MAX_DISTANCE],
-        ["BRIT 4″", PS_4INCH_VELOCITY, PS_4INCH_MAX_DISTANCE],
-        ["BRIT 3″", PS_3INCH_VELOCITY, PS_3INCH_MAX_DISTANCE],
-      ],
-      mTypeIndex: Number.parseInt(this.fromStorage("mTypeIndex", "0"), 10),
+      /** @type {MortarType[]} */
+      mortarTypes: this.postScriptum ? Utils.getPSMortarTypes() : Utils.getSquadMortarTypes(),
+
+      mTypeIndex: 0,
+      /** @type {SubtargetsHolder} */
+      subTargetsHolder: undefined,
+      currentSubTarget: 0,
+      targetType: Number.parseInt(this.fromStorage("targetType", TARGET_TYPE.POINT), 10),
     };
   },
   mounted() {
@@ -557,6 +743,11 @@ export default {
     };
 
     this.setupMap();
+    this.subTargetsHolder = new SubtargetsHolder(this.map);
+    this.subTargetsHolder.addOnTargetClickListener((i) => {
+      this.currentSubTarget = i;
+      this.showMenu = false;
+    });
 
     // set selected map, defined already if loaded from localStorage
     if (!this.selectedMap || this.maps.indexOf(this.selectedMap) === -1) {
@@ -574,7 +765,7 @@ export default {
       // on mobile safari, map doesn't show if not fixed
       // but if always fixed, persistent navbar is over map on desktop, which is clunky
       // so this is the compromise.
-      if (this.drawer) { document.getElementById("map").style.position = "relative"; }
+      // if (this.drawer) { document.getElementById("map").style.position = "relative"; }
       this.map.invalidateSize();
       if (executions === 0) { clearInterval(interval); }
     }, 250);
@@ -616,6 +807,7 @@ export default {
       // clear map related objects
       this.mortar = undefined;
       this.target = undefined;
+      this.secondaryTarget = undefined;
       this.placedTargets = [];
       this.placedMortars = [];
       this.placedFobs = [];
@@ -665,10 +857,8 @@ export default {
       }
 
       console.log("setting up map layer");
-
       this.map.addLayer(layer); // finally add the map
-
-      this.map.setView(squadMap.bounds.getCenter());
+      this.map.setView(squadMap.bounds.getCenter()); // center view
 
       // hack to properly align map and squadgrid
       // eslint-disable-next-line no-underscore-dangle
@@ -692,7 +882,7 @@ export default {
 
 
       // format position as keypad for bottom left corner
-      this.mouseKeypad = getKP(e.latlng.lat, e.latlng.lng);
+      this.mouseKeypad = Utils.getKP(e.latlng.lat, e.latlng.lng);
 
       // black magic to only have bottom left keypad indicator shown for 1 second
       if (this.showKeypadTimeout) {
@@ -750,7 +940,7 @@ export default {
       // string -> keypad string e.g. A03-1-1 -> convert to LatLng
       // Array -> "raw" LatLng -> convert to LatLng
       if (typeof pos === "string") {
-        pos = getPos(pos);
+        pos = Utils.getPos(pos);
       } else if (Array.isArray(pos)) {
         pos = new LatLng(pos);
       }
@@ -760,132 +950,242 @@ export default {
         case PIN_TYPE.MORTAR:
           // check placed pins. if pin exists already, just move it
           for (let i = 0; i < this.placedMortars.length; i += 1) {
-            if (this.colors.pin.mortar[urlIndex] === this.placedMortars[i].pUrl) {
+            if (this.colors.pin.mortar[urlIndex] === this.placedMortars[i].pinUrl) {
               this.placedMortars[i].pos = pos;
+
+              // automatically put it as main mortar for calculations
               this.mortar = this.placedMortars[i];
               return;
             }
           }
-          pin = new PinHolder(
-            type, this.colors.pin.mortar[urlIndex], this.pinSize,
-            this.postScriptum ? this.currentMType[2] : SQUAD_MAX_DISTANCE, // use max distance of current mortar for PS
+          // no pin was found, so we create it
+          pin = new MortarPin(
+            this.map, pos, PinHolder.createIcon(this.colors.pin.mortar[urlIndex], this.pinSize),
+            true, this.mortarType.maxDistance,
           );
           this.placedMortars.push(pin);
           this.mortar = pin;
           break;
         case PIN_TYPE.TARGET:
+          // check placed pins. if pin exists already, just move it
           for (let i = 0; i < this.placedTargets.length; i += 1) {
-            if (this.colors.pin.target[urlIndex] === this.placedTargets[i].pUrl) {
+            if (this.colors.pin.target[urlIndex] === this.placedTargets[i].pinUrl) {
               this.placedTargets[i].pos = pos;
-              this.target = this.placedTargets[i];
+
+              // we found a matching target and moved it
+              // if this target is neither the current primary or secondary target,
+              // we set the current primary target as secondary, and this one as the new primary target
+              if (this.placedTargets[i] !== this.target && this.placedTargets[i] !== this.secondaryTarget) {
+                this.secondaryTarget = this.target;
+                this.target = this.placedTargets[i];
+              }
               return;
             }
           }
-          pin = new PinHolder(type, this.colors.pin.target[urlIndex], this.pinSize);
+          // no pin was found, so we create it
+          pin = new TargetPin(this.map, pos, PinHolder.createIcon(this.colors.pin.target[urlIndex], this.pinSize));
           this.placedTargets.push(pin);
+
+          // if there currently is a primary target, we set is as secondary,
+          // and the new pin becomes the primary target.
+          if (this.target) {
+            this.secondaryTarget = this.target;
+          }
           this.target = pin;
           break;
         case PIN_TYPE.FOB:
+          // check placed pins. if pin exists already, just move it
           for (let i = 0; i < this.placedFobs.length; i += 1) {
-            if (this.colors.pin.fob[urlIndex] === this.placedFobs[i].pUrl) {
+            if (this.colors.pin.fob[urlIndex] === this.placedFobs[i].pinUrl) {
               this.placedFobs[i].pos = pos;
               return;
             }
           }
-          pin = new PinHolder(type, this.colors.pin.fob[urlIndex], this.pinSize);
+          // no pin was found, so we create it
+          pin = new FobPin(this.map, pos, PinHolder.createIcon(this.colors.pin.fob[urlIndex], this.pinSize));
           this.placedFobs.push(pin);
           break;
         default:
           console.error(`Unrecognized pin type ${type}!`); // should never happen
       }
 
-      // no a few things we do on all types of pin
+      // now a few things we do on all types of pin
       if (pin) {
         pin.addOnDragStartListener(this.onDragStartListener);
         pin.addOnDragEndListener(this.onDragEndListener);
         console.log("setting new pin at position:", pos);
-        pin.pos = pos;
-        pin.addTo(this.map);
+        // pin.pos = pos;
+        // pin.addTo(this.map);
+        pin.show();
       }
     },
     /**
-     * Calculates mortar settings.
+     * Draws or move the primary line from start (s) to end (e).
      *
-     * @param {PinHolder} mortar - mortar pin
-     * @param {PinHolder} target - target pin
-     * @param {Boolean} delayUpdate - whether or not to delay updating values for DOM
+     * @param {LatLng} s - starting position
+     * @param {LatLng} e - ending position
+     * @param {boolean} [inRange] - whether or not target is in range (determines line color)
      */
-    calcMortar(mortar, target, delayUpdate = true) {
-      console.log("calcMortar", [mortar, target]);
-
-      const s = mortar.pos;
-      const e = target.pos;
-
-      // oh no, vector maths!
-      let bearing = Math.atan2(e.lng - s.lng, e.lat - s.lat) * 180 / Math.PI;
-
-      const a = s.lat - e.lat;
-      const b = s.lng - e.lng;
-
-      const dist = Math.sqrt(a * a + b * b);
-
-      // rotate so 0° is towards North, round to 1 decimal, mod 360 so that 360° = 0°
-      bearing = (Math.round((180 - bearing) * 10) / 10) % 360;
-
-      // now we get the height and calculate the difference
-      const mortarHeight = this.squadMap.hasHeightmap ? this.squadMap.getHeightmapHolder().getHeight(s.lng, s.lat) : 0;
-      const targetHeight = this.squadMap.hasHeightmap ? this.squadMap.getHeightmapHolder().getHeight(e.lng, e.lat) : 0;
-
-      const hDelta = targetHeight - mortarHeight;
-      const mVelocity = this.postScriptum ? this.currentMType[1] : SQUAD_VELOCITY;
-      const elevation = calcMortarAngle(dist, hDelta, mVelocity);
-
-      // create or move the line
-      if (!this.distLine) {
-        this.distLine = new Polyline([s, e], {
-          color: "#4caf50",
+    drawPrimaryLine(s, e, inRange = true) {
+      console.log("drawPrimaryLine:", s.toString(), e.toString());
+      if (!this.primaryLine) {
+        this.primaryLine = new Polyline([s, e], {
+          // color: "#4caf50",
           interactive: false,
           clickable: false, // legacy support
         });
       } else {
-        this.distLine.setLatLngs([s, e]);
+        this.primaryLine.setLatLngs([s, e]);
       }
 
-      // isNaN is used as elevation might be NaN
-      this.distLine.setStyle({
-        color: Number.isNaN(elevation) || elevation > 1580 || elevation < 800 ? "#f44336" : "#4caf50",
+      this.primaryLine.setStyle({
+        color: inRange ? COLORS.IN_RANGE : COLORS.OUT_OF_RANGE,
       });
 
-      // add to map if it isn't shown yet
-      if (!this.map.hasLayer(this.distLine)) {
-        this.map.addLayer(this.distLine);
-      }
-
-      // new this.c object before setting it
-      const newC = {
-        bearing,
-        elevation,
-        dist,
-        hDelta,
-      };
-
-      if (this.calcTimeout) { clearTimeout(this.calcTimeout); }
-
-      // if we want to delay the calc update, we set a timer that will set this.c
-      if (delayUpdate) {
-        this.calcTimeout = setTimeout(() => {
-          this.c = newC;
-        }, 250);
+      if (!this.map.hasLayer(this.primaryLine)) {
+        this.map.addLayer(this.primaryLine);
       } else {
-        this.c = newC;
+        this.primaryLine.bringToFront();
       }
     },
     /**
+     * Draws or moves the secondary line from start (s) to end (e).
+     *
+     * @param {LatLng} [s] - starting position
+     * @param {LatLng} [e] - ending position
+     */
+    drawFireLine(s = this.secondaryTarget.pos, e = this.target.pos) {
+      console.log("drawFireLine:", s.toString(), e.toString(), this.fireLine);
+
+      if (!this.fireLine) {
+        this.fireLine = new Polyline([s, e], {
+          color: COLORS.LINE_FIRE,
+          interactive: false,
+          clickable: false, // legacy support
+        });
+      } else {
+        this.fireLine.setLatLngs([s, e]);
+      }
+
+      // isNaN is used as elevation might be NaN
+      // const ele = this.mortarSettings.elevation;
+      // this.fireLine.setStyle({
+      //   color: Number.isNaN(ele) || ele > 1580 || ele < 800 ? "#f44336" : "#4caf50",
+      // });
+
+      if (!this.map.hasLayer(this.fireLine)) {
+        this.map.addLayer(this.fireLine);
+      } else {
+        this.fireLine.bringToFront();
+      }
+    },
+    /**
+     * Draws or moves a rectangle between start (s) and end (e).
+     *
+     * @param {LatLng} s - starting position
+     * @param {LatLng} e - ending position
+     */
+    drawFireArea(s = this.secondaryTarget.pos, e = this.target.pos) {
+      console.log("drawFireArea:", s.toString(), e.toString());
+
+      if (!this.fireArea) {
+        this.fireArea = new Rectangle(new LatLngBounds(s, e), {
+          color: COLORS.AREA_FIRE,
+          fill: false,
+          interactive: false,
+          clickable: false, // legacy support
+        });
+      } else {
+        this.fireArea.setBounds(new LatLngBounds(s, e));
+      }
+
+      // isNaN is used as elevation might be NaN
+      // const ele = this.mortarSettings.elevation;
+      // this.fireLine.setStyle({
+      //   color: Number.isNaN(ele) || ele > 1580 || ele < 800 ? "#f44336" : "#4caf50",
+      // });
+
+      if (!this.map.hasLayer(this.fireArea)) {
+        this.map.addLayer(this.fireArea);
+      } else {
+        this.fireArea.bringToFront();
+      }
+    },
+
+    /**
+     * Draws or moves a line specifically for subTargets of Line/Area fire, from start (s) to end (e).
+     *
+     * @param {LatLng} [s] - starting position
+     * @param {LatLng} [e] - ending position
+     * @param {boolean} [inRange] - whether or not target is in range (determines line color)
+     */
+    drawSubTargetLine(
+      s = this.mortar.pos, e = this.subTargetsHolder.targets[this.currentSubTarget].pos,
+      inRange = true,
+    ) {
+      console.log("drawSubTargetLine()");
+      if (!this.subTargetLine) {
+        this.subTargetLine = new Polyline([s, e], {
+          // color: inRange ? "#4caf50" : "#f44336",
+          interactive: false,
+          clickable: false, // legacy support
+        });
+      } else {
+        this.subTargetLine.setLatLngs([s, e]);
+      }
+
+      this.subTargetLine.setStyle({
+        color: inRange ? COLORS.IN_RANGE : COLORS.OUT_OF_RANGE,
+      });
+
+      if (!this.map.hasLayer(this.subTargetLine)) {
+        this.map.addLayer(this.subTargetLine);
+      } else {
+        this.subTargetLine.bringToFront();
+      }
+    },
+
+    /**
+     * Calculates the mortar settings based on the given mortar & target positions.
+     *
+     * @param {LatLng} mPos - mortar position
+     * @param {LatLng} tPos - target position
+     * @returns {{bearing: number, elevation: (number|NaN), dist: number, dHeight: number}} - bearing and elevation
+     *  settings required to hit target. Elevation is NaN if target is out of range.
+     */
+    calcMortarSettings(mPos, tPos) {
+      const mHeight =
+        this.squadMap.hasHeightmap ? this.squadMap.getHeightmapHolder().getHeight(mPos.lng, mPos.lat) : 0;
+      const tHeight =
+        this.squadMap.hasHeightmap ? this.squadMap.getHeightmapHolder().getHeight(tPos.lng, tPos.lat) : 0;
+
+      const dHeight = tHeight - mHeight;
+      const mVel = this.mortarType.velocity;
+      return Utils.getMortarSettings(mPos, tPos, mVel, dHeight);
+    },
+    setMortarSettings(settings, delayed = this.delayCalcUpdate) {
+      if (delayed) {
+        if (this.delayUpdateTimeout) {
+          clearTimeout(this.delayUpdateTimeout);
+        }
+        this.delayUpdateTimeout = setTimeout(() => {
+          this.mortarSettings = settings;
+        }, 1000 / 4);
+      } else {
+        this.mortarSettings = settings;
+      }
+    },
+
+    /**
      * Remove an already placed mortar, specified by its index in placedMortars
-     * @param {Number} i - index of mortar in placedMortars
+     * @param {Number|MortarPin} i - index of mortar in placedMortars, or MortarPin object
      */
     removeMortar(i) {
       console.log("removeMortar:", i);
+      // if i is the pin object, we change it to the index
+      if (i instanceof MortarPin) {
+        i = this.placedMortars.indexOf(i);
+      }
       const tMortar = this.placedMortars[i];
       this.placedMortars.splice(i, 1);
       if (tMortar === this.mortar) {
@@ -896,24 +1196,49 @@ export default {
         }
       }
 
-      tMortar.removeFrom(this.map);
+      tMortar.hide();
     },
     /**
      * Remove an already placed target, specified by its index in placedTargets
-     * @param {Number} i - index of target in placedTargets
+     * @param {Number|TargetPin} i - index of target in placedTargets, or TargetPin object
      */
     removeTarget(i) {
       console.log("removeTarget:", i);
+      // if i is the pin object, we change it to the index
+      if (i instanceof TargetPin) {
+        i = this.placedTargets.indexOf(i);
+      }
       const tTarget = this.placedTargets[i];
       this.placedTargets.splice(i, 1);
       if (tTarget === this.target) {
         if (this.placedTargets.length > 0) {
           this.target = this.placedTargets[i === 0 ? 0 : i - 1];
+          if (this.target.pUrl === this.secondaryTarget.pUrl) {
+            this.secondaryTarget = undefined;
+            // this.removeSubTargets();
+            // this.drawSecondaryLine();
+          }
         } else {
           this.target = undefined;
+          this.secondaryTarget = undefined;
+          // this.removeSubTargets();
+          // this.drawSecondaryLine();
         }
+      } else if (tTarget === this.secondaryTarget) {
+        this.secondaryTarget = undefined;
+        // this.removeSubTargets();
+        // this.drawSecondaryLine();
       }
-      tTarget.removeFrom(this.map);
+      tTarget.hide();
+    },
+    formatDOMElevation(elevation) {
+      if (Number.isNaN(elevation) || elevation > 1580 || elevation < 800) {
+        return "XXXX.Xmil";
+      }
+      return `${Utils.pad((Math.round(elevation * 10) / 10).toFixed(1), 6)}mil`;
+    },
+    formatDOMBearing(bearing) {
+      return `${Utils.pad((Math.round(bearing * 10) / 10).toFixed(1), 5)}°`;
     },
     /**
      * Remove an already placed fob, specified by its index in placedFobs
@@ -972,6 +1297,30 @@ export default {
       window.open("https://github.com/Endebert/squadmc", "_blank");
     },
 
+    clearPrimaryLine() {
+      if (this.primaryLine && this.map.hasLayer(this.primaryLine)) {
+        this.map.removeLayer(this.primaryLine);
+      }
+    },
+
+    clearFireLine() {
+      if (this.fireLine && this.map.hasLayer(this.fireLine)) {
+        this.map.removeLayer(this.fireLine);
+      }
+    },
+
+    clearFireArea() {
+      if (this.fireArea && this.map.hasLayer(this.fireArea)) {
+        this.map.removeLayer(this.fireArea);
+      }
+    },
+
+    clearSubTargetLine() {
+      if (this.subTargetLine && this.map.hasLayer(this.subTargetLine)) {
+        this.map.removeLayer(this.subTargetLine);
+      }
+    },
+
     /**
      * This function works in tandem with showHeightmap watcher.
      * To bet set to layer.on("load"). Checks what layer to remove after one layer has finished loading.
@@ -998,7 +1347,75 @@ export default {
     },
     onDragEndListener() {
       this.dragging = false;
-      if (this.mortar && this.target) { this.calcMortar(this.mortar, this.target, false); }
+      this.updateSubTargets(false);
+      this.calcAndUpdate(false);
+    },
+    calcAndUpdate(delayUpdate = this.delayCalcUpdate) {
+      console.log("calcAndUpdate", this.mortar, this.target, this.secondaryTarget);
+      if (this.mortar && this.target) {
+        // handle line/area fire
+        if (this.targetType !== TARGET_TYPE.POINT && this.secondaryTarget) {
+          this.clearPrimaryLine();
+          // this.subTargetsHolder.genLineFire(this.secondaryTarget.pos, this.target.pos, this.subTargetSpacing);
+          // this.subTargetsHolder.showAll();
+          console.log("subTargets:", this.subTargetsHolder.targets.length, this.subTargetsHolder.targets);
+          console.log("currentSubTarget:", this.currentSubTarget);
+          const cSubTargetPos = this.subTargetsHolder.targets[this.currentSubTarget].pos;
+          const settings = this.calcMortarSettings(this.mortar.pos, cSubTargetPos);
+          this.setMortarSettings(settings, delayUpdate);
+
+          const ele = settings.elevation;
+          const inRange = !Number.isNaN(ele) && ele <= 1580 && ele >= 800;
+          this.drawSubTargetLine(this.mortar.pos, cSubTargetPos, inRange);
+
+          if (this.targetType === TARGET_TYPE.LINE) {
+            this.clearFireArea();
+            this.drawFireLine();
+          } else {
+            this.clearFireLine();
+            this.drawFireArea();
+          }
+        } else {
+          this.clearFireLine();
+          this.clearFireArea();
+          this.clearSubTargetLine();
+          this.subTargetsHolder.hideAll();
+          const settings = this.calcMortarSettings(this.mortar.pos, this.target.pos);
+          this.setMortarSettings(settings, delayUpdate);
+
+          const ele = settings.elevation;
+          const inRange = !Number.isNaN(ele) && ele <= 1580 && ele >= 800;
+          this.drawPrimaryLine(this.mortar.pos, this.target.pos, inRange);
+        }
+      } else {
+        this.clearPrimaryLine();
+        this.clearFireLine();
+        this.clearFireArea();
+        this.clearSubTargetLine();
+        this.subTargetsHolder.hideAll();
+      }
+    },
+    updateSubTargets() {
+      if (this.mortar && this.target && this.secondaryTarget && this.targetType !== TARGET_TYPE.POINT) {
+        // this.removeSubTargets();
+        // this.calcMortarSecondary(this.mortar, this.secondaryTarget, this.delayCalcUpdate);
+        switch (this.targetType) {
+          case TARGET_TYPE.LINE:
+            this.subTargetsHolder.genLineFire(this.secondaryTarget.pos, this.target.pos, this.subTargetSpacing);
+            break;
+          case TARGET_TYPE.AREA:
+            this.subTargetsHolder.genAreaFire(this.secondaryTarget.pos, this.target.pos, this.subTargetSpacing);
+            break;
+          default:
+            console.log("Trying invoke subTargetsHolder for target type:", this.targetType);
+            break;
+        }
+        this.currentSubTarget = Math.min(this.currentSubTarget, this.subTargetsHolder.targets.length - 1);
+        this.subTargetsHolder.showAll();
+        this.subTargetsHolder.targets[this.currentSubTarget].setSelected(true);
+      } else {
+        // this.clearSecondaryLines();
+      }
     },
 
     /**
@@ -1012,7 +1429,7 @@ export default {
       let gotError = false;
       try {
         // fails when keypad is invalid
-        getPos(kp);
+        Utils.getPos(kp);
       } catch (e) {
         // keypad is invalid, set error state of textField based on type
         gotError = true;
@@ -1026,7 +1443,7 @@ export default {
 
       // formatKeyPad() should never fail, so we return it
       try {
-        return formatKeyPad(kp);
+        return Utils.formatKeyPad(kp);
       } catch (e) {
         // but just in case, we return initial value on error
         return kp;
@@ -1097,27 +1514,34 @@ export default {
      */
     "mortar.pos": function mortarPosWatcher() {
       console.log("mortarPosWatcher");
-      if (this.mortar && this.target) {
-        this.calcMortar(this.mortar, this.target, this.delayCalcUpdate);
-      } else if (this.map.hasLayer(this.distLine)) {
-        this.map.removeLayer(this.distLine);
-      }
+      this.updateSubTargets();
+      this.calcAndUpdate();
     },
     /**
      * Triggers calculation on position change of active target
      */
     "target.pos": function targetPosWatcher() {
       console.log("targetPosWatcher");
-      if (this.mortar && this.target) {
-        this.calcMortar(this.mortar, this.target, this.delayCalcUpdate);
-      } else if (this.map.hasLayer(this.distLine)) {
-        this.map.removeLayer(this.distLine);
+      this.updateSubTargets();
+      this.calcAndUpdate();
+    },
+    "secondaryTarget.pos": function secondaryTargetPosWatcher() {
+      console.log("secondaryTargetPosWatcher");
+      this.updateSubTargets();
+      this.calcAndUpdate();
+    },
+    warningTooMuchSubTargets(b) {
+      console.log("warningTooMuchSubTargets", b);
+      if (this.fireLine) {
+        this.fireLine.setStyle({
+          color: b ? "#ff3333" : "#3333ff",
+        });
       }
     },
     /**
      * let new active mortar know that it is active now (in order to show min and max range circles)
-     * @param {PinHolder} newM - new active mortar
-     * @param {PinHolder} oldM - old active mortar
+     * @param {__PinHolder} newM - new active mortar
+     * @param {__PinHolder} oldM - old active mortar
      */
     mortar(newM, oldM) {
       console.log("mortar:", [newM, oldM]);
@@ -1129,6 +1553,14 @@ export default {
       if (newM) {
         newM.setActive(true, this.map);
       }
+    },
+    subTargetSpacing(i) {
+      this.toStorage("secondaryRoundsSpacing", i);
+      this.updateSubTargets();
+      this.calcAndUpdate(false);
+      // if (this.advancedMode && this.target && this.secondaryTarget && this.targetType !== TARGET_TYPE.POINT) {
+      //   this.calcSubTargets();
+      // }
     },
     /**
      * Resets map when advancedMode is disabled (fixes orphaned markers)
@@ -1144,6 +1576,8 @@ export default {
         while (this.placedTargets.length > 0) {
           this.removeTarget(0);
         }
+        // set targetType to point
+        // this.targetType = TARGET_TYPE.POINT;
       }
       this.toStorage("advancedMode", b);
     },
@@ -1157,8 +1591,8 @@ export default {
       console.log("pinSize:", newSize);
       this.placedMortars.forEach((marker) => {
         marker.size = newSize;
-        marker.removeFrom(this.map);
-        marker.addTo(this.map);
+        // marker.removeFrom(this.map);
+        // marker.addTo(this.map);
       });
       this.placedTargets.forEach((marker) => {
         marker.size = newSize;
@@ -1199,22 +1633,44 @@ export default {
       this.toStorage("hideLoadingBar", b);
     },
 
-    /* PostScriptum exclusive */
+    /**
+     * Updates maxDistance of placed mortars.
+     *
+     * @param {MortarType} mType - mortar type
+     */
+    mortarType(mType) {
+      this.placedMortars.forEach((m) => {
+        m.setMaxDistance(mType.maxDistance);
+      });
+    },
 
+    /**
+     * @param {TARGET_TYPE} tType - target type, one of TARGET_TYPE enum
+     */
+    targetType(tType) {
+      this.updateSubTargets();
+      this.calcAndUpdate(false);
+      this.toStorage("targetType", tType);
+    },
+    /**
+     * Keeps track fo the current subTarget and recalculates the mortar settings.
+     */
+    currentSubTarget(newI, oldI) {
+      console.log("currentSubTarget:", [newI, oldI]);
+      try {
+        this.subTargetsHolder.targets[oldI].setSelected(false);
+      } catch (e) {
+        console.warn(`old current subtarget at ${oldI} does not exist anymore`);
+      }
+      this.subTargetsHolder.targets[newI].setSelected(true);
+      this.calcAndUpdate(false);
+    },
     /**
      * Saves the mortar type index in localStorage
      * and updates placed mortar markers to display correct the max distance.
      */
     mTypeIndex(newIndex) {
-      const newMaxDist = this.currentMType[2];
-      this.placedMortars.forEach((m) => {
-        m.setMaxDistance(newMaxDist);
-      });
-
-      if (this.mortar && this.target) {
-        this.calcMortar(this.mortar, this.target);
-      }
-
+      this.calcAndUpdate(false);
       this.toStorage("mTypeIndex", newIndex);
     },
   },
@@ -1224,43 +1680,38 @@ export default {
      * @return {String} formatted string
      */
     DOMbearing() {
-      return `✵${pad((Math.round(this.c.bearing * 10) / 10).toFixed(1), 5)}°`;
+      return this.formatDOMBearing(this.mortarSettings.bearing);
     },
     /**
      * Returns formatted elevation string for DOM element
      * @return {String} formatted string
      */
     DOMelevation() {
-      if (Number.isNaN(this.c.elevation) || this.c.elevation > 1580 || this.c.elevation < 800) {
-        return "∠XXXX.Xmil";
-      }
-      return `∠${pad((Math.round(this.c.elevation * 10) / 10).toFixed(1), 6)}mil`;
+      return this.formatDOMElevation(this.mortarSettings.elevation);
     },
     /**
      * Returns formatted dist string for DOM element
      * @return {String} formatted string
      */
     DOMdist() {
-      return `↔${pad(Math.round(this.c.dist), 4)}m`;
+      return `↔${Utils.pad(Math.round(this.mortarSettings.dist), 4)}m`;
     },
     /**
-     * Returns formatted hDelta string for DOM element
+     * Returns formatted dHeight string for DOM element
      * @return {String} formatted string
      */
     DOMhDelta() {
-      if (this.c.hDelta > 0) {
-        return `↕+${pad(Math.round(this.c.hDelta), 3)}m`;
+      if (this.mortarSettings.dHeight > 0) {
+        return `↕+${Utils.pad(Math.round(this.mortarSettings.dHeight), 3)}m`;
       }
-      return `↕-${pad(Math.round(-this.c.hDelta), 3)}m`;
+      return `↕-${Utils.pad(Math.round(-this.mortarSettings.dHeight), 3)}m`;
     },
-
-    /* PostScriptum exclusive */
-
     /**
-     * Returns the current mortar Type array based on mTypeIndex.
-     * @returns {Array} 3-element array containing mortar name, velocity, and max distance
+     * Returns current mortar type as MortarType instance.
+     *
+     * @return {MortarType}
      */
-    currentMType() {
+    mortarType() {
       return this.mortarTypes[this.mTypeIndex];
     },
   },
@@ -1280,18 +1731,6 @@ body {
 
 body::-webkit-scrollbar {
   display: none;
-}
-
-.fixedPos {
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-}
-
-.front {
-  z-index: 1;
 }
 
 .leaflet-container {
@@ -1323,31 +1762,13 @@ body::-webkit-scrollbar {
 #map {
   cursor: crosshair;
   z-index: 0;
-  width: 100%;
-  height: 100%;
+  /*width: 100%;*/
+  /*height: 100%;*/
 }
 
 #heightmap {
   visibility: hidden;
   position: absolute;
-}
-
-.keypadLabel {
-  padding: 0 0.5em;
-  font-family: monospace;
-}
-
-.bottom-bar {
-  /*position: fixed;*/
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  width: 100%;
-  height: 100%;
-}
-
-#my-footer {
-  display: flex; align-items: center; pointer-events: all
 }
 
 .font-mono {
@@ -1357,6 +1778,7 @@ body::-webkit-scrollbar {
 .flex {
   display: flex;
   flex: 0 0 auto;
+  align-items: center;
 }
 
 .column {
@@ -1366,5 +1788,10 @@ body::-webkit-scrollbar {
 /* for bottom bar to work in safari 8*/
 .content--wrap {
   height: 100%!important;
+}
+
+.absolute-layer {
+  position: absolute;
+  top: 0; bottom: 0; left: 0; right: 0;
 }
 </style>
