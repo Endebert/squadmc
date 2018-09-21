@@ -1,5 +1,6 @@
-import { CircleMarker, ImageOverlay, LatLngBounds, TileLayer } from "leaflet";
+import { CircleMarker, ImageOverlay, LatLngBounds } from "leaflet";
 import HeightmapHolder from "./HeightmapHolder";
+import NoGapTileLayer from "./Leaflet_extensions/NoGapTileLayer";
 
 /**
  * This class holds a map and gives simplified access to its heightmap, locations, etc.
@@ -30,7 +31,7 @@ export default class SquadMap {
    */
   getMapTileLayer() {
     if (!this._mapTileLayer) {
-      this._mapTileLayer = new TileLayer(this._mapData.url, {
+      this._mapTileLayer = new NoGapTileLayer(this._mapData.url, {
         minNativeZoom: 0,
         maxNativeZoom: 4,
         // zoomOffset: -3,
@@ -64,7 +65,7 @@ export default class SquadMap {
     if (!this.hasHeightmap) { throw new Error(`${this._mapData.name} has no heightmap!`); }
 
     if (!this._heightmapTileLayer) {
-      this._heightmapTileLayer = new TileLayer(this._mapData.heightmap.tile, {
+      this._heightmapTileLayer = new NoGapTileLayer(this._mapData.heightmap.tile, {
         minNativeZoom: 0,
         maxNativeZoom: 4,
         // zoomOffset: -3,
