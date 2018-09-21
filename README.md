@@ -60,6 +60,7 @@ The build will be contained in the `/dist` folder.
 
 ## Contributors
  * [Trikolon](https://github.com/Trikolon)
+ * [Kalliser](https://github.com/Kalliser)
 
 ## Attributions
  * Keypad grid originally based on [Leaflet.SimpleGraticule](https://github.com/ablakey/Leaflet.SimpleGraticule), but not much is left from the original code
