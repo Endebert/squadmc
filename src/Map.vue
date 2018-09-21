@@ -532,7 +532,7 @@
     </v-list>
 
     <!--'REMOVE PINS' SECTION-->
-    <v-list>
+    <v-list class="pa-0">
       <v-list-group :disabled="placedMortars.length + placedFobs.length + placedTargets.length === 0">
         <v-list-tile slot="activator">
           <v-list-tile-content>
