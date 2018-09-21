@@ -383,7 +383,10 @@
       <v-list class="pa-0" two-line >
         <v-list-tile>
           <v-list-tile-content>
-            <v-list-tile-title>Set target type</v-list-tile-title>
+            <v-list-tile-title style="display: flex">
+              Set target type
+              <div class="primary px-2 flex font-mono mx-2" style="border-radius: 2px; margin: 1px">BETA</div>
+            </v-list-tile-title>
             <v-list-tile-sub-title>
               <v-btn-toggle v-model="targetType" mandatory style="display: flex">
                 <v-btn flat v-for="(val, key) in TARGET_TYPE" :key="val"
