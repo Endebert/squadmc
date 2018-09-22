@@ -1,5 +1,23 @@
 # Change Log
 
+<a name="2.9.0"></a>
+# [2.9.0](https://github.com/Endebert/squadmc/compare/v2.8.0...v2.9.0) (2018-09-22)
+
+
+### Bug Fixes
+
+* fixed layout issue in navbar title ([dfdd7f3](https://github.com/Endebert/squadmc/commit/dfdd7f3))
+* replaced font "Roboto Mono" with "Hack" for better monospace & unicode text/symbols ([5868abb](https://github.com/Endebert/squadmc/commit/5868abb))
+
+
+### Features
+
+* added app name & version to splash/loading screen ([778e529](https://github.com/Endebert/squadmc/commit/778e529))
+* LINE & AREA fire; by Kalliser ([6f01033](https://github.com/Endebert/squadmc/commit/6f01033))
+* performance improvements through canvas rendering ([149bb9d](https://github.com/Endebert/squadmc/commit/149bb9d))
+
+
+
 <a name="2.8.0"></a>
 # [2.8.0](https://github.com/Endebert/squadmc/compare/v2.7.1...v2.8.0) (2018-08-09)
 
