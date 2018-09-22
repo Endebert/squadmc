@@ -1723,7 +1723,7 @@ export default {
 @import "~material-icons/iconfont/material-icons.css";
 @import "~leaflet/dist/leaflet.css";
 @import "~typeface-roboto/index.css";
-@import "~typeface-roboto-mono/index.css";
+@import "~hack-font/build/web/hack.css";
 
 /*hide scrollbar*/
 body {
@@ -1754,7 +1754,7 @@ body::-webkit-scrollbar {
   border-radius: 1em;
   /*font-family: monospace;*/
 
-  font-family: "Roboto Mono", monospace;
+  font-family: "Hack", monospace;
   background-color: rgba(0, 0, 0, 0.33);
   text-shadow: 0.1em 0.1em 0.2em rgba(0, 0, 0, 1);
   font-size: large;
@@ -1773,7 +1773,7 @@ body::-webkit-scrollbar {
 }
 
 .font-mono {
-  font-family: "Roboto Mono", monospace;
+  font-family: "Hack", monospace;
 }
 
 .flex {
