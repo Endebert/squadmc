@@ -315,9 +315,9 @@
   >
     <!--APP TITLE AND CHANGELOG BUTTON-->
     <v-toolbar dense>
-      <v-toolbar-title>
+      <v-toolbar-title class="flex" style="flex-grow: 1; justify-content: space-between">
         {{postScriptum ? "PostScriptumMC" : "SquadMC"}}
-        <v-btn small color="primary" @click.stop="changelogDialog = true" style="min-width: 70px">{{appVersion}}</v-btn>
+        <v-btn color="primary" @click.stop="changelogDialog = true" style="min-width: 70px">{{appVersion}}</v-btn>
       </v-toolbar-title>
     </v-toolbar>
 
