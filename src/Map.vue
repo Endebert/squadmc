@@ -579,11 +579,36 @@
 </template>
 
 <script>
-import Vue from "vue";
-import Vuetify from "vuetify";
-import "vuetify/dist/vuetify.min.css";
 
 import { CRS, LatLng, LatLngBounds, Map, Point, Polyline, Rectangle, Transformation } from "leaflet";
+import Vue from "vue";
+// required for Vuetify's a-la-carte functionality
+import "vuetify/src/stylus/app.styl";
+import {
+  Vuetify,
+  VApp,
+  VBadge,
+  VBtn,
+  VBtnToggle,
+  VCard,
+  VDialog,
+  VDivider,
+  VForm,
+  VFooter,
+  VInput,
+  VGrid,
+  VIcon,
+  VList,
+  VLabel,
+  VMenu,
+  VNavigationDrawer,
+  VSelect,
+  VSlider,
+  VSpeedDial,
+  VSwitch,
+  VTextField,
+  VToolbar,
+} from "vuetify";
 
 import SquadGrid from "./assets/Leaflet_extensions/SquadGrid";
 import LocationLayer from "./assets/Leaflet_extensions/LocationLayer";
@@ -604,7 +629,32 @@ import MortarPin from "./assets/marker/pin/MortarPin";
 import TargetPin from "./assets/marker/pin/TargetPin";
 import FobPin from "./assets/marker/pin/FobPin";
 
-Vue.use(Vuetify, {});
+Vue.use(Vuetify, {
+  components: {
+    VApp,
+    VBadge,
+    VBtn,
+    VBtnToggle,
+    VCard,
+    VDialog,
+    VDivider,
+    VFooter,
+    VForm,
+    VGrid,
+    VIcon,
+    VInput,
+    VLabel,
+    VList,
+    VMenu,
+    VNavigationDrawer,
+    VSelect,
+    VSlider,
+    VSpeedDial,
+    VSwitch,
+    VTextField,
+    VToolbar,
+  },
+});
 
 export default {
   name: "Map",
@@ -1794,5 +1844,10 @@ body::-webkit-scrollbar {
 .absolute-layer {
   position: absolute;
   top: 0; bottom: 0; left: 0; right: 0;
+}
+
+/* FIXME: Vuetify a-la-carte changes class order of switches. This hack restores normal behaviour */
+.v-input--selection-controls .v-input__slot {
+  margin-bottom: 0;
 }
 </style>
