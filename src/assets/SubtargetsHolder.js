@@ -21,7 +21,7 @@ export default class SubtargetsHolder {
    * @param {number} spacing
    */
   genLineFire(s, e, spacing) {
-    console.log("genLineFire:", [s, e, spacing]);
+    console.log("genLineFire:", [s.toString(), e.toString(), spacing]);
     this.hideAll();
     const dist = getDist(s, e);
     const latDist = e.lat - s.lat;

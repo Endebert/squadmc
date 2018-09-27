@@ -1254,33 +1254,64 @@ export default {
      * @param {Number|TargetPin} i - index of target in placedTargets, or TargetPin object
      */
     removeTarget(i) {
-      console.log("removeTarget:", i);
+      console.log("removeTarget:", i, this.placedTargets);
       // if i is the pin object, we change it to the index
       if (i instanceof TargetPin) {
         i = this.placedTargets.indexOf(i);
       }
-      const tTarget = this.placedTargets[i];
+      const rTarget = this.placedTargets[i];
       this.placedTargets.splice(i, 1);
-      if (tTarget === this.target) {
-        if (this.placedTargets.length > 0) {
-          this.target = this.placedTargets[i === 0 ? 0 : i - 1];
-          if (this.target.pUrl === this.secondaryTarget.pUrl) {
-            this.secondaryTarget = undefined;
-            // this.removeSubTargets();
-            // this.drawSecondaryLine();
+      console.log("tTarget === this.target:", rTarget === this.target, this.placedTargets);
+      console.log("tTarget === this.secondaryTarget:", rTarget === this.secondaryTarget, this.placedTargets);
+      if (rTarget === this.target) {
+        // if more than one is left, we can find new secondary target
+        if (this.placedTargets.length > 1) {
+          const newTarget = this.placedTargets[i === 0 ? 0 : i - 1];
+          if (newTarget.pinUrl === this.secondaryTarget.pinUrl) {
+            // find new secondary target
+            // iterate through targets backwards, as behaviour is more intuitive to the user
+            let newSecondary;
+            for (let j = 1; j <= this.placedTargets.length; j++) {
+              const target = this.placedTargets[this.placedTargets.length - j];
+              console.log(`(${j}): ${target.pinUrl} !== ${newTarget.pinUrl} -> ${target.pinUrl !== newTarget.pinUrl}`);
+              if (target.pinUrl !== newTarget.pinUrl) {
+                newSecondary = target;
+                break;
+              }
+            }
+            console.log("new primary & secondary targets:", newTarget, newSecondary);
+            this.target = newTarget;
+            this.secondaryTarget = newSecondary;
           }
+        } else if (this.placedTargets.length > 0) {
+          // only one target left, which is primary target, so secondary target must be undefined
+          this.target = this.placedTargets[0];
+          this.secondaryTarget = undefined;
         } else {
+          // no targets left, set primary and secondary target to undefined
           this.target = undefined;
           this.secondaryTarget = undefined;
-          // this.removeSubTargets();
-          // this.drawSecondaryLine();
         }
-      } else if (tTarget === this.secondaryTarget) {
-        this.secondaryTarget = undefined;
-        // this.removeSubTargets();
-        // this.drawSecondaryLine();
+      } else if (rTarget === this.secondaryTarget) {
+        if (this.placedTargets.length > 1) {
+          // more than one targets are left, so we can find new secondary target
+          // iterate through targets backwards, as behaviour is more intuitive to the user
+          let newSecondary;
+          for (let j = 1; j <= this.placedTargets.length; j++) {
+            const target = this.placedTargets[this.placedTargets.length - j];
+            // make sure it's not same target, and not primary target
+            if (target.pinUrl !== this.target.pinUrl) {
+              newSecondary = target;
+              break;
+            }
+          }
+          console.log("new secondary target:", newSecondary);
+          this.secondaryTarget = newSecondary;
+        } else {
+          this.secondaryTarget = undefined;
+        }
       }
-      tTarget.hide();
+      rTarget.hide();
     },
     formatDOMElevation(elevation) {
       if (Number.isNaN(elevation) || elevation > 1580 || elevation < 800) {
@@ -1465,6 +1496,7 @@ export default {
         this.subTargetsHolder.showAll();
         this.subTargetsHolder.targets[this.currentSubTarget].setSelected(true);
       } else {
+        this.subTargetsHolder.hideAll();
         // this.clearSecondaryLines();
       }
     },
@@ -1572,12 +1604,12 @@ export default {
      * Triggers calculation on position change of active target
      */
     "target.pos": function targetPosWatcher() {
-      console.log("targetPosWatcher");
+      console.log("targetPosWatcher:", this.target);
       this.updateSubTargets();
       this.calcAndUpdate();
     },
     "secondaryTarget.pos": function secondaryTargetPosWatcher() {
-      console.log("secondaryTargetPosWatcher");
+      console.log("secondaryTargetPosWatcher:", this.secondaryTarget);
       this.updateSubTargets();
       this.calcAndUpdate();
     },
