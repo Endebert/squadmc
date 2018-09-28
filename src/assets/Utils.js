@@ -105,7 +105,14 @@ export function getKP(lat, lng) {
 
   // basic grid, e.g. B5
   const kpCharCode = 65 + Math.floor(x / kp);
-  const kpLetter = String.fromCharCode(kpCharCode);
+  let kpLetter;
+  // PostScriptum Arnhem Lane A->Z and then a->b letters fix
+  if (kpCharCode > 90) {
+    kpLetter = String.fromCharCode(kpCharCode + 6);
+  } else {
+    kpLetter = String.fromCharCode(kpCharCode);
+  }
+
   const kpNumber = Math.floor(y / kp) + 1;
 
   // sub keypad 1, e.g. B5 - 5
