@@ -1,5 +1,21 @@
 # Change Log
 
+<a name="2.10.0"></a>
+# [2.10.0](https://github.com/Endebert/squadmc/compare/v2.9.0...v2.10.0) (2018-09-28)
+
+
+### Bug Fixes
+
+* fixed errors & strange behaviour when deleting a target from map while using LINE/AREA fire mode ([69c92ab](https://github.com/Endebert/squadmc/commit/69c92ab))
+
+
+### Features
+
+* use modern flag to build production files (by Trikolon) ([#30](https://github.com/Endebert/squadmc/issues/30)) ([70842c4](https://github.com/Endebert/squadmc/commit/70842c4))
+* Vuetify a la carte, to further reduce app size (by Trikolon) ([43a6f52](https://github.com/Endebert/squadmc/commit/43a6f52))
+
+
+
 <a name="2.9.0"></a>
 # [2.9.0](https://github.com/Endebert/squadmc/compare/v2.8.0...v2.9.0) (2018-09-22)
 
