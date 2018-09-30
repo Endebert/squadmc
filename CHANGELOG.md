@@ -1,5 +1,15 @@
 # Change Log
 
+<a name="2.10.1"></a>
+## [2.10.1](https://github.com/Endebert/squadmc/compare/v2.10.0...v2.10.1) (2018-09-30)
+
+
+### Bug Fixes
+
+* fixed using non-letter keypad characters after Z (by TopMak) ([73f93aa](https://github.com/Endebert/squadmc/commit/73f93aa))
+
+
+
 <a name="2.10.0"></a>
 # [2.10.0](https://github.com/Endebert/squadmc/compare/v2.9.0...v2.10.0) (2018-09-28)
 
