@@ -331,7 +331,7 @@
         <v-list-tile-action>
           <v-badge overlap="">
             <v-icon small slot="badge">open_in_new</v-icon>
-            <img src="/img/svg/github.svg" width="40px"/>
+            <img :src="githubIcon" width="40px"/>
           </v-badge>
         </v-list-tile-action>
       </v-list-tile>
@@ -610,6 +610,8 @@ import {
   VToolbar,
 } from "vuetify";
 
+import githubIcon from "./assets/svg/github.svg";
+
 import SquadGrid from "./assets/Leaflet_extensions/SquadGrid";
 import LocationLayer from "./assets/Leaflet_extensions/LocationLayer";
 import * as Utils from "./assets/Utils";
@@ -782,6 +784,8 @@ export default {
       subTargetsHolder: undefined,
       currentSubTarget: 0,
       targetType: Number.parseInt(this.fromStorage("targetType", TARGET_TYPE.POINT), 10),
+
+      githubIcon,
     };
   },
   mounted() {
