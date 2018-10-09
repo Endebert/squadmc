@@ -1,8 +1,9 @@
 
-## Set required http headers for hsts
+## Set required http headers for hsts and disable cache revalidation
 /*
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  Cache-Control: public, max-age=6480000
 
-## Disable cache re-validation for images  and set max age to 3 days
-/img/*
-  Cache-Control: public, max-age=259200
+## Index should always revalidate
+/index.html
+  Cache-Control: must-revalidate
