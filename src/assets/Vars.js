@@ -1,3 +1,31 @@
+import mortarPinRed from "./svg/mortar_pin_red.svg";
+import mortarSymbolRed from "./svg/mortar_symbol_red.svg";
+import mortarPinGreen from "./svg/mortar_pin_green.svg";
+import mortarSymbolGreen from "./svg/mortar_symbol_green.svg";
+import mortarPinBlue from "./svg/mortar_pin_blue.svg";
+import mortarSymbolBlue from "./svg/mortar_symbol_blue.svg";
+import mortarPin from "./svg/mortar_pin.svg";
+import mortarSymbol from "./svg/mortar_symbol.svg";
+
+import targetPinRed from "./svg/target_pin_red.svg";
+import targetSymbolRed from "./svg/target_symbol_red.svg";
+import targetPinGreen from "./svg/target_pin_green.svg";
+import targetSymbolGreen from "./svg/target_symbol_green.svg";
+import targetPinBlue from "./svg/target_pin_blue.svg";
+import targetSymbolBlue from "./svg/target_symbol_blue.svg";
+import targetPin from "./svg/target_pin.svg";
+import targetSymbol from "./svg/target_symbol.svg";
+
+import fobPinRed from "./svg/fob_pin_red.svg";
+import fobSymbolRed from "./svg/fob_symbol_red.svg";
+import fobPinGreen from "./svg/fob_pin_green.svg";
+import fobSymbolGreen from "./svg/fob_symbol_green.svg";
+import fobPinBlue from "./svg/fob_pin_blue.svg";
+import fobSymbolBlue from "./svg/fob_symbol_blue.svg";
+import fobPin from "./svg/fob_pin.svg";
+import fobSymbol from "./svg/fob_symbol.svg";
+
+
 /**
  * Small utility file exporting static values that are reused often
  * @type {number}
@@ -53,22 +81,22 @@ export const TARGET_TYPE = Object.freeze({
  */
 const PIN_MAP = {};
 PIN_MAP[PIN_TYPE.MORTAR] = [
-  ["/img/svg/mortar_pin_red.svg", "/img/svg/mortar_symbol_red.svg", "#F44336"],
-  ["/img/svg/mortar_pin_green.svg", "/img/svg/mortar_symbol_green.svg", "#4CAF50"],
-  ["/img/svg/mortar_pin_blue.svg", "/img/svg/mortar_symbol_blue.svg", "#2196F3"],
-  ["/img/svg/mortar_pin.svg", "/img/svg/mortar_symbol.svg", "#212121"],
+  [mortarPinRed, mortarSymbolRed, "#F44336"],
+  [mortarPinGreen, mortarSymbolGreen, "#4CAF50"],
+  [mortarPinBlue, mortarSymbolBlue, "#2196F3"],
+  [mortarPin, mortarSymbol, "#212121"],
 ];
 PIN_MAP[PIN_TYPE.TARGET] = [
-  ["/img/svg/target_pin_red.svg", "/img/svg/target_symbol_red.svg", "#F44336"],
-  ["/img/svg/target_pin_green.svg", "/img/svg/target_symbol_green.svg", "#4CAF50"],
-  ["/img/svg/target_pin_blue.svg", "/img/svg/target_symbol_blue.svg", "#2196F3"],
-  ["/img/svg/target_pin.svg", "/img/svg/target_symbol.svg", "#212121"],
+  [targetPinRed, targetSymbolRed, "#F44336"],
+  [targetPinGreen, targetSymbolGreen, "#4CAF50"],
+  [targetPinBlue, targetSymbolBlue, "#2196F3"],
+  [targetPin, targetSymbol, "#212121"],
 ];
 PIN_MAP[PIN_TYPE.FOB] = [
-  ["/img/svg/fob_pin_red.svg", "/img/svg/fob_symbol_red.svg", "#F44336"],
-  ["/img/svg/fob_pin_green.svg", "/img/svg/fob_symbol_green.svg", "#4CAF50"],
-  ["/img/svg/fob_pin_blue.svg", "/img/svg/fob_symbol_blue.svg", "#2196F3"],
-  ["/img/svg/fob_pin.svg", "/img/svg/fob_symbol.svg", "#212121"],
+  [fobPinRed, fobSymbolRed, "#F44336"],
+  [fobPinGreen, fobSymbolGreen, "#4CAF50"],
+  [fobPinBlue, fobSymbolBlue, "#2196F3"],
+  [fobPin, fobSymbol, "#212121"],
 ];
 export { PIN_MAP };
 
