@@ -195,7 +195,11 @@ export default TileLayer.extend({
     // Where in the canvas should this tile go?
     const offset = new Point(coords.x, coords.y).subtract(level.canvasRange.min).scaleBy(this.getTileSize());
 
-    level.ctx.drawImage(imageSource, offset.x, offset.y, tileSize.x, tileSize.y);
+    try {
+      level.ctx.drawImage(imageSource, offset.x, offset.y, tileSize.x, tileSize.y);
+    } catch (e) {
+      console.warn("drawing on canvas failed:", e);
+    }
 
     // TODO: Clear the pixels of other levels' canvases where they overlap
     // this newly dumped tile.
