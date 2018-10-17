@@ -26,6 +26,7 @@
     "raf": "^3.4.0",
     "raven-js": "^3.25.2",
     "replace": "^1.0.0",
+    "semver": "^5.6.0",
     "standard-version": "^4.4.0",
     "typeface-roboto": "^0.0.54",
     "vue": "^2.5.16",

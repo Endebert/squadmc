@@ -635,6 +635,7 @@ import {
   VToolbar,
 } from "vuetify";
 import Raven from "raven-js";
+import semver from "semver";
 
 import githubIcon from "./assets/svg/github.svg";
 
@@ -716,6 +717,7 @@ export default {
       selectedMap: this.fromStorage("selectedMap", undefined), // selected map in top selector
       delayCalcUpdate: this.fromStorage("delayCalcUpdate", "true") === "true",
       hideLoadingBar: this.fromStorage("hideLoadingBar", "true") === "true",
+      storedVersion: this.fromStorage("version", "v0.0.0"),
       mouseKeypad: "LOL", // keypad shown in bottom left corner
       showKeypadTimeout: undefined, // value of timeout, set when mouse is moved, set undefined after 1 sec
       calcTimeout: undefined, // value of timeout for delayed calculations set, see calcMortar()
@@ -857,6 +859,16 @@ export default {
       this.map.invalidateSize();
       if (executions === 0) { clearInterval(interval); }
     }, 250);
+
+    if (semver.gt(pkgVersion, this.storedVersion)) {
+      // if first view of new version
+
+      // open changelog
+      this.changelogDialog = true;
+
+      // put new version into localstorage
+      this.toStorage("version", pkgVersion);
+    }
   },
   methods: {
     /**
