@@ -1,5 +1,24 @@
 # Change Log
 
+<a name="2.11.0"></a>
+# [2.11.0](https://github.com/Endebert/squadmc/compare/v2.10.1...v2.11.0) (2018-10-17)
+
+
+### Bug Fixes
+
+* fixed changelog-dialog close button position ([29d0cce](https://github.com/Endebert/squadmc/commit/29d0cce))
+* fixed FOB markers not being removed when trying to remove them in the navbar ([#34](https://github.com/Endebert/squadmc/issues/34)) (by TopMak) ([6251785](https://github.com/Endebert/squadmc/commit/6251785))
+* fixed not catching an error when drawing on the map canvas ([c578791](https://github.com/Endebert/squadmc/commit/c578791))
+
+
+### Features
+
+* added error reporting functionality ([872e431](https://github.com/Endebert/squadmc/commit/872e431))
+* added showing changelog dialog when using newer version for the first time ([92b7a14](https://github.com/Endebert/squadmc/commit/92b7a14))
+* Improved Caching ([#33](https://github.com/Endebert/squadmc/issues/33)) (by Trikolon) ([0a06a56](https://github.com/Endebert/squadmc/commit/0a06a56))
+
+
+
 <a name="2.10.1"></a>
 ## [2.10.1](https://github.com/Endebert/squadmc/compare/v2.10.0...v2.10.1) (2018-09-30)
 
