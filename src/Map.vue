@@ -171,11 +171,12 @@
           </v-menu>
 
           <!--CHANGELOG DIALOG-->
-          <v-dialog v-model="changelogDialog" max-width="600px">
+          <v-dialog v-model="changelogDialog" scrollable max-width="600px">
             <v-card>
               <v-card-text>
                 <Changelog/>
               </v-card-text>
+              <v-divider></v-divider>
               <v-card-actions>
                 <v-btn @click.native="changelogDialog = false">Close</v-btn>
               </v-card-actions>
