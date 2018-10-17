@@ -24,7 +24,8 @@
                   style="z-index: 1"
               >
                 <v-toolbar-side-icon @click.stop="drawer = !drawer">
-                  <v-icon>menu</v-icon>
+                  <v-icon v-if="ravenError" color="#b71c1c">warning</v-icon>
+                  <v-icon v-else>menu</v-icon>
                 </v-toolbar-side-icon>
                 <!--<img src="/img/svg/icon.svg" width="40px">-->
                 <v-toolbar-title>
@@ -338,6 +339,29 @@
     </v-list>
     <v-divider></v-divider>
 
+    <!--ERROR DETECTED ENTRY-->
+    <template v-if="ravenError">
+    <!--<template>-->
+      <v-list class="px-0">
+        <v-list-tile @click="showRavenReportDialog()" style="background-color: #b71c1c">
+          <!--<v-list-tile-action>-->
+            <!--<v-switch-->
+                <!--v-model="advancedMode"-->
+            <!--&gt;</v-switch>-->
+          <!--</v-list-tile-action>-->
+          <v-list-tile-content>
+            <!--<v-list-tile-title>An Error occurred</v-list-tile-title>-->
+            <!--<v-list-tile-sub-title>Please click here and fill out the error report</v-list-tile-sub-title>-->
+            An error occurred. Please click here and fill out the error report.
+          </v-list-tile-content>
+          <v-list-tile-avatar>
+            <v-icon>warning</v-icon>
+          </v-list-tile-avatar>
+        </v-list-tile>
+      </v-list>
+      <v-divider></v-divider>
+    </template>
+
     <!--ADVANCED MODE TOGGLE-->
     <v-list class="px-0">
       <v-list-tile>
@@ -609,6 +633,7 @@ import {
   VTextField,
   VToolbar,
 } from "vuetify";
+import Raven from "raven-js";
 
 import githubIcon from "./assets/svg/github.svg";
 
@@ -786,10 +811,18 @@ export default {
       targetType: Number.parseInt(this.fromStorage("targetType", TARGET_TYPE.POINT), 10),
 
       githubIcon,
+      ravenError: false,
     };
   },
   mounted() {
     console.log("mounted");
+
+    document.addEventListener("ravenSuccess", (event) => {
+      console.log("ravenSuccess!", event);
+      if (event.data.event_id !== undefined) {
+        this.ravenError = true;
+      }
+    }, false);
 
     // remove right click to fix context menu opening when long pressing pin for dragging
     document.oncontextmenu = function retFalse() {
@@ -1536,6 +1569,23 @@ export default {
         // but just in case, we return initial value on error
         return kp;
       }
+    },
+
+    /**
+     * Opens up Raven's error report dialog with custom text
+     */
+    showRavenReportDialog() {
+      Raven.showReportDialog({
+        lang: "en",
+        title: "I flipped  the logi.",
+        subtitle: "An error occurred.",
+        labelName: "Name (mandatory, but can be fake)",
+        labelEmail: "Email (mandatory, but can be fake)",
+        user: {
+          name: "John Doe",
+          email: "john@doe.com",
+        },
+      });
     },
   },
   watch: {
