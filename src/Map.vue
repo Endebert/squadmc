@@ -1334,7 +1334,8 @@ export default {
       console.log("removeFob:", i);
       const tFob = this.placedFobs[i];
       this.placedFobs.splice(i, 1);
-      tFob.removeFrom(this.map);
+      tFob.hide()
+      // tFob.removeFrom(this.map);
     },
     /**
      * Try to get item from localStorage, return defVal if it fails or item is not in storage
