@@ -52,6 +52,10 @@ export const PS_4INCH_NAME = "BRIT 4″";
 export const PS_4INCH_VELOCITY = 159.666038;
 export const PS_4INCH_MAX_DISTANCE = 2601;
 
+export const PS_6CM_NAME = "US 6cm";
+export const PS_6CM_VELOCITY = 119.874256;
+export const PS_6CM_MAX_DISTANCE = 1466;
+
 export const GRAVITY = 9.8;
 export const MIL_TO_DEG_FACTOR = 360 / 6400;
 export const MAX_SUBTARGETS_COUNT = 49;
