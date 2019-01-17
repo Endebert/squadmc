@@ -14,6 +14,7 @@ import {
   PS_4INCH_NAME,
   PS_3INCH_MAX_DISTANCE,
   PS_3INCH_VELOCITY, PS_3INCH_NAME,
+  PS_6CM_NAME, PS_6CM_VELOCITY, PS_6CM_MAX_DISTANCE,
 } from "./Vars";
 import MortarType from "./MortarType";
 
@@ -331,6 +332,7 @@ export function getPSMortarTypes() {
     new MortarType(PS_8CM_NAME, PS_8CM_VELOCITY, PS_8CM_MAX_DISTANCE),
     new MortarType(PS_3INCH_NAME, PS_3INCH_VELOCITY, PS_3INCH_MAX_DISTANCE),
     new MortarType(PS_4INCH_NAME, PS_4INCH_VELOCITY, PS_4INCH_MAX_DISTANCE),
+    new MortarType(PS_6CM_NAME, PS_6CM_VELOCITY, PS_6CM_MAX_DISTANCE),
   ];
 }
 
