@@ -1,5 +1,15 @@
 # Change Log
 
+<a name="2.12.0"></a>
+# [2.12.0](https://github.com/Endebert/squadmc/compare/v2.11.0...v2.12.0) (2019-01-19)
+
+
+### Features
+
+* add 6cm mortar option for PS US airborne faction ([#38](https://github.com/Endebert/squadmc/issues/38)) (by TopMak) ([9913354](https://github.com/Endebert/squadmc/commit/9913354))
+
+
+
 <a name="2.11.0"></a>
 # [2.11.0](https://github.com/Endebert/squadmc/compare/v2.10.1...v2.11.0) (2018-10-17)
 
