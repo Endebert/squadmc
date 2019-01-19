@@ -1,5 +1,7 @@
 /* eslint-disable no-underscore-dangle,no-multi-assign */
-import { TileLayer, Browser, DomUtil, GridLayer, Point, Bounds } from "leaflet";
+import {
+  TileLayer, Browser, DomUtil, GridLayer, Point, Bounds,
+} from "leaflet";
 
 /**
  * TileLayer using Canvas for stitching. Gets rid of gaps when using fractional zoom.
@@ -203,9 +205,7 @@ export default TileLayer.extend({
 
     // TODO: Clear the pixels of other levels' canvases where they overlap
     // this newly dumped tile.
-    return this;
   },
 
 
 });
-

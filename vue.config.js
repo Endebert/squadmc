@@ -8,7 +8,7 @@ gracefulFs.gracefulify(realFs);
 
 
 module.exports = {
-  chainWebpack: (config) => {
+  chainWebpack: () => {
     if (process.env.NODE_ENV === "production") {
       // console.log("PLUGINS: ", config.plugins);
       // config.plugins.delete("prefetch");

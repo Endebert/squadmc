@@ -10,15 +10,14 @@ export default class SubTarget extends MarkerHolder {
   }
 
   _createMarker() {
-    this.marker =
-      new CircleMarker(this._pos, {
-        radius: this._radius,
-        draggable: this._draggable,
-        bubblingMouseEvents: false,
-        color: COLORS.SUBTARGET,
-        fillColor: COLORS.SUBTARGET,
-        fillOpacity: 0.8,
-      });
+    this.marker = new CircleMarker(this._pos, {
+      radius: this._radius,
+      draggable: this._draggable,
+      bubblingMouseEvents: false,
+      color: COLORS.SUBTARGET,
+      fillColor: COLORS.SUBTARGET,
+      fillOpacity: 0.8,
+    });
     if (this._clickHandler) {
       this.marker.on("click", this._clickHandler);
     }

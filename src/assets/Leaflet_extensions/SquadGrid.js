@@ -4,7 +4,9 @@
  *  Auth: Andrew Blakey (ablakey@gmail.com)
  */
 
-import { LayerGroup, Util, LatLng, Polyline } from "leaflet";
+import {
+  LayerGroup, Util, LatLng, Polyline,
+} from "leaflet";
 
 import { isMultiple } from "../Utils";
 

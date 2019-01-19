@@ -1,35 +1,43 @@
 <template>
-<v-app dark>
-  <!--CONTENT PLANE-->
-  <v-content class="absolute-layer" style="position: fixed">
+  <v-app dark>
+    <!--CONTENT PLANE-->
+    <v-content
+      class="absolute-layer"
+      style="position: fixed">
 
-    <!--WRAPPER DIV-->
-    <div class="absolute-layer" style="display: flex; flex-direction: column;">
+      <!--WRAPPER DIV-->
+      <div
+        class="absolute-layer"
+        style="display: flex; flex-direction: column;">
 
-      <!--MAP LAYERS-->
-      <div style="display: flex; flex: 1 0 auto; position: relative">
+        <!--MAP LAYERS-->
+        <div style="display: flex; flex: 1 0 auto; position: relative">
 
 
-        <div class="absolute-layer">
-          <!--this div is at the top of the content plane and contains the toolbar and the quickmode buttons.
+          <div class="absolute-layer">
+            <!--this div is at the top of the content plane and contains the toolbar and the quickmode buttons.
           it wrap the quickmode buttons below the toolbar, when there is not enough space.-->
-          <div class="mt-3"
-               style="position: absolute; left: 0; right: 0; display: flex; flex: 1 0 auto; flex-wrap: wrap">
+            <div
+              class="mt-3"
+              style="position: absolute; left: 0; right: 0; display: flex; flex: 1 0 auto; flex-wrap: wrap">
 
-            <!--FLOATING TOOLBAR-->
-            <div style="display: flex; flex: 0 1 auto; align-items: baseline">
-              <v-toolbar
+              <!--FLOATING TOOLBAR-->
+              <div style="display: flex; flex: 0 1 auto; align-items: baseline">
+                <v-toolbar
                   dense
                   floating
                   style="z-index: 1"
-              >
-                <v-toolbar-side-icon @click.stop="drawer = !drawer">
-                  <v-icon v-if="ravenError" color="#b71c1c">warning</v-icon>
-                  <v-icon v-else>menu</v-icon>
-                </v-toolbar-side-icon>
-                <!--<img src="/img/svg/icon.svg" width="40px">-->
-                <v-toolbar-title>
-                  <v-select class="pa-0"
+                >
+                  <v-toolbar-side-icon @click.stop="drawer = !drawer">
+                    <v-icon
+                      v-if="ravenError"
+                      color="#b71c1c">warning</v-icon>
+                    <v-icon v-else>menu</v-icon>
+                  </v-toolbar-side-icon>
+                  <!--<img src="/img/svg/icon.svg" width="40px">-->
+                  <v-toolbar-title>
+                    <v-select
+                      class="pa-0"
                       :items="maps"
                       :loading="!hideLoadingBar && loading"
                       append-icon="map"
@@ -38,274 +46,420 @@
                       item-value="text"
                       max-height="90%"
                       hide-details
-                  ></v-select>
-                </v-toolbar-title>
-              </v-toolbar>
+                    />
+                  </v-toolbar-title>
+                </v-toolbar>
+              </div>
+
+
+              <!-- QUICK MODE MORTAR/TARGET REMOVE BUTTONS (TOP RIGHT) -->
+              <div
+                v-if="!advancedMode"
+                class="mr-2"
+                style="display: flex; flex-direction: column; flex: 1 0 auto; align-items: flex-end; z-index: 1">
+                <v-btn
+                  icon
+                  @click="removeMortar(0)"
+                  style="pointer-events: all"
+                  v-if="mortar"
+                  class="mt-2"
+                  color="grey darken-4">
+                  <v-badge
+                    color="red"
+                    right
+                    overlap>
+                    <v-icon slot="badge">clear</v-icon>
+                    <img
+                      :src="mortar.symbolUrl"
+                      style="width: 36px;">
+                  </v-badge>
+                </v-btn>
+                <v-btn
+                  icon
+                  @click="removeTarget(0)"
+                  style="pointer-events: all"
+                  v-if="target"
+                  class="mt-2"
+                  color="grey darken-4">
+                  <v-badge
+                    color="red"
+                    right
+                    overlap>
+                    <v-icon slot="badge">clear</v-icon>
+                    <img
+                      :src="target.symbolUrl"
+                      style="width: 36px;">
+                  </v-badge>
+                </v-btn>
+              </div>
             </div>
 
-
-            <!-- QUICK MODE MORTAR/TARGET REMOVE BUTTONS (TOP RIGHT) -->
-            <div v-if="!advancedMode"
-                 class="mr-2"
-                 style="display: flex; flex-direction: column; flex: 1 0 auto; align-items: flex-end; z-index: 1">
-              <v-btn icon
-                     @click="removeMortar(0)"
-                     style="pointer-events: all" v-if="mortar" class="mt-2" color="grey darken-4">
-                <v-badge color="red" right overlap>
-                  <v-icon slot="badge">clear</v-icon>
-                  <img :src="mortar.symbolUrl" style="width: 36px;">
-                </v-badge>
-              </v-btn>
-              <v-btn icon
-                     @click="removeTarget(0)"
-                     style="pointer-events: all" v-if="target" class="mt-2" color="grey darken-4">
-                <v-badge color="red" right overlap>
-                  <v-icon slot="badge">clear</v-icon>
-                  <img :src="target.symbolUrl" style="width: 36px;">
-                </v-badge>
-              </v-btn>
+            <!--BOTTOM LEFT MOUSE KEYPAD-->
+            <div
+              class="ma-3 px-1 grey darken-4 font-mono elevation-1"
+              style="z-index: 1; position: absolute; left: 0; bottom: 0"
+              v-if="showKeypadTimeout">
+              {{ mouseKeypad }}
             </div>
-          </div>
 
-          <!--BOTTOM LEFT MOUSE KEYPAD-->
-          <div class="ma-3 px-1 grey darken-4 font-mono elevation-1"
-               style="z-index: 1; position: absolute; left: 0; bottom: 0" v-if="showKeypadTimeout">
-            {{mouseKeypad}}
-          </div>
-
-          <!--BOTTOM RIGHT FLOATING ACTION BUTTON-->
-          <v-dialog v-model="placePinVars.dialog" max-width="250" style="position: absolute; right: 0; bottom: 0">
-            <v-btn fab slot="activator" color="primary" style="z-index: 1" class="ma-3">
-              <v-icon style="width: 24px; height: 24px">add</v-icon>
-            </v-btn>
-            <v-card>
-              <v-card-title style="background-color: #212121">Add Mortar/Target</v-card-title>
-              <v-divider></v-divider>
-              <v-card-text class="px-0">
-                <div><p align="center">Press icon buttons to cycle through marker colors</p></div>
-                <v-form>
-                  <v-container>
-                    <v-layout column wrap>
-                      <v-flex>
-                        <v-btn icon color="grey darken-4"
-                               @click="placePinVars.mIndex = (placePinVars.mIndex + 1) % 4"
-                        >
-                          <img :src="colors.symbol.mortar[placePinVars.mIndex]" style="width: 48px;">
-                        </v-btn>
-                        <v-text-field
-                            v-model="placePinVars.mText" :error="placePinVars.mError"
-                            label="Mortar pos" placeholder="A01-3-3-7"
+            <!--BOTTOM RIGHT FLOATING ACTION BUTTON-->
+            <v-dialog
+              v-model="placePinVars.dialog"
+              max-width="250"
+              style="position: absolute; right: 0; bottom: 0">
+              <v-btn
+                fab
+                slot="activator"
+                color="primary"
+                style="z-index: 1"
+                class="ma-3">
+                <v-icon style="width: 24px; height: 24px">add</v-icon>
+              </v-btn>
+              <v-card>
+                <v-card-title style="background-color: #212121">Add Mortar/Target</v-card-title>
+                <v-divider/>
+                <v-card-text class="px-0">
+                  <div><p align="center">Press icon buttons to cycle through marker colors</p></div>
+                  <v-form>
+                    <v-container>
+                      <v-layout
+                        column
+                        wrap>
+                        <v-flex>
+                          <v-btn
+                            icon
+                            color="grey darken-4"
+                            @click="placePinVars.mIndex = (placePinVars.mIndex + 1) % 4"
+                          >
+                            <img
+                              :src="colors.symbol.mortar[placePinVars.mIndex]"
+                              style="width: 48px;">
+                          </v-btn>
+                          <v-text-field
+                            v-model="placePinVars.mText"
+                            :error="placePinVars.mError"
+                            label="Mortar pos"
+                            placeholder="A01-3-3-7"
                             @input="placePinVars.mText = formatKP(placePinVars.mText, PIN_TYPE.MORTAR)"
-                            style="width: min-content; font-family: monospace">
-                        </v-text-field>
-                        <v-btn
-                            icon color="grey darken-4" :disabled="placePinVars.mError || !placePinVars.mText"
+                            style="width: min-content; font-family: monospace"/>
+                          <v-btn
+                            icon
+                            color="grey darken-4"
+                            :disabled="placePinVars.mError || !placePinVars.mText"
                             @click="placePin(placePinVars.mText, placePinVars.mIndex, PIN_TYPE.MORTAR)"
                             @click.stop="placePinVars.mText = undefined">
-                          <v-icon>add</v-icon>
-                        </v-btn>
-                      </v-flex>
-                      <v-flex>
-                        <v-btn
-                            icon color="grey darken-4"
+                            <v-icon>add</v-icon>
+                          </v-btn>
+                        </v-flex>
+                        <v-flex>
+                          <v-btn
+                            icon
+                            color="grey darken-4"
                             @click="placePinVars.tIndex = (placePinVars.tIndex + 1) % 4">
-                          <img :src="colors.symbol.target[placePinVars.tIndex]" style="width: 48px;">
-                        </v-btn>
-                        <v-text-field
-                            v-model="placePinVars.tText" :error="placePinVars.tError"
-                            label="Target pos" placeholder="B13-3-7"
+                            <img
+                              :src="colors.symbol.target[placePinVars.tIndex]"
+                              style="width: 48px;">
+                          </v-btn>
+                          <v-text-field
+                            v-model="placePinVars.tText"
+                            :error="placePinVars.tError"
+                            label="Target pos"
+                            placeholder="B13-3-7"
                             @input="placePinVars.tText = formatKP(placePinVars.tText, PIN_TYPE.TARGET)"
-                            style="width: min-content; font-family: monospace">
-                        </v-text-field>
-                        <v-btn
-                            icon color="grey darken-4"
+                            style="width: min-content; font-family: monospace"/>
+                          <v-btn
+                            icon
+                            color="grey darken-4"
                             :disabled="placePinVars.tError || !placePinVars.tText"
                             @click="placePin(placePinVars.tText, placePinVars.tIndex, PIN_TYPE.TARGET)"
                             @click.stop="placePinVars.tText = undefined">
-                          <v-icon>add</v-icon>
-                        </v-btn>
-                      </v-flex>
-                    </v-layout>
-                  </v-container>
-                </v-form>
-              </v-card-text>
-              <v-divider></v-divider>
-              <v-card-actions>
-                <v-btn @click.native="placePinVars.dialog = false">Close</v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
+                            <v-icon>add</v-icon>
+                          </v-btn>
+                        </v-flex>
+                      </v-layout>
+                    </v-container>
+                  </v-form>
+                </v-card-text>
+                <v-divider/>
+                <v-card-actions>
+                  <v-btn @click.native="placePinVars.dialog = false">Close</v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
 
-          <!--MORTAR/TARGET/FOB SELECTION POPUP MENU-->
-          <v-menu v-model="showMenu" absolute :open-on-click="false" :position-x="menuPos.x" :position-y="menuPos.y">
-            <v-card style="border: none">
-              <v-content class="pa-0">
-                <v-layout row>
-                  <v-layout column style="border-right: 2px #212121 solid">
-                    <v-btn
-                        icon large v-for="(mUrl, i) in colors.symbol.mortar" :key="i"
+            <!--MORTAR/TARGET/FOB SELECTION POPUP MENU-->
+            <v-menu
+              v-model="showMenu"
+              absolute
+              :open-on-click="false"
+              :position-x="menuPos.x"
+              :position-y="menuPos.y">
+              <v-card style="border: none">
+                <v-content class="pa-0">
+                  <v-layout row>
+                    <v-layout
+                      column
+                      style="border-right: 2px #212121 solid">
+                      <v-btn
+                        icon
+                        large
+                        v-for="(mUrl, i) in colors.symbol.mortar"
+                        :key="i"
                         @click="placePin(menuLatlng, i, PIN_TYPE.MORTAR)"
                         style="margin: 2px 2px 2px 2px">
-                      <img :src="mUrl" width="48px">
-                    </v-btn>
-                  </v-layout>
-                  <v-layout column>
-                    <v-btn
-                        icon large v-for="(mUrl, i) in colors.symbol.target" :key="i"
+                        <img
+                          :src="mUrl"
+                          width="48px">
+                      </v-btn>
+                    </v-layout>
+                    <v-layout column>
+                      <v-btn
+                        icon
+                        large
+                        v-for="(mUrl, i) in colors.symbol.target"
+                        :key="i"
                         @click="placePin(menuLatlng, i, PIN_TYPE.TARGET)"
                         style="margin: 2px 2px 2px 2px">
-                      <img :src="mUrl" width="48px">
-                    </v-btn>
-                  </v-layout>
-                  <v-layout column style="border-left: 2px #212121 solid">
-                    <v-btn
-                        icon large v-for="(mUrl, i) in colors.symbol.fob" :key="i"
+                        <img
+                          :src="mUrl"
+                          width="48px">
+                      </v-btn>
+                    </v-layout>
+                    <v-layout
+                      column
+                      style="border-left: 2px #212121 solid">
+                      <v-btn
+                        icon
+                        large
+                        v-for="(mUrl, i) in colors.symbol.fob"
+                        :key="i"
                         @click="placePin(menuLatlng, i, PIN_TYPE.FOB)"
                         style="margin: 2px 2px 2px 2px">
-                      <img :src="mUrl" width="48px">
-                    </v-btn>
+                        <img
+                          :src="mUrl"
+                          width="48px">
+                      </v-btn>
+                    </v-layout>
                   </v-layout>
-                </v-layout>
-              </v-content>
-            </v-card>
-          </v-menu>
+                </v-content>
+              </v-card>
+            </v-menu>
 
-          <!--CHANGELOG DIALOG-->
-          <v-dialog v-model="changelogDialog" scrollable max-width="600px">
-            <v-card>
-              <v-card-text>
-                <Changelog/>
-              </v-card-text>
-              <v-divider></v-divider>
-              <v-card-actions>
-                <v-btn @click.native="changelogDialog = false">Close</v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
-        </div>
-
-        <div id="map" class="absolute-layer"  style="z-index: 0"></div>
-      </div>
-
-
-      <!--FOOTER WITH MORTAR SETTINGS-->
-      <v-footer height="auto" v-if="mortar && target" style="display: flex; flex: 0 0 auto">
-        <!--POINT FIRE LAYOUT-->
-        <div class="flex row" v-if="!secondaryTarget || targetType === TARGET_TYPE.POINT">
-          <v-speed-dial>
-            <v-btn icon slot="activator" color="grey darken-3">
-              <img :src="mortar.symbolUrl" style="width: 48px;">
-            </v-btn>
-            <v-btn icon
-                   v-for="(aMortar, index) in placedMortars"
-                   :key="index"
-                   @click="mortar = placedMortars[index]"
-            >
-              <img :src="aMortar.symbolUrl" style="width: 48px;">
-            </v-btn>
-          </v-speed-dial>
-          <v-icon small>arrow_forward</v-icon>
-          <v-speed-dial v-if="target">
-            <v-btn icon slot="activator" color="grey darken-3">
-              <img :src="target.symbolUrl" style="width: 48px;">
-            </v-btn>
-            <v-btn icon
-                   v-for="(aTarget, index) in placedTargets"
-                   :key="index"
-                   v-if="secondaryTarget && aTarget.symbolUrl !== secondaryTarget.symbolUrl"
-                   @click="target = placedTargets[index]">
-              <img :src="aTarget.symbolUrl" style="width: 48px;">
-            </v-btn>
-          </v-speed-dial>
-          <table class="font-mono">
-            <tr style="font-size: small; opacity: 0.7" >
-              <td class="px-1" align="right">{{DOMdist}}</td>
-              <td class="px-1" align="left">{{DOMhDelta}}</td>
-            </tr>
-            <tr style="font-size: large">
-              <td class="px-1" align="right">{{DOMbearing}}</td>
-              <td class="px-1" align="left">{{DOMelevation}}</td>
-            </tr>
-          </table>
-        </div>
-
-        <!--LINE/AREA FIRE LAYOUT-->
-        <div v-else class="flex row">
-          <div class="flex column">
-            <div class="flex row">
-              <v-speed-dial>
-                <v-btn icon slot="activator" class="mb-0" color="grey darken-3">
-                  <img :src="mortar.symbolUrl" style="width: 48px;">
-                </v-btn>
-                <v-btn icon
-                       v-for="(aMortar, index) in placedMortars"
-                       :key="index"
-                       @click="mortar = placedMortars[index]"
-                >
-                  <img :src="aMortar.symbolUrl" style="width: 48px;">
-                </v-btn>
-              </v-speed-dial>
-            </div>
-            <div class="flex row">
-              <v-speed-dial v-if="target">
-                <v-btn icon slot="activator" class="mt-0 mr-1" color="grey darken-3">
-                  <img :src="secondaryTarget.symbolUrl" style="width: 48px;">
-                </v-btn>
-                <v-btn icon
-                       v-for="(aTarget, index) in placedTargets"
-                       :key="index"
-                       v-if="aTarget !== target"
-                       @click="secondaryTarget = placedTargets[index]">
-                  <img :src="aTarget.symbolUrl" style="width: 48px;">
-                </v-btn>
-              </v-speed-dial>
-              <div class="font-mono mx-1" style="font-size: large; align-self: flex-start">⊥</div>
-              <v-speed-dial v-if="targetType !== TARGET_TYPE.POINT && secondaryTarget">
-                <v-btn icon slot="activator" class="mt-0 ml-1" color="grey darken-3">
-                  <img :src="target.symbolUrl" style="width: 48px;">
-                </v-btn>
-                <v-btn icon
-                       v-for="(aTarget, index) in placedTargets"
-                       :key="index"
-                       v-if="aTarget !== secondaryTarget"
-                       @click="target = placedTargets[index]">
-                  <img :src="aTarget.symbolUrl" style="width: 48px;">
-                </v-btn>
-              </v-speed-dial>
-            </div>
+            <!--CHANGELOG DIALOG-->
+            <v-dialog
+              v-model="changelogDialog"
+              scrollable
+              max-width="600px">
+              <v-card>
+                <v-card-text>
+                  <Changelog/>
+                </v-card-text>
+                <v-divider/>
+                <v-card-actions>
+                  <v-btn @click.native="changelogDialog = false">Close</v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
           </div>
-          <table class="font-mono">
-            <tr align="center" style="font-size: small; color: #9e9e9e">
-              <td colspan="2">
-                <div class="flex row">
-                  <v-btn icon small class="flex my-1" color="grey darken-3" :disabled="currentSubTarget <= 0">
-                    <v-icon @click="currentSubTarget--">keyboard_arrow_left</v-icon>
-                  </v-btn>
-                  Round {{pad(currentSubTarget + 1, 3)}} / {{pad(subTargetsHolder.targets.length, 3)}}
-                  <v-btn icon small class="flex my-1" color="grey darken-3"
-                         :disabled="currentSubTarget >= subTargetsHolder.targets.length - 1">
-                    <v-icon @click="currentSubTarget++">keyboard_arrow_right</v-icon>
-                  </v-btn>
-                </div>
-              </td>
-            </tr>
-            <tr >
-              <td align="center" style="font-size: large"
-              >{{DOMbearing}} {{DOMelevation}}</td>
-            </tr>
-          </table>
+
+          <div
+            id="map"
+            class="absolute-layer"
+            style="z-index: 0"/>
         </div>
-      </v-footer>
-    </div>
-    <!--HEIGHTMAP CANVAS-->
-    <canvas id="heightmap"></canvas>
-  </v-content>
-
-  <!--FOOTER CONTAINING MORTAR SETTINGS-->
 
 
-  <!--NAVIGATION DRAWER WITH SETTINGS-->
-  <v-navigation-drawer
+        <!--FOOTER WITH MORTAR SETTINGS-->
+        <v-footer
+          height="auto"
+          v-if="mortar && target"
+          style="display: flex; flex: 0 0 auto">
+          <!--POINT FIRE LAYOUT-->
+          <div
+            class="flex row"
+            v-if="!secondaryTarget || targetType === TARGET_TYPE.POINT">
+            <v-speed-dial>
+              <v-btn
+                icon
+                slot="activator"
+                color="grey darken-3">
+                <img
+                  :src="mortar.symbolUrl"
+                  style="width: 48px;">
+              </v-btn>
+              <v-btn
+                icon
+                v-for="(aMortar, index) in placedMortars"
+                :key="index"
+                @click="mortar = placedMortars[index]"
+              >
+                <img
+                  :src="aMortar.symbolUrl"
+                  style="width: 48px;">
+              </v-btn>
+            </v-speed-dial>
+            <v-icon small>arrow_forward</v-icon>
+            <v-speed-dial v-if="target">
+              <v-btn
+                icon
+                slot="activator"
+                color="grey darken-3">
+                <img
+                  :src="target.symbolUrl"
+                  style="width: 48px;">
+              </v-btn>
+              <v-btn
+                icon
+                v-for="(aTarget, index) in placedTargets"
+                :key="index"
+                v-if="secondaryTarget && aTarget.symbolUrl !== secondaryTarget.symbolUrl"
+                @click="target = placedTargets[index]">
+                <img
+                  :src="aTarget.symbolUrl"
+                  style="width: 48px;">
+              </v-btn>
+            </v-speed-dial>
+            <table class="font-mono">
+              <tr style="font-size: small; opacity: 0.7" >
+                <td
+                  class="px-1"
+                  align="right">{{ DOMdist }}</td>
+                <td
+                  class="px-1"
+                  align="left">{{ DOMhDelta }}</td>
+              </tr>
+              <tr style="font-size: large">
+                <td
+                  class="px-1"
+                  align="right">{{ DOMbearing }}</td>
+                <td
+                  class="px-1"
+                  align="left">{{ DOMelevation }}</td>
+              </tr>
+            </table>
+          </div>
+
+          <!--LINE/AREA FIRE LAYOUT-->
+          <div
+            v-else
+            class="flex row">
+            <div class="flex column">
+              <div class="flex row">
+                <v-speed-dial>
+                  <v-btn
+                    icon
+                    slot="activator"
+                    class="mb-0"
+                    color="grey darken-3">
+                    <img
+                      :src="mortar.symbolUrl"
+                      style="width: 48px;">
+                  </v-btn>
+                  <v-btn
+                    icon
+                    v-for="(aMortar, index) in placedMortars"
+                    :key="index"
+                    @click="mortar = placedMortars[index]"
+                  >
+                    <img
+                      :src="aMortar.symbolUrl"
+                      style="width: 48px;">
+                  </v-btn>
+                </v-speed-dial>
+              </div>
+              <div class="flex row">
+                <v-speed-dial v-if="target">
+                  <v-btn
+                    icon
+                    slot="activator"
+                    class="mt-0 mr-1"
+                    color="grey darken-3">
+                    <img
+                      :src="secondaryTarget.symbolUrl"
+                      style="width: 48px;">
+                  </v-btn>
+                  <v-btn
+                    icon
+                    v-for="(aTarget, index) in placedTargets"
+                    :key="index"
+                    v-if="aTarget !== target"
+                    @click="secondaryTarget = placedTargets[index]">
+                    <img
+                      :src="aTarget.symbolUrl"
+                      style="width: 48px;">
+                  </v-btn>
+                </v-speed-dial>
+                <div
+                  class="font-mono mx-1"
+                  style="font-size: large; align-self: flex-start">⊥</div>
+                <v-speed-dial v-if="targetType !== TARGET_TYPE.POINT && secondaryTarget">
+                  <v-btn
+                    icon
+                    slot="activator"
+                    class="mt-0 ml-1"
+                    color="grey darken-3">
+                    <img
+                      :src="target.symbolUrl"
+                      style="width: 48px;">
+                  </v-btn>
+                  <v-btn
+                    icon
+                    v-for="(aTarget, index) in placedTargets"
+                    :key="index"
+                    v-if="aTarget !== secondaryTarget"
+                    @click="target = placedTargets[index]">
+                    <img
+                      :src="aTarget.symbolUrl"
+                      style="width: 48px;">
+                  </v-btn>
+                </v-speed-dial>
+              </div>
+            </div>
+            <table class="font-mono">
+              <tr
+                align="center"
+                style="font-size: small; color: #9e9e9e">
+                <td colspan="2">
+                  <div class="flex row">
+                    <v-btn
+                      icon
+                      small
+                      class="flex my-1"
+                      color="grey darken-3"
+                      :disabled="currentSubTarget <= 0">
+                      <v-icon @click="currentSubTarget--">keyboard_arrow_left</v-icon>
+                    </v-btn>
+                    Round {{ pad(currentSubTarget + 1, 3) }} / {{ pad(subTargetsHolder.targets.length, 3) }}
+                    <v-btn
+                      icon
+                      small
+                      class="flex my-1"
+                      color="grey darken-3"
+                      :disabled="currentSubTarget >= subTargetsHolder.targets.length - 1">
+                      <v-icon @click="currentSubTarget++">keyboard_arrow_right</v-icon>
+                    </v-btn>
+                  </div>
+                </td>
+              </tr>
+              <tr >
+                <td
+                  align="center"
+                  style="font-size: large"
+                >{{ DOMbearing }} {{ DOMelevation }}</td>
+              </tr>
+            </table>
+          </div>
+        </v-footer>
+      </div>
+      <!--HEIGHTMAP CANVAS-->
+      <canvas id="heightmap"/>
+    </v-content>
+
+    <!--FOOTER CONTAINING MORTAR SETTINGS-->
+
+
+    <!--NAVIGATION DRAWER WITH SETTINGS-->
+    <v-navigation-drawer
       v-model="drawer"
       fixed
       app
@@ -314,298 +468,366 @@
       disable-route-watcher
       mobile-break-point="640"
       style="max-height: 100%"
-  >
-    <!--APP TITLE AND CHANGELOG BUTTON-->
-    <v-toolbar dense>
-      <v-toolbar-title class="flex" style="flex-grow: 1; justify-content: space-between">
-        {{postScriptum ? "PostScriptumMC" : "SquadMC"}}
-        <v-btn color="primary" @click.stop="changelogDialog = true" style="min-width: 70px">{{appVersion}}</v-btn>
-      </v-toolbar-title>
-    </v-toolbar>
+    >
+      <!--APP TITLE AND CHANGELOG BUTTON-->
+      <v-toolbar dense>
+        <v-toolbar-title
+          class="flex"
+          style="flex-grow: 1; justify-content: space-between">
+          {{ postScriptum ? "PostScriptumMC" : "SquadMC" }}
+          <v-btn
+            color="primary"
+            @click.stop="changelogDialog = true"
+            style="min-width: 70px">{{ appVersion }}</v-btn>
+        </v-toolbar-title>
+      </v-toolbar>
 
-    <!--LINK TO GITHUB-->
-    <v-list class="pa-0" two-line>
-      <v-list-tile @click="openGitHub()">
-        <v-list-tile-content>
-          <v-list-tile-title>View Code on GitHub</v-list-tile-title>
-          <v-list-tile-sub-title>Submit issues, contribute, etc.</v-list-tile-sub-title>
-        </v-list-tile-content>
-        <v-list-tile-action>
-          <v-badge overlap="">
-            <v-icon small slot="badge">open_in_new</v-icon>
-            <img :src="githubIcon" width="40px"/>
-          </v-badge>
-        </v-list-tile-action>
-      </v-list-tile>
-    </v-list>
-    <v-divider></v-divider>
-
-    <!--ERROR DETECTED ENTRY-->
-    <template v-if="ravenError">
-    <!--<template>-->
-      <v-list class="px-0">
-        <v-list-tile @click="showRavenReportDialog()" style="background-color: #b71c1c">
-          <!--<v-list-tile-action>-->
-            <!--<v-switch-->
-                <!--v-model="advancedMode"-->
-            <!--&gt;</v-switch>-->
-          <!--</v-list-tile-action>-->
+      <!--LINK TO GITHUB-->
+      <v-list
+        class="pa-0"
+        two-line>
+        <v-list-tile @click="openGitHub()">
           <v-list-tile-content>
-            <!--<v-list-tile-title>An Error occurred</v-list-tile-title>-->
-            <!--<v-list-tile-sub-title>Please click here and fill out the error report</v-list-tile-sub-title>-->
-            An error occurred. Please click here and fill out the error report.
+            <v-list-tile-title>View Code on GitHub</v-list-tile-title>
+            <v-list-tile-sub-title>Submit issues, contribute, etc.</v-list-tile-sub-title>
+          </v-list-tile-content>
+          <v-list-tile-action>
+            <v-badge overlap="">
+              <v-icon
+                small
+                slot="badge">open_in_new</v-icon>
+              <img
+                :src="githubIcon"
+                width="40px">
+            </v-badge>
+          </v-list-tile-action>
+        </v-list-tile>
+      </v-list>
+      <v-divider/>
+
+      <!--ERROR DETECTED ENTRY-->
+      <template v-if="ravenError">
+        <!--<template>-->
+        <v-list class="px-0">
+          <v-list-tile
+            @click="showRavenReportDialog()"
+            style="background-color: #b71c1c">
+            <!--<v-list-tile-action>-->
+            <!--<v-switch-->
+            <!--v-model="advancedMode"-->
+            <!--&gt;</v-switch>-->
+            <!--</v-list-tile-action>-->
+            <v-list-tile-content>
+              <!--<v-list-tile-title>An Error occurred</v-list-tile-title>-->
+              <!--<v-list-tile-sub-title>Please click here and fill out the error report</v-list-tile-sub-title>-->
+              An error occurred. Please click here and fill out the error report.
+            </v-list-tile-content>
+            <v-list-tile-avatar>
+              <v-icon>warning</v-icon>
+            </v-list-tile-avatar>
+          </v-list-tile>
+        </v-list>
+        <v-divider/>
+      </template>
+
+      <!--ADVANCED MODE TOGGLE-->
+      <v-list class="px-0">
+        <v-list-tile>
+          <v-list-tile-action>
+            <v-switch
+              v-model="advancedMode"
+            />
+          </v-list-tile-action>
+          <v-list-tile-content>
+            <v-list-tile-title>Advanced Mode</v-list-tile-title>
           </v-list-tile-content>
           <v-list-tile-avatar>
-            <v-icon>warning</v-icon>
+            <v-icon>fast_forward</v-icon>
           </v-list-tile-avatar>
         </v-list-tile>
-      </v-list>
-      <v-divider></v-divider>
-    </template>
-
-    <!--ADVANCED MODE TOGGLE-->
-    <v-list class="px-0">
-      <v-list-tile>
-        <v-list-tile-action>
-          <v-switch
-              v-model="advancedMode"
-          ></v-switch>
-        </v-list-tile-action>
-        <v-list-tile-content>
-          <v-list-tile-title>Advanced Mode</v-list-tile-title>
-        </v-list-tile-content>
-        <v-list-tile-avatar>
-          <v-icon>fast_forward</v-icon>
-        </v-list-tile-avatar>
-      </v-list-tile>
-      <v-list-tile>
-        <v-list-tile-content style="opacity: 0.7">
-          Place FOBs, multiple markers & targets and create LINE and AREA fire
-        </v-list-tile-content>
-      </v-list-tile>
-    </v-list>
-    <v-divider></v-divider>
-
-    <!--MORTAR TYPE SELECTION-->
-    <template v-if="postScriptum">
-      <v-list class="pa-0" two-line>
         <v-list-tile>
-          <v-list-tile-content>
-            <v-list-tile-title>Set mortar type</v-list-tile-title>
-            <v-list-tile-sub-title>
-              <v-btn-toggle v-model="mTypeIndex" mandatory style="display: flex">
-                <v-btn flat v-for="(mType, i) in mortarTypes" :key="i"
-                       style="flex: 1 0 0; border: none">{{mType.name}}</v-btn>
-              </v-btn-toggle></v-list-tile-sub-title>
+          <v-list-tile-content style="opacity: 0.7">
+            Place FOBs, multiple markers & targets and create LINE and AREA fire
           </v-list-tile-content>
         </v-list-tile>
       </v-list>
-      <v-divider></v-divider>
-    </template>
+      <v-divider/>
 
-    <!--TARGET TYPE SELECTION-->
-    <template v-if="advancedMode">
-      <v-list class="pa-0" two-line >
-        <v-list-tile>
-          <v-list-tile-content>
-            <v-list-tile-title style="display: flex">
-              Set target type
-              <div class="primary px-2 flex font-mono mx-2" style="border-radius: 2px; margin: 1px">BETA</div>
-            </v-list-tile-title>
-            <v-list-tile-sub-title>
-              <v-btn-toggle v-model="targetType" mandatory style="display: flex">
-                <v-btn flat v-for="(val, key) in TARGET_TYPE" :key="val"
-                       style="flex: 1 0 0; border: none">{{key}}</v-btn>
+      <!--MORTAR TYPE SELECTION-->
+      <template v-if="postScriptum">
+        <v-list
+          class="pa-0"
+          two-line>
+          <v-list-tile>
+            <v-list-tile-content>
+              <v-list-tile-title>Set mortar type</v-list-tile-title>
+              <v-list-tile-sub-title>
+                <v-btn-toggle
+                  v-model="mTypeIndex"
+                  mandatory
+                  style="display: flex">
+                  <v-btn
+                    flat
+                    v-for="(mType, i) in mortarTypes"
+                    :key="i"
+                    style="flex: 1 0 0; border: none">{{ mType.name }}</v-btn>
               </v-btn-toggle></v-list-tile-sub-title>
-          </v-list-tile-content>
-        </v-list-tile>
-      </v-list>
+            </v-list-tile-content>
+          </v-list-tile>
+        </v-list>
+        <v-divider/>
+      </template>
 
-      <!--ROUND SPACING SLIDER-->
-      <template v-if="targetType !== TARGET_TYPE.POINT">
-        <v-list class="pa-0">
-          <v-list-tile v-if="!secondaryTarget" style="background-color: #01579B">
-            Two target markers required
-            <v-list-tile-content></v-list-tile-content>
+      <!--TARGET TYPE SELECTION-->
+      <template v-if="advancedMode">
+        <v-list
+          class="pa-0"
+          two-line >
+          <v-list-tile>
+            <v-list-tile-content>
+              <v-list-tile-title style="display: flex">
+                Set target type
+                <div
+                  class="primary px-2 flex font-mono mx-2"
+                  style="border-radius: 2px; margin: 1px">BETA</div>
+              </v-list-tile-title>
+              <v-list-tile-sub-title>
+                <v-btn-toggle
+                  v-model="targetType"
+                  mandatory
+                  style="display: flex">
+                  <v-btn
+                    flat
+                    v-for="(val, key) in TARGET_TYPE"
+                    :key="val"
+                    style="flex: 1 0 0; border: none">{{ key }}</v-btn>
+              </v-btn-toggle></v-list-tile-sub-title>
+            </v-list-tile-content>
+          </v-list-tile>
+        </v-list>
+
+        <!--ROUND SPACING SLIDER-->
+        <template v-if="targetType !== TARGET_TYPE.POINT">
+          <v-list class="pa-0">
+            <v-list-tile
+              v-if="!secondaryTarget"
+              style="background-color: #01579B">
+              Two target markers required
+              <v-list-tile-content/>
+              <v-list-tile-avatar>
+                <v-icon>info</v-icon>
+              </v-list-tile-avatar>
+            </v-list-tile>
+            <v-list-tile>
+              Round Spacing
+              <v-slider
+                v-model="subTargetSpacing"
+                hide-details
+                thumb-label
+                class="pa-0 pr-3"
+                step="5"
+                min="5"
+                max="50"
+                ticks/>
+            </v-list-tile>
+          </v-list>
+          <v-divider/>
+        </template>
+      </template>
+
+      <!--MAP SETTINGS-->
+      <v-list class="pa-0">
+        <v-list-group>
+          <v-list-tile slot="activator">
+            <v-list-tile-content>
+              <v-list-tile-title>Map Settings</v-list-tile-title>
+            </v-list-tile-content>
+          </v-list-tile>
+          <v-list-tile
+            style="background-color: #b71c1c"
+            v-if="errorString">
+            <v-list-tile-content>
+              <v-list-tile-title>{{ errorString }}</v-list-tile-title>
+              <v-list-tile-sub-title>Your settings won't be saved</v-list-tile-sub-title>
+            </v-list-tile-content>
             <v-list-tile-avatar>
-              <v-icon>info</v-icon>
+              <v-icon>warning</v-icon>
             </v-list-tile-avatar>
           </v-list-tile>
           <v-list-tile>
-            Round Spacing
-            <v-slider v-model="subTargetSpacing" hide-details thumb-label class="pa-0 pr-3"
-                      step="5" min="5" max="50" ticks></v-slider>
-          </v-list-tile>
-        </v-list>
-        <v-divider></v-divider>
-      </template>
-    </template>
-
-    <!--MAP SETTINGS-->
-    <v-list class="pa-0">
-      <v-list-group>
-        <v-list-tile slot="activator">
-          <v-list-tile-content>
-            <v-list-tile-title>Map Settings</v-list-tile-title>
-          </v-list-tile-content>
-        </v-list-tile>
-        <v-list-tile style="background-color: #b71c1c" v-if="errorString">
-          <v-list-tile-content>
-            <v-list-tile-title>{{errorString}}</v-list-tile-title>
-            <v-list-tile-sub-title>Your settings won't be saved</v-list-tile-sub-title>
-          </v-list-tile-content>
-          <v-list-tile-avatar>
-            <v-icon>warning</v-icon>
-          </v-list-tile-avatar>
-        </v-list-tile>
-        <v-list-tile>
-          <v-list-tile-action>
-            <v-switch
+            <v-list-tile-action>
+              <v-switch
                 v-model="showGrid"
-            ></v-switch>
-          </v-list-tile-action>
-          <v-list-tile-content>
-            <v-list-tile-title>Show Keypad Grid</v-list-tile-title>
-          </v-list-tile-content>
-          <v-list-tile-avatar>
-            <v-icon>grid_on</v-icon>
-          </v-list-tile-avatar>
-        </v-list-tile>
-        <v-list-tile>
-          <v-list-tile-action>
-            <v-switch
+              />
+            </v-list-tile-action>
+            <v-list-tile-content>
+              <v-list-tile-title>Show Keypad Grid</v-list-tile-title>
+            </v-list-tile-content>
+            <v-list-tile-avatar>
+              <v-icon>grid_on</v-icon>
+            </v-list-tile-avatar>
+          </v-list-tile>
+          <v-list-tile>
+            <v-list-tile-action>
+              <v-switch
                 v-model="showHeightmap"
                 :disabled="!squadMap || !squadMap.hasHeightmap"
-            ></v-switch>
-          </v-list-tile-action>
-          <v-list-tile-content>
-            <v-list-tile-title>Show Heightmap</v-list-tile-title>
-          </v-list-tile-content>
-          <v-list-tile-avatar>
-            <v-icon>terrain</v-icon>
-          </v-list-tile-avatar>
-        </v-list-tile>
-        <v-list-tile>
-          <v-list-tile-action>
-            <v-switch
+              />
+            </v-list-tile-action>
+            <v-list-tile-content>
+              <v-list-tile-title>Show Heightmap</v-list-tile-title>
+            </v-list-tile-content>
+            <v-list-tile-avatar>
+              <v-icon>terrain</v-icon>
+            </v-list-tile-avatar>
+          </v-list-tile>
+          <v-list-tile>
+            <v-list-tile-action>
+              <v-switch
                 v-model="showLocations"
-            ></v-switch>
-          </v-list-tile-action>
-          <v-list-tile-content>
-            <v-list-tile-title>Show Locations</v-list-tile-title>
-          </v-list-tile-content>
-          <v-list-tile-avatar>
-            <v-icon>location_on</v-icon>
-          </v-list-tile-avatar>
-        </v-list-tile>
-        <v-list-tile>
-          <v-list-tile-action>
-            <v-switch
+              />
+            </v-list-tile-action>
+            <v-list-tile-content>
+              <v-list-tile-title>Show Locations</v-list-tile-title>
+            </v-list-tile-content>
+            <v-list-tile-avatar>
+              <v-icon>location_on</v-icon>
+            </v-list-tile-avatar>
+          </v-list-tile>
+          <v-list-tile>
+            <v-list-tile-action>
+              <v-switch
                 v-model="showAllRanges"
-            ></v-switch>
-          </v-list-tile-action>
-          <v-list-tile-content>
-            <v-list-tile-title>Show all Mortar Circles</v-list-tile-title>
-            <v-list-tile-sub-title>instead of active only</v-list-tile-sub-title>
-          </v-list-tile-content>
-          <v-list-tile-avatar>
-            <v-icon>adjust</v-icon>
-          </v-list-tile-avatar>
-        </v-list-tile>
-        <v-list-tile>
-          <div class="pr-3">Pin Size</div>
-          <v-slider v-model="pinSize" hide-details thumb-label class="pa-0 pr-3"
-                    step="12" min="24" max="96" ticks></v-slider>
-        </v-list-tile>
-      </v-list-group>
-    </v-list>
+              />
+            </v-list-tile-action>
+            <v-list-tile-content>
+              <v-list-tile-title>Show all Mortar Circles</v-list-tile-title>
+              <v-list-tile-sub-title>instead of active only</v-list-tile-sub-title>
+            </v-list-tile-content>
+            <v-list-tile-avatar>
+              <v-icon>adjust</v-icon>
+            </v-list-tile-avatar>
+          </v-list-tile>
+          <v-list-tile>
+            <div class="pr-3">Pin Size</div>
+            <v-slider
+              v-model="pinSize"
+              hide-details
+              thumb-label
+              class="pa-0 pr-3"
+              step="12"
+              min="24"
+              max="96"
+              ticks/>
+          </v-list-tile>
+        </v-list-group>
+      </v-list>
 
-    <!--PERFORMANCE SETTINGS-->
-    <v-list class="pa-0">
-      <v-list-group>
-        <v-list-tile slot="activator">
-          <v-list-tile-content>
-            <v-list-tile-title>Performance Settings</v-list-tile-title>
-          </v-list-tile-content>
-        </v-list-tile>
-        <v-list-tile>
-          <v-list-tile-action>
-            <v-switch
+      <!--PERFORMANCE SETTINGS-->
+      <v-list class="pa-0">
+        <v-list-group>
+          <v-list-tile slot="activator">
+            <v-list-tile-content>
+              <v-list-tile-title>Performance Settings</v-list-tile-title>
+            </v-list-tile-content>
+          </v-list-tile>
+          <v-list-tile>
+            <v-list-tile-action>
+              <v-switch
                 v-model="delayCalcUpdate"
-            ></v-switch>
-          </v-list-tile-action>
-          <v-list-tile-content>
-            <v-list-tile-title>Delay mil update on drag</v-list-tile-title>
-            <v-list-tile-sub-title>performance hack</v-list-tile-sub-title>
-          </v-list-tile-content>
-          <v-list-tile-avatar>
-            <v-icon>timelapse</v-icon>
-          </v-list-tile-avatar>
-        </v-list-tile>
-        <v-list-tile>
-          <v-list-tile-action>
-            <v-switch
+              />
+            </v-list-tile-action>
+            <v-list-tile-content>
+              <v-list-tile-title>Delay mil update on drag</v-list-tile-title>
+              <v-list-tile-sub-title>performance hack</v-list-tile-sub-title>
+            </v-list-tile-content>
+            <v-list-tile-avatar>
+              <v-icon>timelapse</v-icon>
+            </v-list-tile-avatar>
+          </v-list-tile>
+          <v-list-tile>
+            <v-list-tile-action>
+              <v-switch
                 v-model="hideLoadingBar"
-            ></v-switch>
-          </v-list-tile-action>
-          <v-list-tile-content>
-            <v-list-tile-title>Hide loading bar</v-list-tile-title>
-            <v-list-tile-sub-title>reduces zoom delay</v-list-tile-sub-title>
-          </v-list-tile-content>
-          <v-list-tile-avatar>
-            <v-icon>timelapse</v-icon>
-          </v-list-tile-avatar>
-        </v-list-tile>
-      </v-list-group>
-    </v-list>
+              />
+            </v-list-tile-action>
+            <v-list-tile-content>
+              <v-list-tile-title>Hide loading bar</v-list-tile-title>
+              <v-list-tile-sub-title>reduces zoom delay</v-list-tile-sub-title>
+            </v-list-tile-content>
+            <v-list-tile-avatar>
+              <v-icon>timelapse</v-icon>
+            </v-list-tile-avatar>
+          </v-list-tile>
+        </v-list-group>
+      </v-list>
 
-    <!--'REMOVE PINS' SECTION-->
-    <v-list class="pa-0">
-      <v-list-group :disabled="placedMortars.length + placedFobs.length + placedTargets.length === 0">
-        <v-list-tile slot="activator">
-          <v-list-tile-content>
-            <v-list-tile-title>Remove Pins</v-list-tile-title>
-          </v-list-tile-content>
-        </v-list-tile>
-        <v-list-tile v-if="placedMortars.length > 0">
-          <v-list-tile-content>
-            <v-layout>
-              <v-btn icon style="margin: 2px 2px 2px 2px"
-                     v-for="(aMortar, i) in placedMortars" :key="i" @click="removeMortar(i)">
-                <img :src="aMortar.symbolUrl" width="48px">
-              </v-btn>
-            </v-layout>
-          </v-list-tile-content>
-        </v-list-tile>
-        <v-list-tile v-if="placedTargets.length > 0">
-          <v-list-tile-content>
-            <v-layout>
-              <v-btn icon style="margin: 2px 2px 2px 2px"
-                     v-for="(aTarget, i) in placedTargets" :key="i" @click="removeTarget(i)">
-                <img :src="aTarget.symbolUrl" width="48px">
-              </v-btn>
-            </v-layout>
-          </v-list-tile-content>
-        </v-list-tile>
-        <v-list-tile v-if="placedFobs.length > 0">
-          <v-list-tile-content>
-            <v-layout>
-              <v-btn icon style="margin: 2px 2px 2px 2px"
-                     v-for="(aFob, i) in placedFobs" :key="i" @click="removeFob(i)">
-                <img :src="aFob.symbolUrl" width="48px">
-              </v-btn>
-            </v-layout>
-          </v-list-tile-content>
-        </v-list-tile>
-      </v-list-group>
-    </v-list>
-  </v-navigation-drawer>
-</v-app>
+      <!--'REMOVE PINS' SECTION-->
+      <v-list class="pa-0">
+        <v-list-group :disabled="placedMortars.length + placedFobs.length + placedTargets.length === 0">
+          <v-list-tile slot="activator">
+            <v-list-tile-content>
+              <v-list-tile-title>Remove Pins</v-list-tile-title>
+            </v-list-tile-content>
+          </v-list-tile>
+          <v-list-tile v-if="placedMortars.length > 0">
+            <v-list-tile-content>
+              <v-layout>
+                <v-btn
+                  icon
+                  style="margin: 2px 2px 2px 2px"
+                  v-for="(aMortar, i) in placedMortars"
+                  :key="i"
+                  @click="removeMortar(i)">
+                  <img
+                    :src="aMortar.symbolUrl"
+                    width="48px">
+                </v-btn>
+              </v-layout>
+            </v-list-tile-content>
+          </v-list-tile>
+          <v-list-tile v-if="placedTargets.length > 0">
+            <v-list-tile-content>
+              <v-layout>
+                <v-btn
+                  icon
+                  style="margin: 2px 2px 2px 2px"
+                  v-for="(aTarget, i) in placedTargets"
+                  :key="i"
+                  @click="removeTarget(i)">
+                  <img
+                    :src="aTarget.symbolUrl"
+                    width="48px">
+                </v-btn>
+              </v-layout>
+            </v-list-tile-content>
+          </v-list-tile>
+          <v-list-tile v-if="placedFobs.length > 0">
+            <v-list-tile-content>
+              <v-layout>
+                <v-btn
+                  icon
+                  style="margin: 2px 2px 2px 2px"
+                  v-for="(aFob, i) in placedFobs"
+                  :key="i"
+                  @click="removeFob(i)">
+                  <img
+                    :src="aFob.symbolUrl"
+                    width="48px">
+                </v-btn>
+              </v-layout>
+            </v-list-tile-content>
+          </v-list-tile>
+        </v-list-group>
+      </v-list>
+    </v-navigation-drawer>
+  </v-app>
 </template>
 
 <script>
-
-import { CRS, LatLng, LatLngBounds, Map, Point, Polyline, Rectangle, Transformation } from "leaflet";
+import {
+  CRS, LatLng, LatLngBounds, Map, Point, Polyline, Rectangle, Transformation,
+} from "leaflet";
 import Vue from "vue";
 // required for Vuetify's a-la-carte functionality
 import "vuetify/src/stylus/app.styl";
@@ -690,6 +912,7 @@ export default {
   props: {
     mapData: {
       type: MapData,
+      default: () => undefined,
     },
 
     // whether to add PostScriptum features or not
@@ -1255,10 +1478,8 @@ export default {
      *  settings required to hit target. Elevation is NaN if target is out of range.
      */
     calcMortarSettings(mPos, tPos) {
-      const mHeight =
-        this.squadMap.hasHeightmap ? this.squadMap.getHeightmapHolder().getHeight(mPos.lng, mPos.lat) : 0;
-      const tHeight =
-        this.squadMap.hasHeightmap ? this.squadMap.getHeightmapHolder().getHeight(tPos.lng, tPos.lat) : 0;
+      const mHeight = this.squadMap.hasHeightmap ? this.squadMap.getHeightmapHolder().getHeight(mPos.lng, mPos.lat) : 0;
+      const tHeight = this.squadMap.hasHeightmap ? this.squadMap.getHeightmapHolder().getHeight(tPos.lng, tPos.lat) : 0;
 
       const dHeight = tHeight - mHeight;
       const mVel = this.mortarType.velocity;

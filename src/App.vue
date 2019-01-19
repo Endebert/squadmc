@@ -1,5 +1,8 @@
 <template>
-  <Map :mapData="mapData" :postScriptum="postScriptum"/>
+  <Map
+    :mapData="mapData"
+    :postScriptum="postScriptum"
+  />
   <!--<Loading />-->
 
 </template>

@@ -3,7 +3,7 @@ module.exports = {
   env: {
     node: true,
   },
-  extends: ["plugin:vue/essential", "@vue/airbnb"],
+  extends: ["plugin:vue/strongly-recommended", "@vue/airbnb"],
   rules: {
     "no-console": "off",
     quotes: ["error", "double"],
@@ -13,8 +13,8 @@ module.exports = {
     "prefer-destructuring": "off",
     "no-plusplus": "off",
     "no-underscore-dangle": ["error", {
-      "allowAfterThis": true,
-      "allowAfterSuper": true,
+      allowAfterThis: true,
+      allowAfterSuper: true,
     }],
     "no-param-reassign": "off",
   },
