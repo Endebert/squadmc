@@ -1,5 +1,15 @@
 # Change Log
 
+<a name="2.12.2"></a>
+## [2.12.2](https://github.com/Endebert/squadmc/compare/v2.12.1...v2.12.2) (2020-01-18)
+
+
+### Bug Fixes
+
+* updated PostScriptum mortar ranges ([6c5fa85](https://github.com/Endebert/squadmc/commit/6c5fa85))
+
+
+
 <a name="2.12.1"></a>
 ## [2.12.1](https://github.com/Endebert/squadmc/compare/v2.12.0...v2.12.1) (2020-01-11)
 
