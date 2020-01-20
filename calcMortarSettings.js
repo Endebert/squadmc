@@ -351,7 +351,7 @@ tables.forEach((t) => {
     const estimatedAngle = radToMil(findAngle(tDistance, 0, avgVel));
     const eAFormatted = pad(estimatedAngle.toFixed(1), 6);
     const d = tAngle - estimatedAngle;
-    const dFormatted = (d < 0 ? "-" : "+") + pad(d.toFixed(2), 4);
+    const dFormatted = (d < 0 ? "-" : "+") + pad(Math.abs(d).toFixed(2), 5);
 
     console.log(
       `${tName}: ${pad(tDistance, 4)}m ${pad(tAngle, 4)}mil | ${eAFormatted}mil | d=${dFormatted} | v=${v.toFixed(3)}`,
