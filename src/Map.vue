@@ -291,6 +291,7 @@
                 icon
                 v-for="(aMortar, index) in placedMortars"
                 :key="index"
+                v-if="mortar && aMortar.symbolUrl !== mortar.symbolUrl"
                 @click="mortar = placedMortars[index]"
               >
                 <img
@@ -312,7 +313,7 @@
                 icon
                 v-for="(aTarget, index) in placedTargets"
                 :key="index"
-                v-if="secondaryTarget && aTarget.symbolUrl !== secondaryTarget.symbolUrl"
+                v-if="target && aTarget.symbolUrl !== target.symbolUrl"
                 @click="target = placedTargets[index]">
                 <img
                   :src="aTarget.symbolUrl"
@@ -1538,7 +1539,7 @@ export default {
         // if more than one is left, we can find new secondary target
         if (this.placedTargets.length > 1) {
           const newTarget = this.placedTargets[i === 0 ? 0 : i - 1];
-          if (newTarget.pinUrl === this.secondaryTarget.pinUrl) {
+          if (newTarget.pinUrl === this.secondaryTarget.pinUrl || this.target.pinUrl === this.secondaryTarget.pinUrl) {
             // find new secondary target
             // iterate through targets backwards, as behaviour is more intuitive to the user
             let newSecondary;
@@ -1550,10 +1551,11 @@ export default {
                 break;
               }
             }
-            console.log("new primary & secondary targets:", newTarget, newSecondary);
-            this.target = newTarget;
+            console.log("new secondary target:", newSecondary);
             this.secondaryTarget = newSecondary;
           }
+          console.log("new primary target:", newTarget);
+          this.target = newTarget;
         } else if (this.placedTargets.length > 0) {
           // only one target left, which is primary target, so secondary target must be undefined
           this.target = this.placedTargets[0];
