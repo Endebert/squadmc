@@ -1,5 +1,15 @@
 # Change Log
 
+<a name="2.12.3"></a>
+## [2.12.3](https://github.com/Endebert/squadmc/compare/v2.12.2...v2.12.3) (2020-02-24)
+
+
+### Bug Fixes
+
+* fixed pins in target selection missing + state handling ([a52214f](https://github.com/Endebert/squadmc/commit/a52214f))
+
+
+
 <a name="2.12.2"></a>
 ## [2.12.2](https://github.com/Endebert/squadmc/compare/v2.12.1...v2.12.2) (2020-01-18)
 
