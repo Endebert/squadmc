@@ -472,7 +472,7 @@
       disable-route-watcher
       mobile-break-point="640"
       style="max-height: 100%"
-      width="300"
+      width="325"
     >
       <!--APP TITLE AND CHANGELOG BUTTON-->
       <v-toolbar>
@@ -774,44 +774,46 @@
         <template v-slot:activator>
           <v-list-item-title>Remove Pins</v-list-item-title>
         </template>
-        <v-item-group v-if="placedMortars.length">
-          <v-item
-            v-for="(aMortar, i) in placedMortars"
-            :key="i">
-            <v-btn
-              icon
-              @click="removeMortar(i)">
-              <v-img
-                :src="aMortar.symbolUrl"/>
-            </v-btn>
-          </v-item>
-        </v-item-group>
+        <v-container>
+          <v-item-group v-if="placedMortars.length">
+            <v-item
+              v-for="(aMortar, i) in placedMortars"
+              :key="i">
+              <v-btn
+                icon
+                @click="removeMortar(i)">
+                <v-img
+                  :src="aMortar.symbolUrl"/>
+              </v-btn>
+            </v-item>
+          </v-item-group>
 
-        <v-item-group v-if="placedTargets.length">
-          <v-item
-            v-for="(aTarget, i) in placedTargets"
-            :key="i">
-            <v-btn
-              icon
-              @click="removeTarget(i)">
-              <v-img
-                :src="aTarget.symbolUrl"/>
-            </v-btn>
-          </v-item>
-        </v-item-group>
+          <v-item-group v-if="placedTargets.length">
+            <v-item
+              v-for="(aTarget, i) in placedTargets"
+              :key="i">
+              <v-btn
+                icon
+                @click="removeTarget(i)">
+                <v-img
+                  :src="aTarget.symbolUrl"/>
+              </v-btn>
+            </v-item>
+          </v-item-group>
 
-        <v-item-group v-if="placedFobs.length">
-          <v-item
-            v-for="(aFob, i) in placedFobs"
-            :key="i">
-            <v-btn
-              icon
-              @click="removeFob(i)">
-              <v-img
-                :src="aFob.symbolUrl"/>
-            </v-btn>
-          </v-item>
-        </v-item-group>
+          <v-item-group v-if="placedFobs.length">
+            <v-item
+              v-for="(aFob, i) in placedFobs"
+              :key="i">
+              <v-btn
+                icon
+                @click="removeFob(i)">
+                <v-img
+                  :src="aFob.symbolUrl"/>
+              </v-btn>
+            </v-item>
+          </v-item-group>
+        </v-container>
       </v-list-group>
     </v-navigation-drawer>
   </v-app>

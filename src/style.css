@@ -81,12 +81,6 @@ body::-webkit-scrollbar {
   font-size: 14px!important;
 }
 
-.v-list-group__items {
-  padding-left: 16px;
-  padding-right: 16px;
-
-}
-
 v-speed-dial__list {
   padding-bottom: 0px!important;
 }
