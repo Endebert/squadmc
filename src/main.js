@@ -10,6 +10,9 @@ import Raven from "raven-js";
 import RavenVue from "raven-js/plugins/vue";
 
 import App from "./App.vue";
+import vuetify from "./plugins/vuetify";
+import "./style.css";
+
 
 // Sentry.io error reporting tool
 // only used in production mode
@@ -24,5 +27,6 @@ if (process.env.NODE_ENV === "production") {
 Vue.config.productionTip = true;
 
 new Vue({
+  vuetify,
   render: h => h(App),
 }).$mount("#app");

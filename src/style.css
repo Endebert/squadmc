@@ -1,0 +1,101 @@
+@import "~material-icons/iconfont/material-icons.css";
+@import "~leaflet/dist/leaflet.css";
+@import "~typeface-roboto/index.css";
+@import "~hack-font/build/web/hack.css";
+
+/*hide scrollbar*/
+body {
+  overflow-y: hidden;
+}
+
+body::-webkit-scrollbar {
+  display: none;
+}
+
+.leaflet-container {
+  background-color: rgba(255, 0, 0, 0);
+}
+
+.leaflet-tooltip {
+  color: white;
+  /*border-radius: unset;*/
+  /*border: unset;*/
+  /*font-family: monospace;*/
+  /*font-weight: bold;*/
+  /*opacity: 0.5;*/
+  /*box-shadow: unset;*/
+  border-top: unset;
+  border-left: unset;
+  border-right: unset;
+  padding: 0 0.5em;
+  white-space: nowrap;
+  border-radius: 1em;
+  /*font-family: monospace;*/
+
+  font-family: "Hack", monospace;
+  background-color: rgba(0, 0, 0, 0.33);
+  text-shadow: 0.1em 0.1em 0.2em rgba(0, 0, 0, 1);
+  font-size: large;
+}
+
+#map {
+  cursor: crosshair;
+  z-index: 0;
+  /*width: 100%;*/
+  /*height: 100%;*/
+}
+
+#heightmap {
+  visibility: hidden;
+  position: absolute;
+}
+
+.font-mono {
+  font-family: "Hack", monospace;
+}
+
+.flex {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+}
+
+/* for bottom bar to work in safari 8*/
+.content--wrap {
+  height: 100%!important;
+}
+
+.absolute-layer {
+  position: absolute;
+  top: 0; bottom: 0; left: 0; right: 0;
+}
+
+.v-list-item__content {
+  padding-top: 0px!important;
+  padding-bottom: 0px!important;
+}
+
+.v-list-item__title {
+  margin-top: 5px!important;
+  margin-bottom: 5px!important;
+  font-size: 14px!important;
+}
+
+.v-list-group__items {
+  padding-left: 16px;
+  padding-right: 16px;
+
+}
+
+v-speed-dial__list {
+  padding-bottom: 0px!important;
+}
+
+.v-toolbar--floating {
+  margin: 16px;
+}
+
+/* FIXME: Vuetify a-la-carte changes class order of switches. This hack restores normal behaviour */
+.v-input--selection-controls .v-input__slot {
+  margin-bottom: 0;
+}

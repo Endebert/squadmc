@@ -27,12 +27,15 @@
     "raf": "^3.4.1",
     "raven-js": "^3.27.0",
     "replace": "^1.0.1",
+    "sass": "^1.26.2",
+    "sass-loader": "7.2.0",
     "semver": "^5.6.0",
     "standard-version": "^4.4.0",
     "typeface-roboto": "^0.0.54",
-    "vue": "^2.5.22",
+    "vue": "^2.6.11",
     "vue-md-loader": "^1.1.0",
-    "vuetify": "^1.4.2",
+    "vuetify": "^2.2.15",
+    "vuetify-loader": "^1.4.3",
     "whatwg-fetch": "^3.0.0"
   },
   "devDependencies": {
@@ -43,8 +46,8 @@
     "babel-plugin-transform-imports": "^1.5.1",
     "stylus": "^0.54.5",
     "stylus-loader": "^3.0.2",
-    "vue-cli-plugin-vuetify": "^0.4.6",
-    "vue-template-compiler": "^2.5.22"
+    "vue-cli-plugin-vuetify": "^2.0.5",
+    "vue-template-compiler": "^2.6.11"
   },
   "browserslist": [
     "defaults",
