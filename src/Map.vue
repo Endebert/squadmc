@@ -395,7 +395,9 @@
                         :src="aTarget.symbolUrl"/>
                     </v-btn>
                   </v-speed-dial>
-                  <div class="font-mono mx-1" style="font-size: large; align-self: flex-start;">⊥</div>
+                  <div
+                    class="font-mono mx-1"
+                    style="font-size: large; align-self: flex-start;">⊥</div>
                   <v-speed-dial>
                     <v-btn
                       icon
@@ -423,7 +425,7 @@
                   align="center"
                   style="font-size: small; color: #9e9e9e">
                   <td colspan="2">
-                    <div class="flex row">
+                    <div class="flex-container">
                       <v-btn
                         icon
                         small
@@ -432,7 +434,9 @@
                         :disabled="currentSubTarget <= 0">
                         <v-icon @click="currentSubTarget--">keyboard_arrow_left</v-icon>
                       </v-btn>
+
                       Round {{ pad(currentSubTarget + 1, 3) }} / {{ pad(subTargetsHolder.targets.length, 3) }}
+
                       <v-btn
                         icon
                         small
