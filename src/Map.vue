@@ -282,7 +282,9 @@
           <v-row
             v-if="!secondaryTarget || targetType === TARGET_TYPE.POINT"
             no-gutters>
-            <v-col cols="auto" class="d-flex justify-center align-center">
+            <v-col
+              cols="auto"
+              class="d-flex justify-center align-center">
               <v-speed-dial>
                 <v-btn
                   icon
@@ -1046,6 +1048,44 @@ export default {
       }
     }, false);
 
+    this._keyListener = function keydown(e) {
+      if (e.key === "1" && e.altKey) {
+        this.placePin(this.LatLng, 0, PIN_TYPE.MORTAR);
+        return;
+      }
+      if (e.altKey && e.key === "2") {
+        this.placePin(this.LatLng, 1, PIN_TYPE.MORTAR);
+        return;
+      }
+      if (e.altKey && e.key === "3") {
+        this.placePin(this.LatLng, 2, PIN_TYPE.MORTAR);
+        return;
+      }
+      if (e.altKey && e.key === "4") {
+        this.placePin(this.LatLng, 3, PIN_TYPE.MORTAR);
+        return;
+      }
+
+      if (e.key === "1") {
+        this.placePin(this.LatLng, 0, PIN_TYPE.TARGET);
+        return;
+      }
+      if (e.key === "2") {
+        this.placePin(this.LatLng, 1, PIN_TYPE.TARGET);
+        return;
+      }
+      if (e.key === "3") {
+        this.placePin(this.LatLng, 2, PIN_TYPE.TARGET);
+        return;
+      }
+      if (e.key === "4") {
+        this.placePin(this.LatLng, 3, PIN_TYPE.TARGET);
+        return;
+      }
+    };
+
+    document.addEventListener("keydown", this._keyListener.bind(this));
+
     // remove right click to fix context menu opening when long pressing pin for dragging
     document.oncontextmenu = function retFalse() {
       return false;
@@ -1192,7 +1232,7 @@ export default {
      */
     onMouseMove(e) {
       console.debug("onMouseMove:", e);
-
+      this.LatLng = e.latlng;
       // we don't want to show the indicator if any of the markers are being dragged
       // so we clear showKeypadTimeout (so that the indicator is not shown) and return early
       if (this.dragging) {
