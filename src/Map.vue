@@ -1049,37 +1049,17 @@ export default {
     }, false);
 
     this._keyListener = function keydown(e) {
-      if (e.key === "1" && e.altKey) {
-        this.placePin(this.LatLng, 0, PIN_TYPE.MORTAR);
-        return;
-      }
-      if (e.altKey && e.key === "2") {
-        this.placePin(this.LatLng, 1, PIN_TYPE.MORTAR);
-        return;
-      }
-      if (e.altKey && e.key === "3") {
-        this.placePin(this.LatLng, 2, PIN_TYPE.MORTAR);
-        return;
-      }
-      if (e.altKey && e.key === "4") {
-        this.placePin(this.LatLng, 3, PIN_TYPE.MORTAR);
+      // disabled for basic mode
+      if (this.advancedMode === false) {
         return;
       }
 
-      if (e.key === "1") {
-        this.placePin(this.LatLng, 0, PIN_TYPE.TARGET);
-        return;
-      }
-      if (e.key === "2") {
-        this.placePin(this.LatLng, 1, PIN_TYPE.TARGET);
-        return;
-      }
-      if (e.key === "3") {
-        this.placePin(this.LatLng, 2, PIN_TYPE.TARGET);
-        return;
-      }
-      if (e.key === "4") {
-        this.placePin(this.LatLng, 3, PIN_TYPE.TARGET);
+      // if alt key is pressed - place mortar, target otherwise
+      const pinType = e.altKey ? PIN_TYPE.MORTAR : PIN_TYPE.TARGET;
+      const number = Number(e.key);
+
+      if (number > 0 && number < 5 && number !== Number.NaN) {
+        this.placePin(this.LatLng, number - 1, pinType);
         return;
       }
     };
@@ -1333,9 +1313,9 @@ export default {
               this.placedTargets[i].pos = pos;
 
               // we found a matching target and moved it
-              // if this target is neither the current primary or secondary target,
+              // if this target is not the current primary target,
               // we set the current primary target as secondary, and this one as the new primary target
-              if (this.placedTargets[i] !== this.target && this.placedTargets[i] !== this.secondaryTarget) {
+              if (this.placedTargets[i] !== this.target) {
                 this.secondaryTarget = this.target;
                 this.target = this.placedTargets[i];
               }
