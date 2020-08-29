@@ -1484,7 +1484,9 @@ export default {
 
       const dHeight = tHeight - mHeight;
       const mVel = this.mortarType.velocity;
-      return Utils.getMortarSettings(mPos, tPos, mVel, dHeight);
+      const useNatoMils = !this.postScriptum;
+
+      return Utils.getMortarSettings(mPos, tPos, mVel, dHeight, useNatoMils);
     },
     setMortarSettings(settings, delayed = this.delayCalcUpdate) {
       if (delayed) {
