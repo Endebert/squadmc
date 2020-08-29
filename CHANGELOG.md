@@ -1,5 +1,20 @@
 # Change Log
 
+<a name="2.13.0"></a>
+# [2.13.0](https://github.com/Endebert/squadmc/compare/v2.12.3...v2.13.0) (2020-08-29)
+
+
+### Bug Fixes
+
+* **PostScriptum:** update mortar velocities ([3538f89](https://github.com/Endebert/squadmc/commit/3538f89))
+
+
+### Features
+
+* switch between regular Milliradian and NATO Milliradian based on game ([e8794e0](https://github.com/Endebert/squadmc/commit/e8794e0))
+
+
+
 <a name="2.12.3"></a>
 ## [2.12.3](https://github.com/Endebert/squadmc/compare/v2.12.2...v2.12.3) (2020-02-24)
 
