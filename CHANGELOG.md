@@ -1,5 +1,16 @@
 # Change Log
 
+<a name="2.13.1"></a>
+## [2.13.1](https://github.com/Endebert/squadmc/compare/v2.13.0...v2.13.1) (2020-08-29)
+
+
+### Bug Fixes
+
+* Added cache-control immutable header ([c4600cc](https://github.com/Endebert/squadmc/commit/c4600cc))
+* fix not using nato mils in squad ([889f678](https://github.com/Endebert/squadmc/commit/889f678))
+
+
+
 <a name="2.13.0"></a>
 # [2.13.0](https://github.com/Endebert/squadmc/compare/v2.12.3...v2.13.0) (2020-08-29)
 
