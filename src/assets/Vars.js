@@ -58,6 +58,7 @@ export const PS_6CM_MAX_DISTANCE = 1467;
 
 export const GRAVITY = 9.8;
 export const MIL_TO_DEG_FACTOR = 360.0 / 6283.1853;
+export const NATO_MIL_TO_DEG_FACTOR = 360 / 6400;
 export const MAX_SUBTARGETS_COUNT = 49;
 
 /**

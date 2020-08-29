@@ -1,6 +1,7 @@
 import { LatLng } from "leaflet";
 import {
   MIL_TO_DEG_FACTOR,
+  NATO_MIL_TO_DEG_FACTOR,
   GRAVITY,
   PIN_MAP,
   SQUAD_VELOCITY,
@@ -27,6 +28,15 @@ import MortarType from "./MortarType";
  * @param {number} mil - NATO mils
  * @returns {number} degrees
  */
+export function natoMilToDeg(mil) {
+  return mil * NATO_MIL_TO_DEG_FACTOR;
+}
+
+/**
+ * Converts mils to degrees
+ * @param {number} mil - NATO mils
+ * @returns {number} degrees
+ */
 export function milToDeg(mil) {
   return mil * MIL_TO_DEG_FACTOR;
 }
@@ -50,7 +60,7 @@ export function radToDeg(rad) {
 }
 
 /**
- * Converts degrees into NATO mils
+ * Converts degrees into mils
  * @param {number} deg - degrees
  * @returns {number} NATO mils
  */
@@ -58,22 +68,51 @@ export function degToMil(deg) {
   return deg / MIL_TO_DEG_FACTOR;
 }
 
+
 /**
- * Converts radians into NATO mils
- * @param {number} rad - radians
+ * Converts degrees into NATO mils
+ * @param {number} deg - degrees
  * @returns {number} NATO mils
+ */
+export function degToNatoMil(deg) {
+  return deg / NATO_MIL_TO_DEG_FACTOR;
+}
+
+/**
+ * Converts radians into mils
+ * @param {number} rad - radians
+ * @returns {number} mils
  */
 export function radToMil(rad) {
   return degToMil(radToDeg(rad));
 }
 
 /**
- * Converts NATO mils into radians
- * @param mil - NATO mils
+ * Converts radians into NATO mils
+ * @param {number} rad - radians
+ * @returns {number} NATO mils
+ */
+export function radToNatoMil(rad) {
+  return degToMil(radToDeg(rad));
+}
+
+/**
+ * Converts mils into radians
+ * @param mil - mils
  * @returns {number} radians
  */
 export function milToRad(mil) {
   return degToRad(milToDeg(mil));
+}
+
+
+/**
+ * Converts NATO mils into radians
+ * @param mil - NATO mils
+ * @returns {number} radians
+ */
+export function natoMilToRad(mil) {
+  return degToRad(natoMilToDeg(mil));
 }
 
 /**
@@ -152,6 +191,27 @@ export function isMultiple(a, b) {
   const r = Math.round(t);
   const d = t >= r ? t - r : r - t;
   return d < 0.0001;
+}
+
+/**
+ * Calculates the angle the mortar needs to be set,
+ * in order to hit the target at the desired distance and vertical delta.
+ *
+ * Function taken from https://en.wikipedia.org/wiki/Projectile_motion
+ *
+ * @param {number} x - distance between mortar and target
+ * @param {number} [y] - vertical delta between mortar and target
+ * @param {number} [v] - initial mortar projectile velocity
+ * @param {number} [g] - gravity force
+ * @returns {number || NaN} NATO mil if target in range, NaN otherwise
+ */
+export function getNatoElevation(x, y = 0, v = SQUAD_VELOCITY, g = GRAVITY) {
+  const p1 = Math.sqrt(v ** 4 - g * (g * x ** 2 + 2 * y * v ** 2));
+  const a1 = Math.atan((v ** 2 + p1) / (g * x));
+  // const a2 = Math.atan((v ** 2 - p1) / (g * x));
+  // no need to calculate, angle is always below 45°/800mil
+
+  return radToNatoMil(a1);
 }
 
 /**
@@ -297,13 +357,14 @@ export function getBearing(a, b) {
  * @param {LatLng} tPos - target position
  * @param {number} mVel - mortar shell velocity
  * @param {number} [dHeight] - height difference between mortar and target, defaults to 0
+ * @param {boolean} [useNatoMils] - use regular Milliradians or NATO Milliradians (Squad uses NATO mils)
  * @returns {{bearing: number, elevation: (number|NaN), dist: number, dHeight: number}} - bearing and elevation settings
  *  required to hit target. Elevation is NaN if target is out of range.
  */
-export function getMortarSettings(mPos, tPos, mVel, dHeight = 0) {
+export function getMortarSettings(mPos, tPos, mVel, dHeight = 0, useNatoMils = true) {
   const bearing = getBearing(mPos, tPos);
   const dist = getDist(mPos, tPos);
-  const elevation = getElevation(dist, dHeight, mVel);
+  const elevation = useNatoMils ? getNatoElevation(dist, dHeight, mVel) : getElevation(dist, dHeight, mVel);
 
   return {
     bearing,
