@@ -93,7 +93,7 @@ export function radToMil(rad) {
  * @returns {number} NATO mils
  */
 export function radToNatoMil(rad) {
-  return degToMil(radToDeg(rad));
+  return degToNatoMil(radToDeg(rad));
 }
 
 /**
