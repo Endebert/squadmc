@@ -41,7 +41,7 @@ SquadMC is a map-based mortar elevation and bearing calculator for the game [*Sq
 git clone https://github.com/Endebert/squadmc.git
 cd squadmc
 yarn install
-``` 
+```
 
 ### Running development mode
 
@@ -52,7 +52,7 @@ yarn run serve
 
 ### Building production version
 
-For an optimized build ready for deployment, execute: 
+For an optimized build ready for deployment, execute:
 ```
 yarn run build
 ```
@@ -62,6 +62,7 @@ The build will be contained in the `/dist` folder.
  * [Trikolon](https://github.com/Trikolon)
  * [Kalliser](https://github.com/Kalliser)
  * [TopMak](https://github.com/TopMak)
+ * [ansarto](https://github.com/ansarto)
 
 ## Attributions
  * Keypad grid originally based on [Leaflet.SimpleGraticule](https://github.com/ablakey/Leaflet.SimpleGraticule), but not much is left from the original code
