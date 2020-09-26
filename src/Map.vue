@@ -921,6 +921,11 @@ export default {
       type: Boolean,
       default: false,
     },
+
+    initialMap: {
+      type: String,
+      default: () => undefined,
+    },
   },
   components: {
     Changelog: () => import(/* webpackChunkName: "changelog" */ "../CHANGELOG.md"),
@@ -938,7 +943,7 @@ export default {
       showGrid: this.fromStorage("showGrid", "true") === "true",
       showHeightmap: this.fromStorage("showHeightmap", "false") === "true",
       showLocations: this.fromStorage("showLocations", "false") === "true",
-      selectedMap: this.fromStorage("selectedMap", undefined), // selected map in top selector
+      selectedMap: this.initialMap || this.fromStorage("selectedMap", undefined), // selected map in top selector
       delayCalcUpdate: this.fromStorage("delayCalcUpdate", "true") === "true",
       hideLoadingBar: this.fromStorage("hideLoadingBar", "true") === "true",
       storedVersion: this.fromStorage("version", "v0.0.0"),
@@ -1122,6 +1127,7 @@ export default {
      */
     changeMap(newMap) {
       console.log("changeMap:", newMap);
+      this.$router.push(newMap);
       const squadMap = this.mapData.getSquadMap(newMap);
 
       // clear map completely

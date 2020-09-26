@@ -1,10 +1,6 @@
 <template>
-  <Map
-    :mapData="mapData"
-    :postScriptum="postScriptum"
-  />
+  <router-view :key="$route.fullPath"/>
   <!--<Loading />-->
-
 </template>
 
 <script>
@@ -36,6 +32,24 @@ export default {
       // A component to use while the async component is loading
       loading: Loading,
     }),
+  },
+  mounted() {
+    // dynamically insert map routes
+    mapData.init(baseUrl).then(() => {
+      mapData.getMapNames().forEach((mapName) => {
+        this.$router.options.routes.push({
+          name: mapName,
+          path: `/${mapName}`,
+          component: () => import(/* webpackChunkName: "map" */ "./Map.vue"),
+          props: {
+            mapData,
+            postScriptum,
+            initialMap: mapName,
+          },
+        });
+      });
+      this.$router.addRoutes(this.$router.options.routes);
+    });
   },
 };
 </script>
