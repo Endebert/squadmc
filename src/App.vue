@@ -36,7 +36,8 @@ export default {
   mounted() {
     // dynamically insert map routes
     mapData.init(baseUrl).then(() => {
-      mapData.getMapNames().forEach((mapName) => {
+      const mapNames = mapData.getMapNames();
+      mapNames.forEach((mapName) => {
         this.$router.options.routes.push({
           name: mapName,
           path: `/${mapName}`,
@@ -46,6 +47,9 @@ export default {
             postScriptum,
             initialMap: mapName,
           },
+        });
+        this.$router.options.routes.push({
+          path: "/", redirect: mapNames[0],
         });
       });
       this.$router.addRoutes(this.$router.options.routes);
