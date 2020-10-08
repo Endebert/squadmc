@@ -24,6 +24,8 @@ SquadMC is a map-based mortar elevation and bearing calculator for the game [*Sq
  * location markers (toggleable)
  * visible heightmap (toggleable)
 
+## Changelog
+ * see here: [Changelog](CHANGELOG.md)
 
 ## installation
 
@@ -57,6 +59,9 @@ For an optimized build ready for deployment, execute:
 yarn run build
 ```
 The build will be contained in the `/dist` folder.
+
+## Code of Conduct
+ * See here: [Code of Conduct](CODE_OF_CONDUCT.md)
 
 ## Contributors
  * [Trikolon](https://github.com/Trikolon)
