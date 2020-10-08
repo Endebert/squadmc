@@ -70,3 +70,4 @@ The build will be contained in the `/dist` folder.
  * UI powered by [Vue.js![Vue.js](./public/img/logos/logo_vuejs.png)](https://vuejs.org/) and [Vuetify![Vue.js](./public/img/logos/logo_vuetify.png)](http://vuetifyjs.com/)
  * Maps © [Offworld Industries](http://joinsquad.com/), powered by [![Leaflet](./public/img/logos/logo_leaflet.png)](https://leafletjs.com/)
  * Tested with [![BrowserStack](./public/img/logos/logo_browserstack.png)](https://www.browserstack.com/)
+ * Deployed using [![Netlify](https://cdn.netlify.com/15ecf59b59c9d04b88097c6b5d2c7e8a7d1302d0/1b6d6/img/press/logos/full-logo-light.svg)](https://www.netlify.com)
