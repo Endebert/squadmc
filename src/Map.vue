@@ -468,7 +468,7 @@
       disable-resize-watcher
       disable-route-watcher
       mobile-break-point="640"
-      style="max-height: 100%"
+      style="max-height: 100%; display: flex; flex-direction: column"
     >
       <!--APP TITLE AND CHANGELOG BUTTON-->
       <v-toolbar dense>
@@ -821,6 +821,14 @@
           </v-list-tile>
         </v-list-group>
       </v-list>
+      <v-spacer/>
+      <a
+        href="https://www.netlify.com"
+        class="pa-3">
+        <img
+          src="https://www.netlify.com/img/global/badges/netlify-color-bg.svg"
+          alt="Deploys by Netlify" >
+      </a>
     </v-navigation-drawer>
   </v-app>
 </template>
