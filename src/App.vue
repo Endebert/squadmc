@@ -24,9 +24,6 @@ export default {
       postScriptum,
     };
   },
-  components: {
-    Loading,
-  },
   mounted() {
     // dynamically insert map routes
     mapData.init(baseUrl).then(() => {
