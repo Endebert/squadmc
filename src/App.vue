@@ -49,7 +49,7 @@ export default {
           },
         });
         this.$router.options.routes.push({
-          path: "/", redirect: mapNames[0],
+          path: "/*", redirect: mapNames[0],
         });
       });
       this.$router.addRoutes(this.$router.options.routes);
