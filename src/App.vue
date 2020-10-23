@@ -36,6 +36,7 @@ export default {
           name: mapName,
           path: `/${mapName}`,
           component: () => import(/* webpackChunkName: "map" */ "./Map.vue"),
+          loading: Loading,
           props: {
             mapData,
             postScriptum,
