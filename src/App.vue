@@ -26,12 +26,6 @@ export default {
   },
   components: {
     Loading,
-    Map: () => ({
-      // The component to load (should be a Promise)
-      component: mapData.init(baseUrl).then(() => import(/* webpackChunkName: "map" */ "./Map.vue")),
-      // A component to use while the async component is loading
-      loading: Loading,
-    }),
   },
   mounted() {
     // dynamically insert map routes
