@@ -35,7 +35,7 @@ export default {
       }));
       // fallback to first map, if name in route could not be matched
       routes.push({
-        path: "*", redirect: mapNames[0],
+        path: "*", redirect: () => localStorage.getItem("selectedMap") || mapNames[0],
       });
       this.$router.addRoutes(routes);
     });
