@@ -25,13 +25,14 @@ export default {
     };
   },
   mounted() {
+    const mapComponentPromise = () => import(/* webpackChunkName: "map" */ "./Map.vue");
     // dynamically insert map routes
     mapData.init(baseUrl).then(() => {
       const mapNames = mapData.getMapNames();
       const routes = mapNames.map(mapName => ({
         name: mapName,
         path: `/${mapName}`,
-        component: () => import(/* webpackChunkName: "map" */ "./Map.vue"),
+        component: mapComponentPromise,
         loading: Loading,
         props: {
           mapData,
