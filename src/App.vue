@@ -48,6 +48,7 @@ export default {
             initialMap: mapName,
           },
         });
+        // fallback to first map, if name in route could not be matched
         this.$router.options.routes.push({
           path: "/*", redirect: mapNames[0],
         });
