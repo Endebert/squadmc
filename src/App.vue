@@ -18,12 +18,6 @@ if (postScriptum) { baseUrl += "/ps"; }
 
 export default {
   name: "App",
-  data() {
-    return {
-      mapData,
-      postScriptum,
-    };
-  },
   mounted() {
     const mapComponentPromise = () => import(/* webpackChunkName: "map" */ "./Map.vue");
     // dynamically insert map routes
