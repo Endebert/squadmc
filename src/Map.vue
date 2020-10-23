@@ -1129,13 +1129,12 @@ export default {
       console.log("changeMap:", newMap);
       this.$router.push(newMap).catch((err) => {
         // Ignore the vuex err regarding navigating to the page they are already on.
-        if (
-          err.name !== "NavigationDuplicated"
-      && !err.message.includes("Avoided redundant navigation to current location")
-        ) {
-          // But print any other errors to the console
-          console.error(err);
+        if (err.name === "NavigationDuplicated" && err.message
+        && err.message.includes("Avoided redundant navigation to current location")) {
+          return;
         }
+        // But print any other errors to the console
+        console.error(err);
       });
       const squadMap = this.mapData.getSquadMap(newMap);
 
