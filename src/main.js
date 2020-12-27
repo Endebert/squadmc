@@ -6,6 +6,7 @@ import "raf"; // requestAnimationFrame
 import "performance-polyfill"; // performance
 
 import Vue from "vue";
+import VueRouter from "vue-router";
 import Raven from "raven-js";
 import RavenVue from "raven-js/plugins/vue";
 
@@ -23,6 +24,13 @@ if (process.env.NODE_ENV === "production") {
 
 Vue.config.productionTip = true;
 
+Vue.use(VueRouter);
+const router = new VueRouter({
+  // routes will be dynamically inserted after App has mounted
+  routes: [],
+});
+
 new Vue({
   render: h => h(App),
+  router,
 }).$mount("#app");

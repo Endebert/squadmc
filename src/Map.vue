@@ -929,6 +929,11 @@ export default {
       type: Boolean,
       default: false,
     },
+
+    initialMap: {
+      type: String,
+      default: () => undefined,
+    },
   },
   components: {
     Changelog: () => import(/* webpackChunkName: "changelog" */ "../CHANGELOG.md"),
@@ -946,7 +951,7 @@ export default {
       showGrid: this.fromStorage("showGrid", "true") === "true",
       showHeightmap: this.fromStorage("showHeightmap", "false") === "true",
       showLocations: this.fromStorage("showLocations", "false") === "true",
-      selectedMap: this.fromStorage("selectedMap", undefined), // selected map in top selector
+      selectedMap: this.initialMap || this.fromStorage("selectedMap", undefined), // selected map in top selector
       delayCalcUpdate: this.fromStorage("delayCalcUpdate", "true") === "true",
       hideLoadingBar: this.fromStorage("hideLoadingBar", "true") === "true",
       storedVersion: this.fromStorage("version", "v0.0.0"),
@@ -1074,10 +1079,63 @@ export default {
     // set selected map, defined already if loaded from localStorage
     if (!this.selectedMap || this.maps.indexOf(this.selectedMap) === -1) {
       this.selectedMap = this.maps[0];
-    } else {
-      // since selectedMap is already defined and doesn't trigger changeMap, we do it here manually
-      this.changeMap(this.selectedMap);
     }
+
+    const squadMap = this.mapData.getSquadMap(this.selectedMap);
+
+    console.log("setting up bounds");
+    const x = 256 / squadMap.bounds.getNorth(); // 256 is inital tile size
+    const y = 256 / squadMap.bounds.getEast();
+    this.map.options.crs.transformation = new Transformation(y, 0, x, 0);
+    // this.map.fitBounds(squadMap.bounds);
+    this.map.setMaxBounds(squadMap.bounds.pad(0.5));
+
+    console.log("setting up grid");
+    this.grid.setBounds(squadMap.bounds);
+    if (this.showGrid) {
+      this.map.addLayer(this.grid);
+    }
+
+    if (squadMap.hasLocations) {
+      console.log("setting up location");
+      const locations = squadMap.getLocations();
+      this.locationLayer.setLocations(locations);
+      if (this.showLocations) {
+        this.map.addLayer(this.locationLayer);
+      }
+    }
+
+    let layer = squadMap.getMapTileLayer();
+    layer.on("loading", () => {
+      this.loading = true;
+    });
+    layer.on("load", () => {
+      this.loading = false;
+    });
+    if (squadMap.hasHeightmap) {
+      const hLayer = squadMap.getHeightmapTileLayer();
+
+      // we set loading callbacks even if its not to be shown yet
+      hLayer.on("loading", () => {
+        this.loading = true;
+      });
+      hLayer.on("load", () => {
+        this.loading = false;
+      });
+      if (this.showHeightmap) {
+        layer = hLayer;
+      }
+    }
+
+    console.log("setting up map layer");
+    this.map.addLayer(layer); // finally add the map
+    this.map.setView(squadMap.bounds.getCenter(), this.map.getBoundsZoom(squadMap.bounds, true)); // center view
+
+    // hack to properly align map and squadgrid
+    // eslint-disable-next-line no-underscore-dangle
+    this.map._resetView(this.map.getCenter(), this.map.getBoundsZoom(squadMap.bounds, true));
+
+    this.squadMap = squadMap;
 
     let executions = 0;
     const interval = setInterval(() => {
@@ -1130,74 +1188,7 @@ export default {
      */
     changeMap(newMap) {
       console.log("changeMap:", newMap);
-      const squadMap = this.mapData.getSquadMap(newMap);
-
-      // clear map completely
-      this.map.eachLayer((layer) => {
-        this.map.removeLayer(layer);
-      });
-
-      // clear map related objects
-      this.mortar = undefined;
-      this.target = undefined;
-      this.secondaryTarget = undefined;
-      this.placedTargets = [];
-      this.placedMortars = [];
-      this.placedFobs = [];
-
-      console.log("setting up bounds");
-      const x = 256 / squadMap.bounds.getNorth(); // 256 is inital tile size
-      const y = 256 / squadMap.bounds.getEast();
-      this.map.options.crs.transformation = new Transformation(y, 0, x, 0);
-      // this.map.fitBounds(squadMap.bounds);
-      this.map.setMaxBounds(squadMap.bounds.pad(0.5));
-
-      console.log("setting up grid");
-      this.grid.setBounds(squadMap.bounds);
-      if (this.showGrid) {
-        this.map.addLayer(this.grid);
-      }
-
-      if (squadMap.hasLocations) {
-        console.log("setting up location");
-        const locations = squadMap.getLocations();
-        this.locationLayer.setLocations(locations);
-        if (this.showLocations) {
-          this.map.addLayer(this.locationLayer);
-        }
-      }
-
-      let layer = squadMap.getMapTileLayer();
-      layer.on("loading", () => {
-        this.loading = true;
-      });
-      layer.on("load", () => {
-        this.loading = false;
-      });
-      if (squadMap.hasHeightmap) {
-        const hLayer = squadMap.getHeightmapTileLayer();
-
-        // we set loading callbacks even if its not to be shown yet
-        hLayer.on("loading", () => {
-          this.loading = true;
-        });
-        hLayer.on("load", () => {
-          this.loading = false;
-        });
-        if (this.showHeightmap) {
-          layer = hLayer;
-        }
-      }
-
-      console.log("setting up map layer");
-      this.map.addLayer(layer); // finally add the map
-      this.map.setView(squadMap.bounds.getCenter(), this.map.getBoundsZoom(squadMap.bounds, true)); // center view
-
-      // hack to properly align map and squadgrid
-      // eslint-disable-next-line no-underscore-dangle
-      this.map._resetView(this.map.getCenter(), this.map.getBoundsZoom(squadMap.bounds, true));
-
-      this.squadMap = squadMap;
+      this.$router.push(newMap).catch(console.error);
     },
     /**
      * Handles "mousemove" events on leaflet map

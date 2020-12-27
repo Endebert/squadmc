@@ -1,10 +1,5 @@
 <template>
-  <Map
-    :mapData="mapData"
-    :postScriptum="postScriptum"
-  />
-  <!--<Loading />-->
-
+  <router-view :key="$route.fullPath"/>
 </template>
 
 <script>
@@ -22,20 +17,28 @@ if (postScriptum) { baseUrl += "/ps"; }
 
 export default {
   name: "App",
-  data() {
-    return {
-      mapData,
-      postScriptum,
-    };
-  },
-  components: {
-    Loading,
-    Map: () => ({
-      // The component to load (should be a Promise)
-      component: mapData.init(baseUrl).then(() => import(/* webpackChunkName: "map" */ "./Map.vue")),
-      // A component to use while the async component is loading
-      loading: Loading,
-    }),
+  mounted() {
+    const mapComponentPromise = () => import(/* webpackChunkName: "map" */ "./Map.vue");
+    // dynamically insert map routes
+    mapData.init(baseUrl).then(() => {
+      const mapNames = mapData.getMapNames();
+      const routes = mapNames.map(mapName => ({
+        name: mapName,
+        path: `/${mapName}`,
+        component: mapComponentPromise,
+        loading: Loading,
+        props: {
+          mapData,
+          postScriptum,
+          initialMap: mapName,
+        },
+      }));
+      // fallback to first map, if name in route could not be matched
+      routes.push({
+        path: "*", redirect: () => localStorage.getItem("selectedMap") || mapNames[0],
+      });
+      this.$router.addRoutes(routes);
+    });
   },
 };
 </script>
