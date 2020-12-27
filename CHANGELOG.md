@@ -1,5 +1,15 @@
 # Change Log
 
+<a name="2.14.0"></a>
+# [2.14.0](https://github.com/Endebert/squadmc/compare/v2.12.3...v2.14.0) (2020-12-27)
+
+
+### Features
+
+* implemented vue-router for maps ([#94](https://github.com/Endebert/squadmc/issues/94)) (by ekzyis) ([30578cb](https://github.com/Endebert/squadmc/commit/30578cb))
+
+
+
 <a name="2.13.2"></a>
 ## [2.13.2](https://github.com/Endebert/squadmc/compare/v2.13.0...v2.13.2) (2020-10-09)
 
