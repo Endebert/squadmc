@@ -68,6 +68,7 @@ The build will be contained in the `/dist` folder.
  * [Kalliser](https://github.com/Kalliser)
  * [TopMak](https://github.com/TopMak)
  * [ansarto](https://github.com/ansarto)
+ * [ekzyis](https://github.com/ekzyis)
 
 ## Attributions
  * Keypad grid originally based on [Leaflet.SimpleGraticule](https://github.com/ablakey/Leaflet.SimpleGraticule), but not much is left from the original code
