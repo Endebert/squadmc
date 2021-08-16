@@ -374,6 +374,89 @@ export function getMortarSettings(mPos, tPos, mVel, dHeight = 0, useNatoMils = t
   };
 }
 
+
+/**
+ * Calculates mortar settings for a mortar to hit a target.
+ *
+ * @param {LatLng} mPos - mortar position
+ * @param {number} bearing - bearing
+ * @param {number} mVel - mortar shell velocity
+ * @param {boolean} [useNatoMils] - use regular Milliradians or NATO Milliradians (Squad uses NATO mils)
+ * @param {SquadMap} [SquadMap] - use regular Milliradians or NATO Milliradians (Squad uses NATO mils)
+ * @returns {{bearing: number, elevation: (number|NaN), dist: number, dHeight: number}} - bearing and elevation settings
+ *  required to hit target. Elevation is NaN if target is out of range.
+ */
+export function getMaxMortarDistance(mPos, bearing, mVel, squadMap, useNatoMils = true) {
+  // This function isn't optimal at all and could be optimized.
+  // This function takes a direction(bearing) and a initial position(mPos) and attempts to find
+  // the position which is the furthest away from the mortar but close enough to be hit.
+
+  // Parameters which can be tweaked in order to make it more accurate
+  // Increments in meters which will be checked, less = more accurate and more slow
+  const increments = 10;
+
+  // distanceStart deterine where to start the look for max distance
+  const distanceStart = 1200;
+
+  // distanceStart deterine where to stop the look for max distance
+  const distanceStop = 1300;
+
+  const angle = bearing * Math.PI / 180;
+
+  // The position of where the mortar are able to hit
+  let lastLatLng = null;
+
+  for (let dist = distanceStart; dist < distanceStop; dist += increments) {
+    // Calculating the position
+
+    // New latitude
+    const x1 = mPos.lat - Math.cos(angle) * dist;
+    // New longitude
+    const y1 = mPos.lng + Math.sin(angle) * dist;
+
+    // Get the height difference between the mortar and target
+    const mHeight = squadMap.hasHeightmap ? squadMap.getHeightmapHolder().getHeight(mPos.lng, mPos.lat) : 0;
+    const tHeight = squadMap.hasHeightmap ? squadMap.getHeightmapHolder().getHeight(x1, y1) : 0;
+    const dHeight = tHeight - mHeight;
+
+    const elevation = useNatoMils ? getNatoElevation(dist, dHeight, mVel) : getElevation(dist, dHeight, mVel);
+
+    // Check if elevation is valid if not, the best distance has been found
+    if (Number.isNaN(elevation) || elevation >= 1580) {
+      break;
+    } else {
+      lastLatLng = new LatLng(x1, y1);
+    }
+  }
+
+  return lastLatLng;
+}
+
+/**
+ * Calculates a series of points indicating the max mortaring distance all around the mortar
+ * This also accounts for the height difference
+ *
+ * @param {LatLng} mPos - mortar position
+ * @param {number} bearing - bearing
+ * @param {number} mVel - mortar shell velocity
+ * @param {boolean} [useNatoMils] - use regular Milliradians or NATO Milliradians (Squad uses NATO mils)
+ * @param {SquadMap} [SquadMap] - use regular Milliradians or NATO Milliradians (Squad uses NATO mils)
+ * @returns {LatLng[]} - The coordniates forming a polygon
+ */
+export function getMaxMortar360Distance(mPos, mVel, squadMap, useNatoMils = true) {
+  const latLngs = [];
+
+  for (let bearing = 0; bearing < 360; bearing += 18) {
+    const latLng = getMaxMortarDistance(mPos, bearing, mVel, squadMap, useNatoMils);
+    if (!latLng) {
+      console.warn("invalid latlng");
+    }
+    latLngs.push(latLng);
+  }
+
+  return latLngs;
+}
+
 /**
  * Get available mortar types for Squad
  *

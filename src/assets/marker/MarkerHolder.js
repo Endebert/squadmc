@@ -90,7 +90,13 @@ export default class MarkerHolder {
    */
   _moveAttachments(latlng) {
     this._attachments.forEach((a) => {
-      a.setLatLng(latlng);
+      try {
+        a.setLatLng(latlng);
+      } catch (error) {
+        // This error happens because you can't call .setLatLng() on the polygram attachment
+        // Feel free to find a better way to handle this error
+        console.log("this is fine");
+      }
     });
   }
 

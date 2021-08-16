@@ -1,4 +1,4 @@
-import { Circle } from "leaflet";
+import { Circle, Polygon } from "leaflet";
 
 import PinHolder from "./PinHolder";
 import { MIN_DISTANCE, SQUAD_MAX_DISTANCE } from "../../Vars";
@@ -38,6 +38,16 @@ export default class MortarPin extends PinHolder {
   }
 
   /**
+   * This postions in which the mortar are actually able to hit
+   * @param {LatLng[]} latlngs
+   */
+  setMaxRangePolygon(latlngs) {
+    if (this.maxRangePolygon) {
+      this.maxRangePolygon.setLatLngs(latlngs);
+    }
+  }
+
+  /**
    * Creates min and max range circles for mortar marker
    */
   _createAttachments() {
@@ -64,6 +74,20 @@ export default class MortarPin extends PinHolder {
       clickable: false, // legacy support
     });
 
-    this._attachments = [this.minRangeCircle, this.maxRangeCircle];
+    /**
+     * This shows the actual range in which the mortar are able to hit. This accounts for height differences
+     */
+    this.maxRangePolygon = new Polygon(this.pos, {
+      draggable: "false",
+      radius: this.maxDistance,
+      color: "red",
+      fillOpacity: 0.1,
+      fillColor: this.color,
+      dashArray: "5, 5",
+      interactive: false,
+      clickable: false, // legacy support
+    });
+
+    this._attachments = [this.minRangeCircle, this.maxRangeCircle, this.maxRangePolygon];
   }
 }

@@ -698,6 +698,20 @@
           <v-list-tile>
             <v-list-tile-action>
               <v-switch
+                v-model="showAccurateMortarRange"
+              />
+            </v-list-tile-action>
+            <v-list-tile-content>
+              <v-list-tile-title>Show Accurate Range</v-list-tile-title>
+              <v-list-tile-sub-title>NOTE: Can be slow</v-list-tile-sub-title>
+            </v-list-tile-content>
+            <v-list-tile-avatar>
+              <v-icon>approval</v-icon>
+            </v-list-tile-avatar>
+          </v-list-tile>
+          <v-list-tile>
+            <v-list-tile-action>
+              <v-switch
                 v-model="showAllRanges"
               />
             </v-list-tile-action>
@@ -951,6 +965,7 @@ export default {
       showGrid: this.fromStorage("showGrid", "true") === "true",
       showHeightmap: this.fromStorage("showHeightmap", "false") === "true",
       showLocations: this.fromStorage("showLocations", "false") === "true",
+      showAccurateMortarRange: this.fromStorage("showAccurateMortarRange", "false") === "true",
       selectedMap: this.initialMap || this.fromStorage("selectedMap", undefined), // selected map in top selector
       delayCalcUpdate: this.fromStorage("delayCalcUpdate", "true") === "true",
       hideLoadingBar: this.fromStorage("hideLoadingBar", "true") === "true",
@@ -1468,7 +1483,35 @@ export default {
         this.subTargetLine.bringToFront();
       }
     },
+    /**
+     * Updates the polygon around the mortar showing how fare it can shoot
+     * Note this is a fairly slow function.
+     */
+    updateMortarDistance() {
+      if (!this.showAccurateMortarRange) {
+        this.mortar.setMaxRangePolygon([]);
+        return;
+      }
 
+      if (!this.mortar) {
+        return;
+      }
+
+      const mPos = this.mortar.pos;
+      const mVel = this.mortarType.velocity;
+      const useNatoMils = !this.postScriptum;
+
+      let latLngs = [];
+
+      /* const bearing = index; */
+      latLngs = Utils.getMaxMortar360Distance(
+        mPos,
+        mVel,
+        this.squadMap,
+        useNatoMils,
+      );
+      this.mortar.setMaxRangePolygon(latLngs);
+    },
     /**
      * Calculates the mortar settings based on the given mortar & target positions.
      *
@@ -1884,6 +1927,12 @@ export default {
       }
       this.toStorage("showLocations", b);
     },
+    showAccurateMortarRange(b) {
+      console.log("showAccurateMortarRange:", b);
+
+      this.updateMortarDistance();
+      this.toStorage("showAccurateMortarRange", b);
+    },
     /**
      * Triggers calculation on position change of active mortar
      */
@@ -1891,6 +1940,7 @@ export default {
       console.log("mortarPosWatcher");
       this.updateSubTargets();
       this.calcAndUpdate();
+      this.updateMortarDistance();
     },
     /**
      * Triggers calculation on position change of active target
