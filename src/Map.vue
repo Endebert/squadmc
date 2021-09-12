@@ -332,10 +332,10 @@
               <tr style="font-size: large">
                 <td
                   class="px-1"
-                  align="right">{{ DOMbearing }}</td>
+                  align="right">{{ DOMbearing[currentSubTarget] }}</td>
                 <td
                   class="px-1"
-                  align="left">{{ DOMelevation }}</td>
+                  align="left">{{ DOMelevation[currentSubTarget] }}</td>
               </tr>
             </table>
           </div>
@@ -343,7 +343,9 @@
           <!--LINE/AREA FIRE LAYOUT-->
           <div
             v-else
-            class="flex row">
+            class="flex row"
+            style="maxHeight: 20vh;"
+          >
             <div class="flex column">
               <div class="flex row">
                 <v-speed-dial>
@@ -416,39 +418,23 @@
                 </v-speed-dial>
               </div>
             </div>
-            <table class="font-mono">
-              <tr
-                align="center"
-                style="font-size: small; color: #9e9e9e">
-                <td colspan="2">
-                  <div class="flex row">
-                    <v-btn
-                      icon
-                      small
-                      class="flex my-1"
-                      color="grey darken-3"
-                      :disabled="currentSubTarget <= 0">
-                      <v-icon @click="currentSubTarget--">keyboard_arrow_left</v-icon>
-                    </v-btn>
-                    Round {{ pad(currentSubTarget + 1, 3) }} / {{ pad(subTargetsHolder.targets.length, 3) }}
-                    <v-btn
-                      icon
-                      small
-                      class="flex my-1"
-                      color="grey darken-3"
-                      :disabled="currentSubTarget >= subTargetsHolder.targets.length - 1">
-                      <v-icon @click="currentSubTarget++">keyboard_arrow_right</v-icon>
-                    </v-btn>
-                  </div>
-                </td>
-              </tr>
-              <tr >
-                <td
+            <div
+              class="flex column"
+              style="maxHeight: 20vh; overflowY: auto; padding: 6px; box-sizing: border-box;"
+            >
+              <div
+                v-for="(target, index) in subTargetsHolder.targets"
+                :key="index"
+              >
+                <p
+                  class="font-mono"
                   align="center"
-                  style="font-size: large"
-                >{{ DOMbearing }} {{ DOMelevation }}</td>
-              </tr>
-            </table>
+                  style="font-size: large; margin: 4px 0;"
+                >
+                  {{ DOMbearing[index] }} {{ DOMelevation[index] }}
+                </p>
+              </div>
+            </div>
           </div>
         </v-footer>
       </div>
@@ -1718,7 +1704,15 @@ export default {
           console.log("subTargets:", this.subTargetsHolder.targets.length, this.subTargetsHolder.targets);
           console.log("currentSubTarget:", this.currentSubTarget);
           const cSubTargetPos = this.subTargetsHolder.targets[this.currentSubTarget].pos;
-          const settings = this.calcMortarSettings(this.mortar.pos, cSubTargetPos);
+          /* eslint-disable */
+          /*
+            This arrow function is more than 120 characters so eslint wont allow it to be one line.
+            But having a multiline arrow function with only one return statement throws multiple eslint errors.
+          */
+          const settings = this.subTargetsHolder.targets.map(target =>
+            this.calcMortarSettings(this.mortar.pos, target.pos)
+          );
+          /* eslint-enable */
           this.setMortarSettings(settings, delayUpdate);
 
           const ele = settings.elevation;
@@ -1738,7 +1732,7 @@ export default {
           this.clearSubTargetLine();
           this.subTargetsHolder.hideAll();
           const settings = this.calcMortarSettings(this.mortar.pos, this.target.pos);
-          this.setMortarSettings(settings, delayUpdate);
+          this.setMortarSettings([settings], delayUpdate);
 
           const ele = settings.elevation;
           const inRange = !Number.isNaN(ele) && ele <= 1580 && ele >= 800;
@@ -2055,31 +2049,33 @@ export default {
      * @return {String} formatted string
      */
     DOMbearing() {
-      return this.formatDOMBearing(this.mortarSettings.bearing);
+      return this.mortarSettings.map(mortarSetting => this.formatDOMBearing(mortarSetting.bearing));
     },
     /**
      * Returns formatted elevation string for DOM element
      * @return {String} formatted string
      */
     DOMelevation() {
-      return this.formatDOMElevation(this.mortarSettings.elevation);
+      return this.mortarSettings.map(mortarSetting => this.formatDOMElevation(mortarSetting.elevation));
     },
     /**
      * Returns formatted dist string for DOM element
      * @return {String} formatted string
      */
     DOMdist() {
-      return `↔${Utils.pad(Math.round(this.mortarSettings.dist), 4)}m`;
+      return this.mortarSettings.map(mortarSetting => `↔${Utils.pad(Math.round(mortarSetting.dist), 4)}m`);
     },
     /**
      * Returns formatted dHeight string for DOM element
      * @return {String} formatted string
      */
     DOMhDelta() {
-      if (this.mortarSettings.dHeight > 0) {
-        return `↕+${Utils.pad(Math.round(this.mortarSettings.dHeight), 3)}m`;
-      }
-      return `↕-${Utils.pad(Math.round(-this.mortarSettings.dHeight), 3)}m`;
+      return this.mortarSettings.map((mortarSetting) => {
+        if (mortarSetting.dHeight > 0) {
+          return `↕+${Utils.pad(Math.round(mortarSetting.dHeight), 3)}m`;
+        }
+        return `↕-${Utils.pad(Math.round(mortarSetting.dHeight), 3)}m`;
+      });
     },
     /**
      * Returns current mortar type as MortarType instance.
