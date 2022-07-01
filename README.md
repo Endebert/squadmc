@@ -27,7 +27,7 @@ SquadMC is a map-based mortar elevation and bearing calculator for the game [*Sq
 ## Changelog
  * see here: [Changelog](CHANGELOG.md)
 
-## installation
+## Installation (without Docker)
 
 ### Installation Prerequisites
 
@@ -59,6 +59,23 @@ For an optimized build ready for deployment, execute:
 yarn run build
 ```
 The build will be contained in the `/dist` folder.
+
+## Installation with Docker
+
+Start the npm docker container
+```
+docker compose up -d --build
+```
+
+Install all dependencies
+```
+docker compose exec app yarn
+```
+
+Start the development server with hot reload
+```
+docker compose exec app yarn run serve
+```
 
 ## Code of Conduct
  * See here: [Code of Conduct](CODE_OF_CONDUCT.md)
