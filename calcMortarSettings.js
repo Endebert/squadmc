@@ -277,7 +277,7 @@ tables.forEach((t) => {
 
   console.log(`${tName}: ===============================================`);
   console.log(`${tName}: average velocity: ${avgVel.toFixed(maxPrecision)}`);
-  console.log(`${tName}: maximum distance: ${getDist(avgVel, milToRad(800, tNato)).toFixed(2)}`);
+  console.log(`${tName}: maximum distance: ${getDist(avgVel, degToRad(45)).toFixed(2)}`);
   console.log(`${tName}: ===============================================`);
   console.log(`${tName}: Minimizing deviation...`);
   console.log(`${tName}: ===============================================`);
@@ -335,7 +335,7 @@ tables.forEach((t) => {
   console.log(`${tName}: ===============================================`);
   console.log(`${tName}: FINAL VELOCITY     : ${lAvgVel.toFixed(maxPrecision)}`);
   console.log(`${tName}: FINAL AVG DEVIATION: ${lAvgDev.toFixed(maxPrecision + 1)}`);
-  console.log(`${tName}: FINAL MAX RANGE    : ${getDist(lAvgVel, milToRad(800, tNato)).toFixed(2)}`);
+  console.log(`${tName}: FINAL MAX RANGE    : ${getDist(lAvgVel, degToRad(45)).toFixed(2)}`);
   console.log(`${tName}: ===============================================`);
   console.log(`${tName}: Generating overview...`);
   console.log(`${tName}: ===============================================`);
