@@ -145,11 +145,11 @@ const usa6cmTable = [
 ];
 
 const tables = [
-  ["SQU", squadTable],
-  ["GER", gerTable],
-  ["BR3", br3inchTable],
-  ["BR4", br4inchTable],
-  ["US6", usa6cmTable],
+  ["SQU", squadTable, true],
+  ["GER", gerTable, false],
+  ["BR3", br3inchTable, false],
+  ["BR4", br4inchTable, false],
+  ["US6", usa6cmTable, false],
 ];
 
 // gravity
@@ -157,10 +157,13 @@ const g = 9.8;
 
 // deg to mil factor
 // "1mil = 1/6400 of a circle in NATO countries."
-const milF = 360 / 6400; // deg to mil factor
+const milFNato = 360 / 6400;
+// standard miliradian
+const milF = 360 / (2 * Math.PI * 1000);
 
 // conversions
-function milToDeg(mil) {
+function milToDeg(mil, nato) {
+  const mf = nato ? milFNato : milF;
   return mil * milF;
 }
 
@@ -172,16 +175,17 @@ function radToDeg(rad) {
   return (rad * 180) / Math.PI;
 }
 
-function degToMil(deg) {
+function degToMil(deg, nato) {
+  const mf = nato ? milFNato : milF;
   return deg / milF;
 }
 
-function radToMil(rad) {
-  return degToMil(radToDeg(rad));
+function radToMil(rad, nato) {
+  return degToMil(radToDeg(rad), nato);
 }
 
-function milToRad(mil) {
-  return degToRad(milToDeg(mil));
+function milToRad(mil, nato) {
+  return degToRad(milToDeg(mil), nato);
 }
 
 // calculate time needed to hit target at distance x
@@ -231,7 +235,7 @@ function findAngle(x, y, v) {
   const p1 = Math.sqrt(v ** 4 - g * (g * x ** 2 + 2 * y * v ** 2));
   const a1 = Math.atan((v ** 2 + p1) / (g * x));
 
-  // a2 is always below 800 mil -> can't be used in the game
+  // a2 is always below 800 mil -> can't be used in the game (direct fire)
   // const a2 = Math.atan((v ** 2 - p1) / (g * x));
 
   return a1;
@@ -250,8 +254,7 @@ const maxPrecision = 6;
 const startTime = Date.now();
 
 tables.forEach((t) => {
-  const tName = t[0];
-  const tTable = t[1];
+  const [tName, tTable, tNato] = t;
 
   console.log(`${tName}: Gathering velocities...`);
   console.log(`${tName}: ===============================================`);
@@ -259,9 +262,8 @@ tables.forEach((t) => {
   // get velocity per table row
   const velocities = [];
   tTable.forEach((entry) => {
-    const tDistance = entry[0];
-    const tAngle = entry[1];
-    const v = getVel(tDistance, milToRad(tAngle));
+    const [tDistance, tAngle] = entry;
+    const v = getVel(tDistance, milToRad(tAngle, tNato));
     velocities.push(v);
 
     console.log(`${tName}: ${pad(tDistance, 4)}m ${pad(tAngle, 4)}mil => ${v.toFixed(maxPrecision)}`);
@@ -275,7 +277,7 @@ tables.forEach((t) => {
 
   console.log(`${tName}: ===============================================`);
   console.log(`${tName}: average velocity: ${avgVel.toFixed(maxPrecision)}`);
-  console.log(`${tName}: maximum distance: ${getDist(avgVel, milToRad(800)).toFixed(2)}`);
+  console.log(`${tName}: maximum distance: ${getDist(avgVel, milToRad(800, tNato)).toFixed(2)}`);
   console.log(`${tName}: ===============================================`);
   console.log(`${tName}: Minimizing deviation...`);
   console.log(`${tName}: ===============================================`);
@@ -299,8 +301,7 @@ tables.forEach((t) => {
     const deviations = [];
     // eslint-disable-next-line no-loop-func
     tTable.forEach((entry) => {
-      const tDistance = entry[0];
-      const tAngle = entry[1];
+      const [tDistance, tAngle] = entry;
       const estimatedAngle = radToMil(findAngle(tDistance, 0, avgVel));
       const d = tAngle - estimatedAngle;
       deviations.push(d);
@@ -344,9 +345,8 @@ tables.forEach((t) => {
   // iterate through table yet again, printing table values,
   // calculated values based on optimized velocity, and deviation from table
   tTable.forEach((entry) => {
-    const tDistance = entry[0];
-    const tAngle = entry[1];
-    const v = getVel(tDistance, milToRad(tAngle));
+    const [tDistance, tAngle] = entry;
+    const v = getVel(tDistance, milToRad(tAngle, tNato));
 
     const estimatedAngle = radToMil(findAngle(tDistance, 0, avgVel));
     const eAFormatted = pad(estimatedAngle.toFixed(1), 6);
